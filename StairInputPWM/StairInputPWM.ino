@@ -2,7 +2,7 @@ const int analogInPin = A0; // Analog input pin that the potentiometer is attach
 const int analogOutPin = 9; // Analog output pin that the LED is attached to
 int sensorValue = 0; // value read from the pot
 
-int howLongToWait = 100;                 // Wait this many millis()
+int howLongToWait = 200;                 // Wait this many millis()
 int lastTimeItHappened = 0;              // The clock time in millis()
 int howLongItsBeen=0;                         // A calculated value
 unsigned int timer=0;
@@ -27,7 +27,21 @@ void loop() {
   if(test_end==0){
   
     howLongItsBeen = millis() - lastTimeItHappened;
-    if ( howLongItsBeen >= howLongToWait ) {      
+    if ( howLongItsBeen >= howLongToWait ) {
+      
+      sensorValue = analogRead(analogInPin);
+      timer=millis();
+      Vsensor = sensorValue*5.0/1024.0;
+       
+      Serial.print(amplitude);
+      Serial.print("\t");
+      Serial.print(sensorValue);
+      Serial.print("\t");
+      Serial.print(Vsensor);
+      Serial.print("\t");
+      Serial.print(timer);
+      Serial.print("\n");
+      
       lastTimeItHappened =millis();
       amplitude+=10;
       if(amplitude>250){
@@ -38,16 +52,6 @@ void loop() {
       analogWrite(analogOutPin, amplitude);
     } 
 
-    sensorValue = analogRead(analogInPin);
-    timer=millis();
-    Vsensor = sensorValue*5.0/1024.0;
-     
-    Serial.print(amplitude);
-    Serial.print("\t");
-    Serial.print(Vsensor);
-    Serial.print("\t");
-    Serial.print(timer);
-    Serial.print("\n");
   }
 // r_ldr = 10.0*(5-Vsensor)/Vsensor;
 //  Serial.print("rldr= ");
