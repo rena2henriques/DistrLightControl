@@ -1,0 +1,2 @@
+figure
+plot(time,lux)
