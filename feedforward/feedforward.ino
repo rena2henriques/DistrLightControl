@@ -18,12 +18,13 @@ const float y_origin = -6.9365;
 
 // serial inputs
 float avg_constant = 0.5; 
-int n_samples = 10;
 float lux_ref = 100;
 
 // serial auxiliars
-char rx_byte = 0;
 String rx_str = "";
+char temp_str[20] = "";
+char temp_fl[20] = "";
+
 
 inline float average(float avg, float new_value) {
 	return avg_constant*avg + (1-avg_constant)*new_value;
@@ -37,15 +38,16 @@ float vtolux(int sensorValue ){
 	return lux; 
 }
 
+// transforms a certain lux value into the correspondent pwm value
 inline int getPwmValue(float lux_aux) {
 	int amplitude = slope*lux_aux + y_origin;
 
+  // pwm can't be more than 255 or less than 0
   if (amplitude > 255){
     amplitude = 255;
   } else if(amplitude <= 0) {
     amplitude = 0;
   }
-
   return amplitude;
 }
 
@@ -57,21 +59,33 @@ void setup() {
 void loop() {
 
 	if (Serial.available() > 0) {    // is a character available?
-      rx_byte = Serial.read();       // get the character
+      rx_str = Serial.readString();       // get the character
 
-      rx_str += rx_byte;
-      
-      if (rx_byte == '\n') {
-        // end of string
-       
-        // reference value of lux is set to the input
-        lux_ref = rx_str.toFloat();
-        // print the result
-        Serial.print("The next value of lux_ref is ");
-        Serial.println(lux_ref);
-        
-        rx_str = "";                // clear the string for reuse
+      char *rx_str_aux = rx_str.c_str();
+
+      if(sscanf(rx_str_aux, "%[^ =] = %[^\n]", temp_str, temp_fl) != 2) {
+         Serial.println(temp_str);
+         Serial.println(temp_fl);
+         Serial.println("Input Error: Wrong input syntax");
       }
+
+      if ( strcmp(temp_str,"lux_ref") == 0){
+        lux_ref = atof(temp_fl);
+        // print the result
+        Serial.print("The new value of lux_ref is ");
+        Serial.println(lux_ref);
+      } else if (strcmp(temp_str, "avg_constant") == 0) {
+        avg_constant = atof(temp_fl);
+        // print the result
+        Serial.print("The new value of avg_constant is ");
+        Serial.println(avg_constant);
+      } else {
+        Serial.println("Input Error: Variable not recognized");
+      }
+
+      memset(temp_fl, 0, 20);
+      memset(temp_str, 0, 20);
+      rx_str = "";                // clear the string for reuse
    
   } // end: if (Serial.available() > 0)
 
@@ -79,13 +93,15 @@ void loop() {
   avg_lux = average(avg_lux, vtolux(sensorValue));
 		  
 	// print lux values to serial
-	Serial.print("\t lux = ");
+	Serial.print("lux = ");
 	Serial.print(avg_lux);
   Serial.print("\t lux_Ref = ");
   Serial.print(lux_ref);
 	Serial.print("\t sensor = ");
 	Serial.print(sensorValue);
-			  
+  Serial.print("\t time = ");
+  Serial.print(millis());
+  
 	// FeedForward control function
 	outputValue = getPwmValue(lux_ref);
 	analogWrite(analogOutPin, outputValue); // change the analog out value
