@@ -10,8 +10,8 @@ float lux = 0.0;
 const float a = -0.74; // declive da reta aproximada do LDR
 const float b = 1.92; // ordenada na origem da reta aproximada do LDR
 float erro=0.0;
-int ref=50;
-int Kp=4;
+int ref=70;
+float Kp=3;
 
 int count=0;
 
@@ -21,31 +21,33 @@ void setup() {
 
 void loop() {
 
-  while(count<100){
-
-    sensorValue = analogRead(analogInPin);
-    Serial.print(millis());
-    Serial.print("\t");
-    vSensor = sensorValue*5.0/1024.0;
-    rLdr = 10.0*(5-vSensor)/vSensor;
-    lux = pow(rLdr/(pow(10,b)), 1/a); 
-    Serial.print(lux);
-    Serial.print("\n");
+    while( count < 100) {
+      sensorValue = analogRead(analogInPin);
+      vSensor = sensorValue*5.0/1024.0;
+      rLdr = 10.0*(5-vSensor)/vSensor;
+      lux = pow(rLdr/(pow(10,b)), 1/a); 
+      Serial.println(lux);
     
-    erro=ref-lux;
-    u=Kp*erro;
-    
-    if(u>255)
-      u=255;
+      erro=ref-lux;
+      // summing 0.5 to the value just for rounding
+      // this way the average error is smaller
+      u=(int)(Kp*erro + 0.5);
       
-    //else if(u<0)
-     // u=0;
+      if(u>255)
+        u = 255;
+      else if (u<0)
+        u = 0;
+        
+      analogWrite(analogOutPin,u);     
       
-    analogWrite(analogOutPin,u); 
-    count++;
-    
-    
-    delay(30);
-  }
+      delay(30);
 
+      count++;
+    }
+    
+    if (count == 100){
+      Serial.println("-1");
+      Serial.println(millis());
+      count++;
+    }
 }

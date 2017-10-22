@@ -18,7 +18,7 @@ const float y_origin = -6.9365;
 
 // serial inputs
 float avg_constant = 0.5; 
-float lux_ref = 100;
+float lux_ref = 70;
 
 // serial auxiliars
 String rx_str = "";
