@@ -11,7 +11,7 @@ const float a = -0.74; // declive da reta aproximada do LDR
 const float b = 1.92; // ordenada na origem da reta aproximada do LDR
 float erro=0.0;
 int ref=50;
-int Kp=4;
+int Kp=40;
 
 int count=0;
 
@@ -21,7 +21,7 @@ void setup() {
 
 void loop() {
 
-  while(count<100){
+ // while(count<100){
 
     sensorValue = analogRead(analogInPin);
     Serial.print(millis());
@@ -42,10 +42,10 @@ void loop() {
      // u=0;
       
     analogWrite(analogOutPin,u); 
-    count++;
+  //  count++;
     
     
     delay(30);
-  }
+  //}
 
 }
