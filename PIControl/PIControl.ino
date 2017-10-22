@@ -22,6 +22,7 @@ int u=0;
 //parameteres obtained 
 float Kp=1.35;
 float Ki=0.019;
+//float Ki=0.02846; //when T=20ms
 float c=1.0; // é o b que está nos slides, tem que ser entre 0 e 1
 float T= 30.0;
 float K1=Kp*c;
@@ -69,7 +70,8 @@ void loop() {
       u=255;
     else if(u<0)
       u=0;
-      
+
+    //Serial.println(u);
     analogWrite(analogOutPin,u);
     
     e_ant=erro;

@@ -18,7 +18,7 @@ const float y_origin = -6.9365;
 
 // serial inputs
 float avg_constant = 0.5; 
-float lux_ref = 70;
+float lux_ref = 0;
 
 // serial auxiliars
 String rx_str = "";
@@ -72,8 +72,8 @@ void loop() {
       if ( strcmp(temp_str,"lux_ref") == 0){
         lux_ref = atof(temp_fl);
         // print the result
-        Serial.print("The new value of lux_ref is ");
-        Serial.println(lux_ref);
+       // Serial.print("The new value of lux_ref is ");
+       //Serial.println(lux_ref);
       } else if (strcmp(temp_str, "avg_constant") == 0) {
         avg_constant = atof(temp_fl);
         // print the result
@@ -93,22 +93,25 @@ void loop() {
   avg_lux = average(avg_lux, vtolux(sensorValue));
 		  
 	// print lux values to serial
-	Serial.print("lux = ");
-	Serial.print(avg_lux);
-  Serial.print("\t lux_Ref = ");
+  //Serial.print("\t lux_Ref = ");
   Serial.print(lux_ref);
-	Serial.print("\t sensor = ");
-	Serial.print(sensorValue);
-  Serial.print("\t time = ");
-  Serial.print(millis());
+  Serial.print("\t");
+	//Serial.print("lux = ");
+	Serial.print(avg_lux);
+  Serial.print("\t");
+  //Serial.print("\t time = ");
+  Serial.println(millis());
+	//Serial.print("\t sensor = ");
+	//Serial.print(sensorValue);
+  
   
 	// FeedForward control function
 	outputValue = getPwmValue(lux_ref);
 	analogWrite(analogOutPin, outputValue); // change the analog out value
 
-	Serial.print("\t PWM = ");
-	Serial.println(outputValue);
-	delay(50);// the professor recomended a sampling time of 30ms
+	//Serial.print("\t PWM = ");
+	//Serial.println(outputValue);
+	delay(30);// the professor recomended a sampling time of 30ms
 }
 
 

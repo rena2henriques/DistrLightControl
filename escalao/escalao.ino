@@ -5,7 +5,7 @@ int sensorValue = 0; // value read from the pot
 int howLongToWait = 300;                 // Wait this many millis()
 unsigned int timer=0;
 
-int dutyCycle=200;
+int dutyCycle=5;
 int testEnd=0;
 
 void setup() {
