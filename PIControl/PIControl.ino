@@ -1,28 +1,49 @@
 const int analogInPin = A0; // Analog input pin that the potentiometer is attached to
 const int analogOutPin = 9; // Analog output pin that the LED is attached to
-int sensorValue = 0;        // value read from the ldr
+int sensorValue = 0; // value read from the pot
+int outputValue = 0.0; // value output to the PWM (analog out)
+float r_ldr = 0.0;
+float Vsensor=0.0;
 
-float rLdr = 0.0;
-float vSensor=0.0;
 // transform into double
 float lux = 0.0;
-const float a = -0.74; // declive da reta aproximada do LDR
-const float b = 1.92; // ordenada na origem da reta aproximada do LDR
+float avg_lux = 0.0;
+// for transforming V to lux
+const float a_lux = -0.74; // declive da reta aproximada do LDR
+const float b_lux = 1.92; // ordenada na origem da reta aproximada do LDR
 
+// serial inputs
+float avg_constant = 0.5; 
+float lux_ref = 70;
+
+// PI control variables
 float erro=0.0;
-int ref=70;
 int u=0;
-
 //parameteres obtained 
 float Kp=1.35;
 float Ki=0.019;
-
 float c=1.0; // é o b que está nos slides, tem que ser entre 0 e 1
-float T=  .0;
+float T= 30.0;
 float K1=Kp*c;
 float K2=Kp*Ki*T/2;
 
+// time variables
+unsigned long previousTime = 0; // ms
+unsigned long sampleInterval = 30; // ms
+
 float i=0.0, i_ant=0.0, e_ant=0.0;
+
+inline float average(float avg, float new_value) {
+  return avg_constant*avg + (1-avg_constant)*new_value;
+}
+
+// calculates the lux value from a certain sensorvalue
+float vtolux(int sensorValue ){
+  Vsensor = sensorValue*5.0/1024.0;
+  r_ldr = 10.0*(5-Vsensor)/Vsensor;
+  lux = pow(r_ldr/(pow(10,b_lux)), 1/a_lux);
+  return lux; 
+}
 
 void setup() {
   Serial.begin(9600); // initialize serial communications at 9600 bps
@@ -30,30 +51,30 @@ void setup() {
 
 void loop() {
 
-  sensorValue = analogRead(analogInPin);
-  
-  vSensor = sensorValue*5.0/1024.0;
-  rLdr = 10.0*(5-vSensor)/vSensor;
-  lux = pow(rLdr/(pow(10,b)), 1/a); 
-  Serial.println(lux);
+  unsigned long currentTime = millis();
+  if(currentTime - previousTime > sampleInterval) {
+    sensorValue = analogRead(analogInPin); // read the analog in value
+    // LOW pass filter 
+    avg_lux = average(avg_lux, vtolux(sensorValue));
 
-  erro=ref-lux;
-  i=i_ant+K2*(erro+e_ant);
-
-  //summing 0.5 to round
-  u=(int) (K1*ref-Kp*lux+i+0.5);
+    Serial.println(avg_lux);
   
-  if(u>255)
-    u=255;
-  else if(u<0)
-    u=0;
+    erro=lux_ref-avg_lux;
+    i=i_ant+K2*(erro+e_ant);
+  
+    //summing 0.5 to round
+    u=(int) (K1*lux_ref-Kp*avg_lux+i+0.5);
     
-  analogWrite(analogOutPin,u);
-  
-  e_ant=erro;
-  i_ant=i;
-  
-  delay(30);
-  
- 
+    if(u>255)
+      u=255;
+    else if(u<0)
+      u=0;
+      
+    analogWrite(analogOutPin,u);
+    
+    e_ant=erro;
+    i_ant=i;
+
+    previousTime = currentTime;
+  }
 }
