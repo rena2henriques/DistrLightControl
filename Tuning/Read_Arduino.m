@@ -18,4 +18,4 @@ fopen(arduino);
  plot(x,y);
  xlabel('time (ms)');
  ylabel('lux');
- title('Oscillations of the system with Kp=3 and ref = 70');
+ title('Oscillations of the system with Kp=3 and ref = 30 and t=20');
