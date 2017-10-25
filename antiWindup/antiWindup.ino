@@ -33,6 +33,7 @@ const int outMax = 255;
 const int outMin = 0;
 int erroWindup = 0;
 float gain_w = 1.35;
+int antiWindup_flag = 1; 
 
 // time variables (ms)
 unsigned long currentTime = 0;
@@ -40,14 +41,17 @@ unsigned long previousTime = 0;
 unsigned long sampleInterval = 30;
 
 // serial auxiliars
+char rx_byte = 0;
 String rx_str = "";
 char temp_str[20] = "";
 char temp_fl[20] = "";
 
+// Low Pass filter
 inline float average(float avg, float new_value) {
   return avg_constant*avg + (1-avg_constant)*new_value;
 }
 
+// AntiWindup system
 int setSaturation(int output) {
     if(output > outMax){
       erroWindup = outMax - output;
@@ -61,6 +65,36 @@ int setSaturation(int output) {
     return output;
 }
 
+// reads the serial buffer and changes the variables accordingly
+void analyseString(String serial_string) {
+    
+    char *rx_str_aux = serial_string.c_str();
+            
+    sscanf(rx_str_aux, "%[^ =] = %[^\n]", temp_str, temp_fl);
+
+    if ( strcmp(temp_str,"lux_ref") == 0){
+      lux_ref = atof(temp_fl);
+      // print the result
+    } else if (strcmp(temp_str, "avg_constant") == 0) {
+      avg_constant = atof(temp_fl);
+      // desk is occupied
+    } else if (strcmp(temp_str, "on") == 0) {
+      lux_ref = 70;
+      // desk is unoccupied
+    } else if (strcmp(temp_str, "off") == 0) {
+      lux_ref = 30;
+      // anti-windup system is off
+    } else if (strcmp(temp_str,"antiwindup_off") == 0) {
+      antiWindup_flag = 0;
+      // anti-windup system is on
+    } else if (strcmp(temp_str,"antiwindup_on") == 0) {
+      antiWindup_flag = 1;
+    }
+      
+    memset(temp_fl, 0, 20);
+    memset(temp_str, 0, 20);  
+}
+
 // calculates the lux value from a certain sensorvalue
 float vtolux(int sensorValue ){
   Vsensor = sensorValue*5.0/1024.0;
@@ -70,37 +104,28 @@ float vtolux(int sensorValue ){
 }
 
 void setup() {
-  Serial.begin(9600); // initialize serial communications at 9600 bps
+  Serial.begin(115200); // initialize serial communications at 115200 bps
 }
 
 void loop() {
-
-    if (Serial.available() > 0) {    // is a character available?
-      rx_str = Serial.readString();       // get the character
-
-      char *rx_str_aux = rx_str.c_str();
-
-      sscanf(rx_str_aux, "%[^ =] = %[^\n]", temp_str, temp_fl);
-
-      if ( strcmp(temp_str,"lux_ref") == 0){
-        lux_ref = atof(temp_fl);
-        // print the result
-      } else if (strcmp(temp_str, "avg_constant") == 0) {
-        avg_constant = atof(temp_fl);
-      // desk is occupied
-      } else if (strcmp(temp_str, "on") == 0) {
-        lux_ref = 70;
-      // desk is unoccupied
-      } else if (strcmp(temp_str, "off") == 0) {
-        lux_ref = 30;
-      }
-
-      memset(temp_fl, 0, 20);
-      memset(temp_str, 0, 20);
-      rx_str = "";                // clear the string for reuse
-   
-  } // end: if (Serial.available() > 0)
   
+  if (Serial.available() > 0) {    // is a character available?
+    
+    rx_byte = Serial.read();       // get the character
+    
+    if (rx_byte != '\n') {
+      // a character of the string was received
+      rx_str += rx_byte;
+    }
+    // end of string
+    else {
+      // checks what serial buffer said
+      analyseString(rx_str);
+      
+      rx_str = ""; // clear the string for reuse
+    }
+  }
+    
   currentTime = millis();
   if(currentTime - previousTime > sampleInterval) {
     sensorValue = analogRead(analogInPin); // read the analog in value
@@ -109,33 +134,29 @@ void loop() {
 
     Serial.print(avg_lux);
     Serial.print('\t');
-    
+
+    // calculation of error between ref and the present lux
     erro=lux_ref-avg_lux;
 
+    // calculation of the integral term of PI
     iTerm=iTerm_ant+K2*(erro+e_ant) + gain_w*erroWindup;
 
     Serial.println(iTerm);
 
-    //summing 0.5 to round
+    // calculation of the Output of PI
+    // summing 0.5 to round
     u = (int) (K1*lux_ref-Kp*avg_lux+iTerm+0.5);
     
-    // Limit the Output because of the saturation of
-    // the actuator
-    u = setSaturation(u);
-
-    /*if(u > outMax){
-      u = outMax;
-    } else if(u < outMin){
-      u = outMin;
-    }*/
-    
-    //Serial.println(u);
+    // AntiWindup System because of the saturation of the actuator
+    if ( antiWindup_flag == 1 ){
+      u = setSaturation(u);
+    }
     
     analogWrite(analogOutPin,u);
-    
+
+    // saves variables for next loop
     e_ant=erro;
     iTerm_ant=iTerm;
-
     previousTime = currentTime;
   }
 }
