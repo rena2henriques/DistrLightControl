@@ -14,7 +14,7 @@ const float b_lux = 1.92; // ordenada na origem da reta aproximada do LDR
 
 // serial inputs
 float avg_constant = 0.5; 
-float lux_ref = 30;
+float lux_ref = 70;
 
 // PI control variables
 float erro=0.0;
@@ -29,8 +29,10 @@ float K2=Kp*Ki*T/2;
 float iTerm=0.0, iTerm_ant=0.0, e_ant=0.0;
 
 // anti-Windup Variables
-int outMax = 255;
-int outMin = 0;
+const int outMax = 255;
+const int outMin = 0;
+int erroWindup = 0;
+float gain_w = 1.35;
 
 // time variables (ms)
 unsigned long currentTime = 0;
@@ -44,6 +46,19 @@ char temp_fl[20] = "";
 
 inline float average(float avg, float new_value) {
   return avg_constant*avg + (1-avg_constant)*new_value;
+}
+
+int setSaturation(int output) {
+    if(output > outMax){
+      erroWindup = outMax - output;
+      output = outMax;
+    } else if(output < outMin){
+      erroWindup = outMin - output;
+      output = outMin;
+    } else {
+       erroWindup = 0;
+    }
+    return output;
 }
 
 // calculates the lux value from a certain sensorvalue
@@ -92,29 +107,28 @@ void loop() {
     // LOW pass filter 
     avg_lux = average(avg_lux, vtolux(sensorValue));
 
-    Serial.println(avg_lux);
-    //Serial.print('\t');
+    Serial.print(avg_lux);
+    Serial.print('\t');
     
     erro=lux_ref-avg_lux;
-    iTerm=iTerm_ant+K2*(erro+e_ant);
 
-    // Limit on integral term to prevent Windup
-    if (iTerm > outMax)
-      iTerm = outMax;
-    else if (iTerm < outMin)
-      iTerm = outMin;
-  
+    iTerm=iTerm_ant+K2*(erro+e_ant) + gain_w*erroWindup;
+
+    Serial.println(iTerm);
+
     //summing 0.5 to round
     u = (int) (K1*lux_ref-Kp*avg_lux+iTerm+0.5);
-
     
     // Limit the Output because of the saturation of
     // the actuator
-    if(u > outMax)
-      u = outMax;
-    else if(u < outMin)
-      u = outMin;
+    u = setSaturation(u);
 
+    /*if(u > outMax){
+      u = outMax;
+    } else if(u < outMin){
+      u = outMin;
+    }*/
+    
     //Serial.println(u);
     
     analogWrite(analogOutPin,u);
