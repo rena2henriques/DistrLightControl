@@ -13,18 +13,16 @@ const float a_lux = -0.74; // declive da reta aproximada do LDR
 const float b_lux = 1.92; // ordenada na origem da reta aproximada do LDR
 
 // serial inputs
-float avg_constant = 0.0; 
+float avg_constant = 0.5; 
 float lux_ref = 70;
 
 // PI control variables
 float erro=0.0;
 int u=0;
 //parameteres obtained 
-//float Kp=1.35;
 float Kp=1.35;
 float Ki=0.019;
-//float Ki=0.03;
-float c=1.0; // é o b que está nos slides, tem que ser entre 0 e 1
+float c=1.0; // � o b que est� nos slides, tem que ser entre 0 e 1
 float T= 30.0;
 float K1=Kp*c;
 float K2=Kp*Ki*T/2;
@@ -34,12 +32,8 @@ float iTerm=0.0, iTerm_ant=0.0, e_ant=0.0;
 const int outMax = 255;
 const int outMin = 0;
 int erroWindup = 0;
-float gain_w = 0.74;
-int antiWindup_flag = 1; 
-
-int antiWindupIterm_flag=0;
-int Imax=150;
-int Imin=-150;
+float gain_w = 0.7;
+int antiWindup_flag = 0; 
 
 // time variables (ms)
 unsigned long currentTime = 0;
@@ -52,11 +46,26 @@ String rx_str = "";
 char temp_str[20] = "";
 char temp_fl[20] = "";
 
-int count=0;
+// for transforming LUX to pwm, FFWD
+const float slope = 2.4356;
+const float y_origin = -6.9365;
+
+//FFWD + PID variables
+int first_iteration = 1;
+int uFFWD = 0;
+int uPID = 0;
+int counter = 0;
 
 // Low Pass filter
 inline float average(float avg, float new_value) {
   return avg_constant*avg + (1-avg_constant)*new_value;
+}
+
+
+//fit from FFWD
+inline int getPwmValue(float lux_aux) {
+  int amplitude = slope*lux_aux + y_origin;
+  return amplitude;
 }
 
 // AntiWindup system
@@ -73,15 +82,6 @@ int setSaturation(int output) {
     return output;
 }
 
-int setItermSat(int output) {
-    if(output > Imax){
-      output = Imax;
-    } else if(output < Imin){
-      output = Imin;
-    }
-    return output;
-}
-
 // reads the serial buffer and changes the variables accordingly
 void analyseString(String serial_string) {
     
@@ -91,6 +91,7 @@ void analyseString(String serial_string) {
 
     if ( strcmp(temp_str,"lux_ref") == 0){
       lux_ref = atof(temp_fl);
+      first_iteration = 1; 
       // print the result
     } else if (strcmp(temp_str, "avg_constant") == 0) {
       avg_constant = atof(temp_fl);
@@ -122,6 +123,7 @@ float vtolux(int sensorValue ){
 
 void setup() {
   Serial.begin(115200); // initialize serial communications at 115200 bps
+  analogWrite(analogOutPin,getPwmValue(lux_ref));
 }
 
 void loop() {
@@ -145,54 +147,54 @@ void loop() {
     
   currentTime = millis();
   if(currentTime - previousTime > sampleInterval) {
-
-    if(count==100)
-      lux_ref=35;
-
-    else if(count==250)
-      lux_ref=70;
-
-      
     sensorValue = analogRead(analogInPin); // read the analog in value
     // LOW pass filter 
-   // avg_lux = average(avg_lux, vtolux(sensorValue));
-    avg_lux= vtolux(sensorValue);
+    avg_lux = average(avg_lux, vtolux(sensorValue));
 
     Serial.print(avg_lux);
     Serial.print('\t');
+    Serial.println(lux_ref);
+   
 
-    // calculation of error between ref and the present lux
-    erro=lux_ref-avg_lux;
+    if(first_iteration == 1) {//first iteration, only FFWD, ignore PID
+        uFFWD = getPwmValue(lux_ref); //output to be sent
+        u = uFFWD;                     //so recalcular FFWD_output se se mudar lux_ref pelo serial
+        first_iteration = 0;
+        sampleInterval = 30;
+    } else {    
+        // calculation of error between ref and the present lux
+        erro=lux_ref-avg_lux;
+       // if ((int)erro != 0) { //case yes, use PID, case not, ?keep the same u value? faz sentido ou este if é desnecessario??, testar esta condição no antiwindup sem FFWD ver se muda alg coisa
+            // calculation of the integral term of PI
+            iTerm=iTerm_ant+K2*(erro+e_ant) + gain_w*erroWindup;
 
-    // calculation of the integral term of PI
-    iTerm=iTerm_ant+K2*(erro+e_ant) + gain_w*erroWindup;
-
-    if(antiWindupIterm_flag ==1){
-      iTerm=setItermSat(iTerm);
-    }  
-
-    Serial.println(iTerm);
-
-    // calculation of the Output of PI
-    // summing 0.5 to round
-    u = (int) (K1*lux_ref-Kp*avg_lux+iTerm+0.5);
-    
-    // AntiWindup System because of the saturation of the actuator
-    if ( antiWindup_flag == 1 ){
-      u = setSaturation(u);
-    }
-
-    if(u>255)
-      u=255;
-    else if(u<0)
-      u=0;
-    
-    analogWrite(analogOutPin,u);
-
-    // saves variables for next loop
-    e_ant=erro;
-    iTerm_ant=iTerm;
-    previousTime = currentTime;
-   // count++; to change reference  
-  }
+             // calculation of the Output of PI
+             // summing 0.5 to round
+             uPID = (int) (K1*lux_ref-Kp*avg_lux+iTerm+0.5);
+             u = uPID + uFFWD;
+             // AntiWindup System because of the saturation of the actuator
+             if ( antiWindup_flag == 1 ){
+               u = setSaturation(u);
+             }
+      //  }
+      }
+      e_ant=erro;
+      iTerm_ant=iTerm;
+      analogWrite(analogOutPin,u);
+      counter++;
+     /* if(counter == 100 || counter == 400) {
+        sampleInterval = 200;
+        lux_ref = 35;
+        first_iteration = 1;
+      }
+      if(counter == 250 || counter == 650) {
+        sampleInterval = 200;
+        lux_ref = 70;
+        first_iteration = 1;
+      }*/
+      // saves variables for next loop
+      
+      previousTime = currentTime;
+     
+   }
 }

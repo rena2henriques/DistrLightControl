@@ -18,7 +18,7 @@ const float y_origin = -6.9365;
 
 // serial inputs
 float avg_constant = 0.5; 
-float lux_ref = 0;
+float lux_ref = 70;
 
 // serial auxiliars
 String rx_str = "";
@@ -64,9 +64,9 @@ void loop() {
       char *rx_str_aux = rx_str.c_str();
 
       if(sscanf(rx_str_aux, "%[^ =] = %[^\n]", temp_str, temp_fl) != 2) {
-         Serial.println(temp_str);
-         Serial.println(temp_fl);
-         Serial.println("Input Error: Wrong input syntax");
+        // Serial.println(temp_str);
+         //Serial.println(temp_fl);
+        // Serial.println("Input Error: Wrong input syntax");
       }
 
       if ( strcmp(temp_str,"lux_ref") == 0){
@@ -77,10 +77,10 @@ void loop() {
       } else if (strcmp(temp_str, "avg_constant") == 0) {
         avg_constant = atof(temp_fl);
         // print the result
-        Serial.print("The new value of avg_constant is ");
-        Serial.println(avg_constant);
+       // Serial.print("The new value of avg_constant is ");
+       // Serial.println(avg_constant);
       } else {
-        Serial.println("Input Error: Variable not recognized");
+        //Serial.println("Input Error: Variable not recognized");
       }
 
       memset(temp_fl, 0, 20);
@@ -97,12 +97,10 @@ void loop() {
   Serial.print(lux_ref);
   Serial.print("\t");
 	//Serial.print("lux = ");
-	Serial.print(avg_lux);
-  Serial.print("\t");
-  //Serial.print("\t time = ");
-  Serial.println(millis());
-	//Serial.print("\t sensor = ");
-	//Serial.print(sensorValue);
+	Serial.println(avg_lux);
+
+ // Serial.println(millis());
+
   
   
 	// FeedForward control function
