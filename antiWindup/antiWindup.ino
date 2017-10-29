@@ -14,7 +14,7 @@ const float b_lux = 1.92; // ordenada na origem da reta aproximada do LDR
 
 // serial inputs
 float avg_constant = 0.5; 
-float lux_ref = 70;
+float lux_ref = 35;
 
 // PI control variables
 float erro=0.0;
@@ -24,7 +24,7 @@ float Kp=1.35;
 float Ki=0.019;
 float c=1.0; // é o b que está nos slides, tem que ser entre 0 e 1
 float T= 30.0;
-float K1=Kp*c;
+float Kp1=Kp*c;
 float K2=Kp*Ki*T/2;
 float iTerm=0.0, iTerm_ant=0.0, e_ant=0.0;
 
@@ -33,12 +33,16 @@ const int outMax = 255;
 const int outMin = 0;
 int erroWindup = 0;
 float gain_w = 1.35;
-int antiWindup_flag = 1; 
+int antiWindup_flag = 0; 
 
 // time variables (ms)
 unsigned long currentTime = 0;
 unsigned long previousTime = 0;
 unsigned long sampleInterval = 30;
+
+// for transforming LUX to pwm
+const float slope = 2.4356;
+const float y_origin = -6.9365;
 
 // serial auxiliars
 char rx_byte = 0;
@@ -65,6 +69,19 @@ int setSaturation(int output) {
     return output;
 }
 
+// transforms a certain lux value into the correspondent pwm value
+int getPwmValue(float lux_aux) {
+  int amplitude = slope*lux_aux + y_origin;
+
+  // pwm can't be more than 255 or less than 0
+  if (amplitude > 255){
+    amplitude = 255;
+  } else if(amplitude <= 0) { 
+    amplitude = 0;
+  }
+  return amplitude;
+}
+
 // reads the serial buffer and changes the variables accordingly
 void analyseString(String serial_string) {
     
@@ -73,8 +90,10 @@ void analyseString(String serial_string) {
     sscanf(rx_str_aux, "%[^ =] = %[^\n]", temp_str, temp_fl);
 
     if ( strcmp(temp_str,"lux_ref") == 0){
+      // new reference value
       lux_ref = atof(temp_fl);
-      // print the result
+      
+      
     } else if (strcmp(temp_str, "avg_constant") == 0) {
       avg_constant = atof(temp_fl);
       // desk is occupied
@@ -82,7 +101,7 @@ void analyseString(String serial_string) {
       lux_ref = 70;
       // desk is unoccupied
     } else if (strcmp(temp_str, "off") == 0) {
-      lux_ref = 30;
+      lux_ref = 35;
       // anti-windup system is off
     } else if (strcmp(temp_str,"antiwindup_off") == 0) {
       antiWindup_flag = 0;
@@ -110,7 +129,6 @@ void setup() {
 void loop() {
   
   if (Serial.available() > 0) {    // is a character available?
-    
     rx_byte = Serial.read();       // get the character
     
     if (rx_byte != '\n') {
@@ -132,16 +150,16 @@ void loop() {
     // LOW pass filter 
     avg_lux = average(avg_lux, vtolux(sensorValue));
 
-    Serial.print(avg_lux);
-    Serial.print('\t');
+    Serial.println(avg_lux);
+    //Serial.print('\t');
 
     // calculation of error between ref and the present lux
     erro=lux_ref-avg_lux;
 
     // calculation of the integral term of PI
     iTerm=iTerm_ant+K2*(erro+e_ant) + gain_w*erroWindup;
-
-    Serial.println(iTerm);
+    
+    //Serial.println(iTerm);
 
     // calculation of the Output of PI
     // summing 0.5 to round
@@ -150,6 +168,13 @@ void loop() {
     // AntiWindup System because of the saturation of the actuator
     if ( antiWindup_flag == 1 ){
       u = setSaturation(u);
+    } else {
+      // limitation of the output
+      if (u > 255){
+        u = 255;
+      } else if (u < 0) {
+        u = 0;
+      }
     }
     
     analogWrite(analogOutPin,u);
