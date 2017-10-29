@@ -19,8 +19,10 @@ PID::PID() {
   e_prev = 0;
   error = 0;
   u = 0;
+  uFFWD=0;
 
 	antiWindFlag = 1;
+  FFWDFlag=1;
 
   setSamplingTime(30);
 
@@ -35,7 +37,7 @@ PID::PID() {
 }
 
 PID::PID(int actMin, int actMax, int ocupationMax, int ocupationMin, int ref,
-                             float antiWk,int antiFlag, float kp, float ki, float kd, float samplingTime) {
+                             float antiWk,int antiFlag, int FFW_flag, float kp, float ki, float kd, float samplingTime) {
 	// actuator saturation limits
 	actuatorMin = actMin;
 	actuatorMax = actMax;
@@ -51,8 +53,10 @@ PID::PID(int actMin, int actMax, int ocupationMax, int ocupationMin, int ref,
   e_prev = 0;
   error = 0;
   u = 0;
+  uFFWD=0;
 
 	antiWindFlag = antiFlag;
+  FFWDFlag=FFW_flag;
 
   setSamplingTime(samplingTime);
 
@@ -120,6 +124,7 @@ float PID::vtolux(int sensorValue){
 
 void PID::setReference(float ref) {
 	reference = ref;
+  first_iteration=1;
 }
 
 int PID::getReference() {
@@ -137,11 +142,20 @@ void PID::setAntiWindupParam(float k) {
 
 // sets the anti windup system on and off (1=on, 0=off)
 void PID::setAntiWindupMode(int mode) {
-	if(antiWindFlag == 1){
+	if(mode == 1){
 		antiWindFlag = 1;
-	} else if (antiWindFlag){
+	} else if (mode==0){
 		antiWindFlag = 0;
 	}
+}
+
+void PID::setFFWDMode(int FFWDmode){
+  if(FFWDmode==1){
+    FFWDFlag = 1;
+  } else if (FFWDmode==0){
+    FFWDFlag = 0;
+    uFFWD=0;
+  }
 }
 
 void PID::setPIDparameters(float kp, float ki, float kd) {
@@ -158,24 +172,29 @@ void PID::setPIDparameters(float kp, float ki, float kd) {
 
 int PID::calculate(float lux) {
 
+  if(first_iteration == 1  && FFWDFlag==1) {//only if it's first iteration and FFWD is activated
+        uFFWD = getPwmValue(reference); //output to be sent
+        u = uFFWD;                     //so recalcular FFWD_output se se mudar lux_ref pelo serial
+        first_iteration = 0;
+    } else {   
 	// calculation of the error between the output and the objective
-	error = reference - lux;
+	  error = reference - lux;
 
 	// calculation of the proportional term of PID
-	pTerm = K1*reference-Kp*lux;
+	  pTerm = K1*reference-Kp*lux;
 
   // calculation of the integral term of PID
-  iTerm= iTerm_prev + K2*(error + e_prev) + gain_w*errorWindup;
+    iTerm= iTerm_prev + K2*(error + e_prev) + gain_w*errorWindup;
 
   // calculation of the derivative term of PID
-  dTerm = K3*dTerm_prev - K4*(lux - lux_prev);
+    dTerm = K3*dTerm_prev - K4*(lux - lux_prev);
 
   // calculation of the Output of PID
-  u = (int) (pTerm + iTerm + dTerm + 0.5); // summing 0.5 to round
+    u = (int) (pTerm + iTerm + dTerm + 0.5)+uFFWD; // summing 0.5 to round
 
   // windup system
-  u = setSaturation(u);
-
+    u = setSaturation(u);
+    }
   // continuity
   lux_prev = lux;
   iTerm_prev = iTerm;
@@ -183,4 +202,8 @@ int PID::calculate(float lux) {
   e_prev = error;
 
   return u;
+}
+
+int PID::getFFWDFlag(){
+  return FFWDFlag;
 }

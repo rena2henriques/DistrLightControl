@@ -43,6 +43,11 @@ private:
 	int errorWindup = 0;
 	float gain_w;
 	int antiWindFlag;
+
+  //FFW Variables
+  int FFWDFlag;
+  int first_iteration;
+  int uFFWD;
 	
 	int setSaturation(int output);
 	
@@ -51,10 +56,12 @@ public:
 	// constructor
 	PID();
 	PID(int actMin, int actMax, int ocupationMax, int ocupationMin, int ref, float antiWk, 
-														int antiFlag, float kp, float ki, float kd, float samplingTime);
+														int antiFlag, int FFWD_flag, float kp, float ki, float kd, float samplingTime);
 	void setAntiWindupParam(float k);
 	void setActuatorLimits(int min, int max);
 	void setAntiWindupMode(int mode);
+  void setFFWDMode(int FFWDmode);
+  int getFFWDFlag();
 
 	int getPwmValue(float lux);
 	float vtolux(int sensorValue);

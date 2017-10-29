@@ -5,8 +5,8 @@ const int analogOutPin = 9; // Analog output pin that the LED is attached to
 int sensorValue = 0; // value read from the pot
 int outputValue = 0.0; // value output to the PWM (analog out)
 float lux = 0.0;
-//actuatorMin, actuatorMax, ocupationlux, unocupationlux, ref, antiWgain, antiWFlag, kp, ki, kd, T
-PID pid(0, 255, 70, 35, 35, 0.74, 1, 1.35, 0.019, 0, 30);
+//actuatorMin, actuatorMax, ocupationlux, unocupationlux, ref, antiWgain, antiWFlag,FFWDFlag, kp, ki, kd, T
+PID pid(0, 255, 70, 35, 35, 0.74, 1,1, 1.35, 0.019, 0, 30);
 
 // time variables (ms)
 unsigned long currentTime = 0;
@@ -41,6 +41,12 @@ void analyseString(String serial_string) {
       // anti-windup system is on
     } else if (strcmp(temp_str,"antiwindup_on") == 0) {
       pid.setAntiWindupMode(1);
+    }
+    else if (strcmp(temp_str,"ffwd_on") == 0) {
+      pid.setFFWDMode(1);
+    }
+    else if (strcmp(temp_str,"ffwd_off") == 0) {
+      pid.setFFWDMode(0);
     }
       
     memset(temp_fl, 0, 20);
@@ -85,7 +91,7 @@ void loop() {
   	Serial.print(' ');
   	Serial.print( ( (float) outputValue/255)*100);
   	Serial.print(' ');
-  	Serial.print('0');
+  	Serial.print(pid.getFFWDFlag());
   	Serial.print(' ');
   	Serial.println(currentTime);
 
