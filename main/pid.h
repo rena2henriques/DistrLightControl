@@ -44,10 +44,10 @@ private:
 	float gain_w;
 	int antiWindFlag;
 
-  //FFW Variables
-  int FFWDFlag;
-  int first_iteration;
-  int uFFWD;
+  	//FFWD Variables
+  	int FFWDFlag; // checks if ffwd is being used
+  	int first_iteration; // first iteration of a certain ref
+  	int uFFWD; // ffwd gain
 	
 	int setSaturation(int output);
 	
@@ -60,8 +60,8 @@ public:
 	void setAntiWindupParam(float k);
 	void setActuatorLimits(int min, int max);
 	void setAntiWindupMode(int mode);
-  void setFFWDMode(int FFWDmode);
-  int getFFWDFlag();
+  	void setFFWDMode(int FFWDmode);
+  	int getFFWDFlag();
 
 	int getPwmValue(float lux);
 	float vtolux(int sensorValue);

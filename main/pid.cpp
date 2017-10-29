@@ -9,22 +9,22 @@ PID::PID() {
 	actuatorMin = 0;
 	actuatorMax = 255;
 
-  lux_prev = 0;
+  	lux_prev = 0;
 
-  iTerm = 0; 
-  dTerm = 0;
-  pTerm = 0; 
-  iTerm_prev = 0;
-  dTerm_prev = 0;
-  e_prev = 0;
-  error = 0;
-  u = 0;
-  uFFWD=0;
+  	iTerm = 0; 
+  	dTerm = 0;
+  	pTerm = 0; 
+  	iTerm_prev = 0;
+  	dTerm_prev = 0;
+	e_prev = 0;
+  	error = 0;
+  	u = 0;
+  	uFFWD=0;
 
 	antiWindFlag = 1;
-  FFWDFlag=1;
+  	FFWDFlag=1;
 
-  setSamplingTime(30);
+	setSamplingTime(30);
 
 	setOcupationLux(35, 70);
 
@@ -32,8 +32,7 @@ PID::PID() {
 
 	setAntiWindupParam(0.74);
 
-  setPIDparameters(1.35, 0.019, 0);
-
+	setPIDparameters(1.35, 0.019, 0);
 }
 
 PID::PID(int actMin, int actMax, int ocupationMax, int ocupationMin, int ref,
@@ -124,7 +123,9 @@ float PID::vtolux(int sensorValue){
 
 void PID::setReference(float ref) {
 	reference = ref;
-  first_iteration=1;
+
+	// for using the feedforward control
+  	first_iteration=1;
 }
 
 int PID::getReference() {
@@ -149,6 +150,7 @@ void PID::setAntiWindupMode(int mode) {
 	}
 }
 
+// defines if we are using PID with feedforward or not
 void PID::setFFWDMode(int FFWDmode){
   if(FFWDmode==1){
     FFWDFlag = 1;
@@ -170,40 +172,43 @@ void PID::setPIDparameters(float kp, float ki, float kd) {
 	K4 = Kp*Kd*a/(Kd+a*T);
 }
 
+// used to check if feedforward is being used or not
+int PID::getFFWDFlag(){
+  return FFWDFlag;
+}
+
+// the PID control system per se
 int PID::calculate(float lux) {
 
-  if(first_iteration == 1  && FFWDFlag==1) {//only if it's first iteration and FFWD is activated
+  	if(first_iteration == 1  && FFWDFlag==1) {//only if it's first iteration and FFWD is activated
         uFFWD = getPwmValue(reference); //output to be sent
         u = uFFWD;                     //so recalcular FFWD_output se se mudar lux_ref pelo serial
         first_iteration = 0;
-    } else {   
-	// calculation of the error between the output and the objective
-	  error = reference - lux;
+	} else {   
+		// calculation of the error between the output and the objective
+		error = reference - lux;
 
-	// calculation of the proportional term of PID
-	  pTerm = K1*reference-Kp*lux;
+		// calculation of the proportional term of PID
+		pTerm = K1*reference-Kp*lux;
 
-  // calculation of the integral term of PID
-    iTerm= iTerm_prev + K2*(error + e_prev) + gain_w*errorWindup;
+	  	// calculation of the integral term of PID
+	    iTerm= iTerm_prev + K2*(error + e_prev) + gain_w*errorWindup;
 
-  // calculation of the derivative term of PID
-    dTerm = K3*dTerm_prev - K4*(lux - lux_prev);
+	 	// calculation of the derivative term of PID
+	    dTerm = K3*dTerm_prev - K4*(lux - lux_prev);
 
-  // calculation of the Output of PID
-    u = (int) (pTerm + iTerm + dTerm + 0.5)+uFFWD; // summing 0.5 to round
+	  	// calculation of the Output of PID
+	    u = (int) (pTerm + iTerm + dTerm + uFFWD + 0.5); // summing 0.5 to round
 
-  // windup system
-    u = setSaturation(u);
+	  	// windup system
+	    u = setSaturation(u);
     }
-  // continuity
-  lux_prev = lux;
-  iTerm_prev = iTerm;
-  dTerm_prev = dTerm;
-  e_prev = error;
 
-  return u;
-}
+  	// continuity
+	lux_prev = lux;
+	iTerm_prev = iTerm;
+	dTerm_prev = dTerm;
+	e_prev = error;
 
-int PID::getFFWDFlag(){
-  return FFWDFlag;
+	return u;
 }

@@ -26,7 +26,7 @@ void analyseString(String serial_string) {
             
     sscanf(rx_str_aux, "%[^ =] = %[^\n]", temp_str, temp_fl);
 
-    // new reference value
+      // new reference value
     if ( strcmp(temp_str,"lux_ref") == 0){
       pid.setReference(atof(temp_fl));
       // the desk it occupied
@@ -41,11 +41,11 @@ void analyseString(String serial_string) {
       // anti-windup system is on
     } else if (strcmp(temp_str,"antiwindup_on") == 0) {
       pid.setAntiWindupMode(1);
-    }
-    else if (strcmp(temp_str,"ffwd_on") == 0) {
+      // feedforward is on
+    } else if (strcmp(temp_str,"ffwd_on") == 0) {
       pid.setFFWDMode(1);
-    }
-    else if (strcmp(temp_str,"ffwd_off") == 0) {
+      // feedforward is off
+    } else if (strcmp(temp_str,"ffwd_off") == 0) {
       pid.setFFWDMode(0);
     }
       
