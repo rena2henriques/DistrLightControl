@@ -14,14 +14,16 @@ const float b_lux = 1.92; // ordenada na origem da reta aproximada do LDR
 
 // serial inputs
 float avg_constant = 0.5; 
-float lux_ref = 70;
+float lux_ref = 100;
 
 // PI control variables
 float erro=0.0;
 int u=0;
 //parameteres obtained 
+//float Kp=1.35;
+//float Ki=0.019;
 float Kp=1.35;
-float Ki=0.019;
+float Ki=0.019; 
 //float Ki=0.02846; //when T=20ms
 float c=1.0; // é o b que está nos slides, tem que ser entre 0 e 1
 float T= 30.0;
@@ -59,6 +61,7 @@ void loop() {
     avg_lux = average(avg_lux, vtolux(sensorValue));
 
     Serial.println(avg_lux);
+   // Serial.print('\t');
   
     erro=lux_ref-avg_lux;
     i=i_ant+K2*(erro+e_ant);
@@ -73,7 +76,7 @@ void loop() {
 
     //Serial.println(u);
     analogWrite(analogOutPin,u);
-    
+    //Serial.println(u);
     e_ant=erro;
     i_ant=i;
 
