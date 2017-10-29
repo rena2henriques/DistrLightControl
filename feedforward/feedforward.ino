@@ -17,8 +17,8 @@ const float slope = 2.4356;
 const float y_origin = -6.9365;
 
 // serial inputs
-float avg_constant = 0.5; 
-float lux_ref = 70;
+float avg_constant = 0; 
+float lux_ref =70 ;
 
 // serial auxiliars
 String rx_str = "";
@@ -53,7 +53,7 @@ inline int getPwmValue(float lux_aux) {
 
 void setup() {
   Serial.begin(9600); // initialize serial communications at 9600 bps
-  analogWrite(analogOutPin, LOW);
+  analogWrite(analogOutPin, getPwmValue(lux_ref));
 }
 
 void loop() {
