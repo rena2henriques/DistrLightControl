@@ -75,11 +75,19 @@ void loop() {
 
   	lux = pid.vtolux(sensorValue);
 
-  	Serial.println(lux);
-
   	outputValue = pid.calculate(lux);
 
   	analogWrite(analogOutPin, outputValue);
+
+  	Serial.print(pid.getReference());
+  	Serial.print(' ');
+  	Serial.print(lux);
+  	Serial.print(' ');
+  	Serial.print( ( (float) outputValue/255)*100);
+  	Serial.print(' ');
+  	Serial.print('0');
+  	Serial.print(' ');
+  	Serial.println(currentTime);
 
   	previousTime = currentTime;
   }

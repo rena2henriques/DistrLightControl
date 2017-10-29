@@ -41,7 +41,7 @@ private:
 
 	// anti-Windup Variables
 	int errorWindup = 0;
-	float gain_w = 1.35;
+	float gain_w;
 	int antiWindFlag;
 	
 	int setSaturation(int output);
