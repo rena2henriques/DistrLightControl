@@ -37,8 +37,8 @@ float gain_w = 0.74;
 int antiWindup_flag = 1; 
 
 int antiWindupIterm_flag=0;
-int Imax=150;
-int Imin=-150;
+int Imax=175;
+int Imin=-175;
 
 // time variables (ms)
 unsigned long currentTime = 0;
@@ -154,27 +154,37 @@ void loop() {
   currentTime = millis();
   if(currentTime - previousTime > sampleInterval) {
 
-    if(count==100)
-      lux_ref=35;
-
-    else if(count==250)
-      lux_ref=70;
-
-      
+         
     sensorValue = analogRead(analogInPin); // read the analog in value
     // LOW pass filter 
    // avg_lux = average(avg_lux, vtolux(sensorValue));
     avg_lux= vtolux(sensorValue);
 
+
+    Serial.print(u);
+    Serial.print("\t");
+    Serial.print(lux_ref);
+    Serial.print("\t");
     Serial.println(avg_lux);
     //Serial.print('\t');
 
     // calculation of error between ref and the present lux
     erro=lux_ref-avg_lux;
 
+    /*if(count==200)
+      lux_ref=35;
+
+    else if(count==450)
+      lux_ref=70;*/
+
     // calculation of the integral term of PI
     iTerm=iTerm_ant+K2*(erro+e_ant) + gain_w*erroWindup;
-    
+
+    if(antiWindupIterm_flag ==1){
+      iTerm=setItermSat(iTerm);
+    }  
+
+
     //Serial.println(iTerm);
 
     // calculation of the Output of PI
@@ -204,6 +214,6 @@ void loop() {
     e_ant=erro;
     iTerm_ant=iTerm;
     previousTime = currentTime;
-   // count++; to change reference  
+    count++; //to change reference  
   }
 }
