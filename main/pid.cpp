@@ -187,12 +187,10 @@ int PID::getFFWDFlag(){
 }
 
 // deadzone used to lessen the error
-float PID::deadzone(float error) {
+void PID::deadzone() {
   if (error <= dead_max && error >= dead_min){
     error = 0;
   }
-
-  return error;
 }
 
 // the PID control system per se
@@ -208,7 +206,7 @@ int PID::calculate(float lux) {
 		error = reference - lux;
 
     if (deadFlag == 1){
-      error = deadzone(error);
+      deadzone();
     }
 
 		// calculation of the proportional term of PID

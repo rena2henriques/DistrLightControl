@@ -54,7 +54,7 @@ private:
 	float dead_max;
 	float dead_min;
 
-	float deadzone(float error);
+	void deadzone();
 
 	int setSaturation(int output);
 	
