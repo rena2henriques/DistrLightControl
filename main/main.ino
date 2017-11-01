@@ -5,8 +5,8 @@ const int analogOutPin = 9; // Analog output pin that the LED is attached to
 int sensorValue = 0; // value read from the pot
 int outputValue = 0.0; // value output to the PWM (analog out)
 float lux = 0.0;
-//actuatorMin, actuatorMax, ocupationlux, unocupationlux, ref, antiWgain, antiWFlag, kp, ki, kd, T
-PID pid(0, 255, 70, 35, 35, 0.74, 1, 1.35, 0.019, 0, 30);
+//actuatorMin, actuatorMax, ocupationlux, unocupationlux, ref, antiWgain, antiWFlag, deadFlag, deadMin, deadMax, kp, ki, kd, T
+PID pid(0, 255, 70, 35, 35, 0.74, 1, 0,0, 0,1.35, 0.019, 0, 30);
 
 // time variables (ms)
 unsigned long currentTime = 0;

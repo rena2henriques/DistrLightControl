@@ -43,7 +43,12 @@ private:
 	int errorWindup = 0;
 	float gain_w;
 	int antiWindFlag;
-	
+
+	// deadzone variables
+	int deadFlag; // 0 if deadzone off, 1 if on
+	float dead_max;
+	float dead_min;
+
 	int setSaturation(int output);
 	
 public:

@@ -20,6 +20,10 @@ PID::PID() {
   error = 0;
   u = 0;
 
+  deadFlag = 1;
+  dead_max = 2;
+  dead_min = -2;
+
 	antiWindFlag = 1;
 
   setSamplingTime(30);
@@ -35,11 +39,15 @@ PID::PID() {
 }
 
 PID::PID(int actMin, int actMax, int ocupationMax, int ocupationMin, int ref,
-                             float antiWk,int antiFlag, float kp, float ki, float kd, float samplingTime) {
+                             float antiWk,int antiFlag, int deadflag, float deadMin, float deadMax, float kp, float ki, float kd, float samplingTime) {
 	// actuator saturation limits
 	actuatorMin = actMin;
 	actuatorMax = actMax;
 
+  deadFlag = deadflag;
+
+  dead_min = deadMin;
+  dead_max = deadMax;
 
   lux_prev = 0;
 
@@ -156,10 +164,21 @@ void PID::setPIDparameters(float kp, float ki, float kd) {
 	K4 = Kp*Kd*a/(Kd+a*T);
 }
 
+void deadzone() {
+
+  if (error >= dead_min && error <= dead_max){
+    error = 0;
+  } 
+}
+
 int PID::calculate(float lux) {
 
 	// calculation of the error between the output and the objective
 	error = reference - lux;
+
+  if (deadFlag == 1){
+    deadzone();
+  }
 
 	// calculation of the proportional term of PID
 	pTerm = K1*reference-Kp*lux;
