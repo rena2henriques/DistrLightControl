@@ -7,7 +7,7 @@ int outputValue = 0.0; // value output to the PWM (analog out)
 float lux = 0.0;
 
 //actuatorMin, actuatorMax, ocupationlux, unocupationlux, ref, antiWgain, antiWFlag, deadFlag, deadMin, deadMax, FFWDFlag, kp, ki, kd, T
-PID pid(0, 255, 70, 35, 35, 0.74, 1, 1, -0.75, 0.75, 1, 1.35, 0.019, 0, 30);
+PID pid(0, 255, 70, 35, 35, 0.74, 0, 1, -0.2, 0.2, 1, 1.35, 0.019, 0, 30);
 
 // time variables (ms)
 unsigned long currentTime = 0;
@@ -21,6 +21,11 @@ char temp_str[20] = "";
 char temp_fl[20] = "";
 
 int count=0;
+
+// LOW PASS FILTER
+float avg_value = 0.0;
+int n_samples = 30;
+int i = 0;
 
 // reads the serial buffer and changes the variables accordingly
 void analyseString(String serial_string) {
@@ -86,29 +91,43 @@ void loop() {
   currentTime = millis();
   if(currentTime - previousTime > sampleInterval) {
 
-  	sensorValue = analogRead(analogInPin);
+    // LOW PASS filter
+    for(i = 0; i < n_samples; i++)
+        sensorValue = sensorValue + analogRead(analogInPin);
 
-  	lux = pid.vtolux(sensorValue);
+    avg_value = sensorValue/n_samples;
+
+    // converts the voltage to Lux
+  	lux = pid.vtolux(avg_value);
 
   	outputValue = pid.calculate(lux);
 
+    // write the pwm to the LED
   	analogWrite(analogOutPin, outputValue);
 
+    // printing the data format requested
   	Serial.print(pid.getReference());
   	Serial.print(' ');
-  	Serial.println(lux);
-  	/*Serial.print(' ');
+  	Serial.print(lux);
+  	Serial.print(' ');
   	Serial.print( ( (float) outputValue/255)*100);
   	Serial.print(' ');
   	Serial.print(pid.getFFWDFlag());
   	Serial.print(' ');
-  	Serial.println(currentTime);*/
+  	Serial.println(currentTime);
 
-  	previousTime = currentTime;
-    //count++;
+    // used for testing the ref change
+    /*count++;
     if(count==150)
       pid.setReference(70);
     if(count==300)
-      pid.setReference(35);
+      pid.setReference(35);*/
+
+    // reset the read values
+    avg_value = 0.0;
+    sensorValue = 0;
+
+    // reset the timer
+    previousTime = currentTime;
   }
 }
