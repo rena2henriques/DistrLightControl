@@ -6,7 +6,7 @@ int sensorValue = 0; // value read from the pot
 int outputValue = 0.0; // value output to the PWM (analog out)
 float lux = 0.0;
 //actuatorMin, actuatorMax, ocupationlux, unocupationlux, ref, antiWgain, antiWFlag, deadFlag, deadMin, deadMax, FFWDFlag, kp, ki, kd, T
-PID pid(0, 255, 70, 35, 35, 0.74, 1, 1, -20, 20, 1, 1.35, 0.019, 0, 30);
+PID pid(0, 255, 70, 35, 35, 0.74, 1, 1, -0.75, 0.75, 1, 1.35, 0.019, 0, 30);
 
 // time variables (ms)
 unsigned long currentTime = 0;
@@ -91,8 +91,8 @@ void loop() {
 
   	analogWrite(analogOutPin, outputValue);
 
-  	/*Serial.print(pid.getReference());
-  	Serial.print(' ');*/
+  	Serial.print(pid.getReference());
+  	Serial.print(' ');
   	Serial.println(lux);
   	/*Serial.print(' ');
   	Serial.print( ( (float) outputValue/255)*100);
