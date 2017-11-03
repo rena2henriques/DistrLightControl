@@ -1,5 +1,7 @@
 figure
 plot(PWM,vldr_adc, '.')
+xlabel('PWM')
+ylabel('Vldr (adc)')
 a = -0.74;
 b = 1.92;
 R = 10.0;%Kohm;
@@ -8,6 +10,8 @@ r_ldr = R.*(5-Vsensor)./Vsensor;
 lux = power(r_ldr/(power(10,b)),1/a);%pôr aqui a expressao correta
 figure
 plot(PWM,lux,'.')
+xlabel('PWM')
+ylabel('intensidade de iluminação(lux)')
 
 %GUARDAR CORRESPONDENCIA LUX-PWM
 % lut=[PWM';lux']
