@@ -16,7 +16,7 @@ PID::PID() {
   	pTerm = 0; 
   	iTerm_prev = 0;
   	dTerm_prev = 0;
-	e_prev = 0;
+	   e_prev = 0;
   	error = 0;
   	u = 0;
   	uFFWD=0;
@@ -167,6 +167,10 @@ void PID::setFFWDMode(int FFWDmode){
     FFWDFlag = 0;
     uFFWD=0;
   }
+}
+
+void PID::setDeadMode(int deadmode) {
+  deadFlag = deadmode;
 }
 
 void PID::setPIDparameters(float kp, float ki, float kd) {

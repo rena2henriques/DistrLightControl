@@ -69,6 +69,7 @@ public:
 	void setAntiWindupMode(int mode);
 	void setFFWDMode(int FFWDmode);
   	int getFFWDFlag();
+  	void setDeadMode(int deadmode);
 
 	int getPwmValue(float lux);
 	float vtolux(int sensorValue);

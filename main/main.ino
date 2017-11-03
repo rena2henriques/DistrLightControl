@@ -47,6 +47,12 @@ void analyseString(String serial_string) {
       // feedforward is off
     } else if (strcmp(temp_str,"ffwd_off") == 0) {
       pid.setFFWDMode(0);
+      // deadzone is off
+    } else if (strcmp(temp_str,"deadzone_off") == 0){
+      pid.setDeadMode(0);
+      // deadzone is on
+    } else if (strcmp(temp_str,"deadzone_on") == 0) {
+      pid.setDeadMode(1);
     }
       
     memset(temp_fl, 0, 20);
