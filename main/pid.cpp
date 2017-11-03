@@ -186,6 +186,11 @@ int PID::calculate(float lux) {
   // calculation of the integral term of PID
     iTerm= iTerm_prev + K2*(error + e_prev) + gain_w*errorWindup;
 
+    if(iTerm>180)
+      iTerm=180;  
+    if(iTerm<-180)
+      iTerm=-180;
+
   // calculation of the derivative term of PID
     dTerm = K3*dTerm_prev - K4*(lux - lux_prev);
 
