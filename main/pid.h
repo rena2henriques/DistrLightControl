@@ -44,11 +44,18 @@ private:
 	float gain_w;
 	int antiWindFlag;
 
-  //FFW Variables
-  int FFWDFlag;
-  int first_iteration;
-  int uFFWD;
-	
+	//FFWD Variables
+  	int FFWDFlag; // checks if ffwd is being used
+  	int first_iteration; // first iteration of a certain ref
+  	int uFFWD; // ffwd gain
+
+	// deadzone variables
+	int deadFlag; // 0 if deadzone off, 1 if on
+	float dead_max;
+	float dead_min;
+
+	void deadzone();
+
 	int setSaturation(int output);
 	
 public:
@@ -56,12 +63,13 @@ public:
 	// constructor
 	PID();
 	PID(int actMin, int actMax, int ocupationMax, int ocupationMin, int ref, float antiWk, 
-														int antiFlag, int FFWD_flag, float kp, float ki, float kd, float samplingTime);
+														int antiFlag, int deadflag, float deadMin, float deadMax, int FFWD_flag, float kp, float ki, float kd, float samplingTime);
 	void setAntiWindupParam(float k);
 	void setActuatorLimits(int min, int max);
 	void setAntiWindupMode(int mode);
-  void setFFWDMode(int FFWDmode);
-  int getFFWDFlag();
+	void setFFWDMode(int FFWDmode);
+  	int getFFWDFlag();
+  	void setDeadMode(int deadmode);
 
 	int getPwmValue(float lux);
 	float vtolux(int sensorValue);

@@ -5,8 +5,10 @@ const int analogOutPin = 9; // Analog output pin that the LED is attached to
 int sensorValue = 0; // value read from the pot
 int outputValue = 0.0; // value output to the PWM (analog out)
 float lux = 0.0;
-//actuatorMin, actuatorMax, ocupationlux, unocupationlux, ref, antiWgain, antiWFlag,FFWDFlag, kp, ki, kd, T
-PID pid(0, 255, 70, 35, 35, 1.35, 1,1, 1.35, 0.019, 0, 30);
+
+//actuatorMin, actuatorMax, ocupationlux, unocupationlux, ref, antiWgain, antiWFlag, deadFlag, deadMin, deadMax, FFWDFlag, kp, ki, kd, T
+PID pid(0, 255, 70, 35, 35, 0.74, 1, 1, -20, 20, 1, 1.35, 0.019, 0, 30);
+
 // time variables (ms)
 unsigned long currentTime = 0;
 unsigned long previousTime = 0;
@@ -27,7 +29,7 @@ void analyseString(String serial_string) {
             
     sscanf(rx_str_aux, "%[^ =] = %[^\n]", temp_str, temp_fl);
 
-    // new reference value
+      // new reference value
     if ( strcmp(temp_str,"lux_ref") == 0){
       pid.setReference(atof(temp_fl));
       // the desk it occupied
@@ -42,12 +44,18 @@ void analyseString(String serial_string) {
       // anti-windup system is on
     } else if (strcmp(temp_str,"antiwindup_on") == 0) {
       pid.setAntiWindupMode(1);
-    }
-    else if (strcmp(temp_str,"ffwd_on") == 0) {
+      // feedforward is on
+    } else if (strcmp(temp_str,"ffwd_on") == 0) {
       pid.setFFWDMode(1);
-    }
-    else if (strcmp(temp_str,"ffwd_off") == 0) {
+      // feedforward is off
+    } else if (strcmp(temp_str,"ffwd_off") == 0) {
       pid.setFFWDMode(0);
+      // deadzone is off
+    } else if (strcmp(temp_str,"deadzone_off") == 0){
+      pid.setDeadMode(0);
+      // deadzone is on
+    } else if (strcmp(temp_str,"deadzone_on") == 0) {
+      pid.setDeadMode(1);
     }
       
     memset(temp_fl, 0, 20);
@@ -86,15 +94,15 @@ void loop() {
 
   	analogWrite(analogOutPin, outputValue);
 
-  	Serial.print(pid.getReference());
-  	Serial.print(' ');
-  	Serial.print(lux);
-  	Serial.print(' ');
+  	/*Serial.print(pid.getReference());
+  	Serial.print(' ');*/
+  	Serial.println(lux);
+  	/*Serial.print(' ');
   	Serial.print( ( (float) outputValue/255)*100);
   	Serial.print(' ');
   	Serial.print(pid.getFFWDFlag());
   	Serial.print(' ');
-  	Serial.println(currentTime);
+  	Serial.println(currentTime);*/
 
   	previousTime = currentTime;
     //count++;
