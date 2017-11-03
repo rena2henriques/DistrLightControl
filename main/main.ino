@@ -1,4 +1,4 @@
-#include "pid.h"
+# include "pid.h"
 
 const int analogInPin = A0; // Analog input pin that the potentiometer is attached to
 const int analogOutPin = 9; // Analog output pin that the LED is attached to
@@ -26,6 +26,7 @@ int count=0;
 float avg_value = 0.0;
 int n_samples = 30;
 int i = 0;
+int filter_flag=1;
 
 // reads the serial buffer and changes the variables accordingly
 void analyseString(String serial_string) {
@@ -56,12 +57,17 @@ void analyseString(String serial_string) {
     } else if (strcmp(temp_str,"ffwd_off") == 0) {
       pid.setFFWDMode(0);
       // deadzone is off
-    } else if (strcmp(temp_str,"deadzone_off") == 0){
+    } else if (strcmp(temp_str,"dead_off") == 0){
       pid.setDeadMode(0);
       // deadzone is on
-    } else if (strcmp(temp_str,"deadzone_on") == 0) {
+    } else if (strcmp(temp_str,"dead_on") == 0) {
       pid.setDeadMode(1);
+    } else if (strcmp(temp_str,"filter_on") == 0) {
+      filter_flag=1;
+    } else if (strcmp(temp_str,"filter_off") == 0) {
+      filter_flag=0;
     }
+    
       
     memset(temp_fl, 0, 20);
     memset(temp_str, 0, 20);  
@@ -91,6 +97,8 @@ void loop() {
   currentTime = millis();
   if(currentTime - previousTime > sampleInterval) {
 
+    if(filter_flag==0)
+      n_samples=1;
     // LOW PASS filter
     for(i = 0; i < n_samples; i++)
         sensorValue = sensorValue + analogRead(analogInPin);
@@ -117,14 +125,13 @@ void loop() {
   	Serial.println(currentTime);
 
     // used for testing the ref change
-    /*count++;
+   /* count++;
     if(count==150)
       pid.setReference(70);
     if(count==300)
       pid.setReference(35);*/
 
     // reset the read values
-    avg_value = 0.0;
     sensorValue = 0;
 
     // reset the timer
