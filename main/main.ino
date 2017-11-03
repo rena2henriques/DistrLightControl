@@ -5,6 +5,7 @@ const int analogOutPin = 9; // Analog output pin that the LED is attached to
 int sensorValue = 0; // value read from the pot
 int outputValue = 0.0; // value output to the PWM (analog out)
 float lux = 0.0;
+
 //actuatorMin, actuatorMax, ocupationlux, unocupationlux, ref, antiWgain, antiWFlag, deadFlag, deadMin, deadMax, FFWDFlag, kp, ki, kd, T
 PID pid(0, 255, 70, 35, 35, 0.74, 1, 1, -0.75, 0.75, 1, 1.35, 0.019, 0, 30);
 
@@ -18,6 +19,8 @@ char rx_byte = 0;
 String rx_str = "";
 char temp_str[20] = "";
 char temp_fl[20] = "";
+
+int count=0;
 
 // reads the serial buffer and changes the variables accordingly
 void analyseString(String serial_string) {
@@ -102,5 +105,10 @@ void loop() {
   	Serial.println(currentTime);*/
 
   	previousTime = currentTime;
+    //count++;
+    if(count==150)
+      pid.setReference(70);
+    if(count==300)
+      pid.setReference(35);
   }
 }
