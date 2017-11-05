@@ -7,7 +7,7 @@ int outputValue = 0.0; // value output to the PWM (analog out)
 float lux = 0.0;
 
 //actuatorMin, actuatorMax, ocupationlux, unocupationlux, ref, antiWgain, antiWFlag, deadFlag, deadMin, deadMax, FFWDFlag, kp, ki, kd, T
-PID pid(0, 255, 70, 35, 35, 0.74, 1, 1, -0.35, 0.35, 1, 1.35, 0.019, 0, 30);
+PID pid(0, 255, 70, 35, 35, 0.74, 1, 1, -0.2, 0.2, 1, 1.35, 0.019, 0, 30);
 
 // time variables (ms)
 unsigned long currentTime = 0;
@@ -77,6 +77,8 @@ void analyseString(String serial_string) {
 
 void setup() {
   Serial.begin(115200);
+  analogWrite(analogOutPin, 35);
+  
 }
 
 void loop() {
@@ -116,16 +118,16 @@ void loop() {
     // printing the data format requested
   	Serial.print(pid.getReference());
   	Serial.print(' ');
-  	Serial.println(lux);
-  	/*Serial.print(' ');
+  	Serial.print(lux);
+    Serial.print(' ');
   	Serial.print( ( (float) outputValue/255)*100);
   	Serial.print(' ');
   	Serial.print(pid.getFFWDFlag());
   	Serial.print(' ');
-  	Serial.println(currentTime);*/
+  	Serial.println(currentTime);
 
     // used for testing the ref change
-   count++;
+    count++;
     if(count==150)
       pid.setReference(70);
     if(count==300)
