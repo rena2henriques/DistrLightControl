@@ -7,7 +7,7 @@ int outputValue = 0.0; // value output to the PWM (analog out)
 float lux = 0.0;
 
 //actuatorMin, actuatorMax, ocupationlux, unocupationlux, ref, antiWgain, antiWFlag, deadFlag, deadMin, deadMax, FFWDFlag, kp, ki, kd, T
-PID pid(0, 255, 70, 35, 35, 0.74, 1, 1, -0.2, 0.2, 1, 1.35, 0.019, 0, 30);
+PID pid(0, 255, 70, 35, 35, 0.74, 1, 1, -0.35, 0.35, 1, 1.35, 0.019, 0, 30);
 
 // time variables (ms)
 unsigned long currentTime = 0;
@@ -24,7 +24,7 @@ int count=0;
 
 // LOW PASS FILTER
 float avg_value = 0.0;
-int n_samples = 30;
+int n_samples =30;
 int i = 0;
 int filter_flag=1;
 
@@ -64,8 +64,10 @@ void analyseString(String serial_string) {
       pid.setDeadMode(1);
     } else if (strcmp(temp_str,"filter_on") == 0) {
       filter_flag=1;
+      n_samples=30;
     } else if (strcmp(temp_str,"filter_off") == 0) {
       filter_flag=0;
+      n_samples=1;
     }
     
       
@@ -97,8 +99,6 @@ void loop() {
   currentTime = millis();
   if(currentTime - previousTime > sampleInterval) {
 
-    if(filter_flag==0)
-      n_samples=1;
     // LOW PASS filter
     for(i = 0; i < n_samples; i++)
         sensorValue = sensorValue + analogRead(analogInPin);
@@ -125,11 +125,11 @@ void loop() {
   	Serial.println(currentTime);*/
 
     // used for testing the ref change
-   /* count++;
+   count++;
     if(count==150)
       pid.setReference(70);
     if(count==300)
-      pid.setReference(35);*/
+      pid.setReference(35);
 
     // reset the read values
     sensorValue = 0;

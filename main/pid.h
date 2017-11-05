@@ -31,7 +31,7 @@ private:
 	int actuatorMin;
 	// for transforming LUX to pwm
 	const float slope = 2.4356;
-	const float y_origin = -6.9365;
+  const float y_origin = -6.9365;
 
 	// Voltage to lux
 	const float a_lux = -0.74; // declive da reta aproximada do LDR
