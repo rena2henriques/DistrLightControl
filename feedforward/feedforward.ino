@@ -18,12 +18,14 @@ const float y_origin = -6.9365;
 
 // serial inputs
 float avg_constant = 0; 
-float lux_ref =70 ;
+float lux_ref =35 ;
 
 // serial auxiliars
 String rx_str = "";
 char temp_str[20] = "";
 char temp_fl[20] = "";
+
+int count=0;
 
 
 inline float average(float avg, float new_value) {
@@ -53,7 +55,7 @@ inline int getPwmValue(float lux_aux) {
 
 void setup() {
   Serial.begin(9600); // initialize serial communications at 9600 bps
-  analogWrite(analogOutPin, getPwmValue(lux_ref));
+  analogWrite(analogOutPin, LOW);
 }
 
 void loop() {
@@ -90,23 +92,28 @@ void loop() {
   } // end: if (Serial.available() > 0)
 
 	sensorValue = analogRead(analogInPin); // read the analog in value
-  avg_lux = average(avg_lux, vtolux(sensorValue));
-		  
+  //avg_lux = average(avg_lux, vtolux(sensorValue));
+	sensorValue=vtolux(sensorValue);  
 	// print lux values to serial
   //Serial.print("\t lux_Ref = ");
   Serial.print(lux_ref);
   Serial.print("\t");
 	//Serial.print("lux = ");
-	Serial.println(avg_lux);
+	Serial.println(sensorValue);
 
  // Serial.println(millis());
-
-  
-  
+ 
 	// FeedForward control function
 	outputValue = getPwmValue(lux_ref);
 	analogWrite(analogOutPin, outputValue); // change the analog out value
 
+    count++;
+  if(count==100)
+    lux_ref=70;
+
+  if(count==250)
+    lux_ref=35;
+  
 	//Serial.print("\t PWM = ");
 	//Serial.println(outputValue);
 	delay(30);// the professor recomended a sampling time of 30ms

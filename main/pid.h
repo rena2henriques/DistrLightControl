@@ -31,7 +31,10 @@ private:
 	int actuatorMin;
 	// for transforming LUX to pwm
 	const float slope = 2.4356;
-	const float y_origin = -6.9365;
+  const float y_origin = -6.9365;
+  //const float y_origin=-7.98;
+  //const float slope=2.459;
+
 
 	// Voltage to lux
 	float a_lux = 0.0; // declive da reta aproximada do LDR
@@ -69,6 +72,7 @@ public:
 	void setAntiWindupMode(int mode);
 	void setFFWDMode(int FFWDmode);
   	int getFFWDFlag();
+  	void setDeadMode(int deadmode);
 
 	int getPwmValue(float lux);
 	float vtolux(int sensorValue);

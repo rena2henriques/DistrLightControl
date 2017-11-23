@@ -1,10 +1,11 @@
-#include "pid.h"
+# include "pid.h"
 
 const int analogInPin = A0; // Analog input pin that the LDR is attached to
 const int analogOutPin = 9; // Analog output pin that the LED is attached to
 int sensorValue = 0; // value read from the pot
 int outputValue = 0.0; // value output to the PWM (analog out)
 float lux = 0.0;
+
 //actuatorMin, actuatorMax, ocupationlux, unocupationlux, ref, antiWgain, antiWFlag, deadFlag, deadMin, deadMax, FFWDFlag, kp, ki, kd, T
 PID pid(-0.62, 1.96, 0, 255, 70, 35, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
 //PID pid(-0.62, 1.96, 0, 255, 70, 35, 35, 0.74, 0, 0, -20, 20, 1, 1.35, 0.019, 0, 30);
@@ -19,6 +20,14 @@ char rx_byte = 0;
 String rx_str = "";
 char temp_str[20] = "";
 char temp_fl[20] = "";
+
+int count=0;
+
+// LOW PASS FILTER
+float avg_value = 0.0;
+int n_samples =30;
+int i = 0;
+int filter_flag=1;
 
 // reads the serial buffer and changes the variables accordingly
 void analyseString(String serial_string) {
@@ -48,7 +57,20 @@ void analyseString(String serial_string) {
       // feedforward is off
     } else if (strcmp(temp_str,"ffwd_off") == 0) {
       pid.setFFWDMode(0);
+      // deadzone is off
+    } else if (strcmp(temp_str,"dead_off") == 0){
+      pid.setDeadMode(0);
+      // deadzone is on
+    } else if (strcmp(temp_str,"dead_on") == 0) {
+      pid.setDeadMode(1);
+    } else if (strcmp(temp_str,"filter_on") == 0) {
+      filter_flag=1;
+      n_samples=30;
+    } else if (strcmp(temp_str,"filter_off") == 0) {
+      filter_flag=0;
+      n_samples=1;
     }
+    
       
     memset(temp_fl, 0, 20);
     memset(temp_str, 0, 20);  
@@ -56,6 +78,8 @@ void analyseString(String serial_string) {
 
 void setup() {
   Serial.begin(115200);
+  analogWrite(analogOutPin, 35);
+  
 }
 
 void loop() {
@@ -78,12 +102,18 @@ void loop() {
   currentTime = millis();
   if(currentTime - previousTime > sampleInterval) {
 
-  	sensorValue = analogRead(analogInPin);
+    // LOW PASS filter
+    for(i = 0; i < n_samples; i++)
+        sensorValue = sensorValue + analogRead(analogInPin);
 
-  	lux = pid.vtolux(sensorValue);
+    avg_value = sensorValue/n_samples;
+
+    // converts the voltage to Lux
+  	lux = pid.vtolux(avg_value);
 
   	outputValue = pid.calculate(lux);
 
+    // write the pwm to the LED
   	analogWrite(analogOutPin, outputValue);
 
   	Serial.print(pid.getReference());
@@ -94,8 +124,19 @@ void loop() {
   	Serial.print(' ');
   	Serial.print(pid.getFFWDFlag());
   	Serial.print(' ');
-  	Serial.println(currentTime);*/
+  	Serial.println(currentTime);
 
-  	previousTime = currentTime;
+    // used for testing the ref change
+    count++;
+    if(count==150)
+      pid.setReference(70);
+    if(count==300)
+      pid.setReference(35);
+
+    // reset the read values
+    sensorValue = 0;
+
+    // reset the timer
+    previousTime = currentTime;
   }
 }

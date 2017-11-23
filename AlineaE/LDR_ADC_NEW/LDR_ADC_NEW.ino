@@ -10,7 +10,7 @@ int howLongItsBeen=0;                         // A calculated value
 int dutyCycle=0;
 int testEnd=0;
 int previousVSensor=0;
-float alpha=0.3;
+float alpha=0;
 
 void setup() {
   Serial.begin(9600); // initialize serial communications at 9600 bps
@@ -48,7 +48,7 @@ void loop() {
   
 
       if(dutyCycle<250)
-        dutyCycle+=10;
+        dutyCycle+=1;
 
       else
        testEnd=1;

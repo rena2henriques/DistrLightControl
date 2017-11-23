@@ -21,7 +21,7 @@ PID::PID() {
   	pTerm = 0; 
   	iTerm_prev = 0;
   	dTerm_prev = 0;
-	e_prev = 0;
+	   e_prev = 0;
   	error = 0;
   	u = 0;
   	uFFWD=0;
@@ -179,6 +179,10 @@ void PID::setFFWDMode(int FFWDmode){
   }
 }
 
+void PID::setDeadMode(int deadmode) {
+  deadFlag = deadmode;
+}
+
 void PID::setPIDparameters(float kp, float ki, float kd) {
 	// control parameters
 	Kp = kp;
@@ -200,6 +204,10 @@ int PID::getFFWDFlag(){
 void PID::deadzone() {
   if (error <= dead_max && error >= dead_min){
     error = 0;
+  } else if (error > dead_max) {
+    error = error - dead_max;
+  } else if (error < dead_min) {
+    error = error - dead_min;
   }
 }
 
@@ -211,7 +219,6 @@ int PID::calculate(float lux) {
         u = uFFWD;                     //so recalcular FFWD_output se se mudar lux_ref pelo serial
         first_iteration = 0;
 	} else {   
-
 		// calculation of the error between the output and the objective
 		error = reference - lux;
 

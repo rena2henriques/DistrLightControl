@@ -25,7 +25,7 @@ float Ki=0.019;
 //float Ki=0.03;
 float c=1.0; // é o b que está nos slides, tem que ser entre 0 e 1
 float T= 30.0;
-float Kp1=Kp*c;
+float K1=Kp*c;
 float K2=Kp*Ki*T/2;
 float iTerm=0.0, iTerm_ant=0.0, e_ant=0.0;
 
@@ -33,12 +33,12 @@ float iTerm=0.0, iTerm_ant=0.0, e_ant=0.0;
 const int outMax = 255;
 const int outMin = 0;
 int erroWindup = 0;
-float gain_w = 0.74;
+float gain_w = 1.35;
 int antiWindup_flag = 1; 
 
 int antiWindupIterm_flag=0;
-int Imax=175;
-int Imin=-175;
+int Imax=180;
+int Imin=-180;
 
 // time variables (ms)
 unsigned long currentTime = 0;
@@ -87,7 +87,18 @@ int getPwmValue(float lux_aux) {
     amplitude = 0;
   }
   return amplitude;
+}
 
+float setItermSat(float iTerm){
+    if (iTerm > Imax){
+    iTerm = Imax;
+  } else if(iTerm < Imin) { 
+    iTerm = Imin;
+  }
+  return iTerm;
+}
+
+ 
 
 // reads the serial buffer and changes the variables accordingly
 void analyseString(String serial_string) {
@@ -161,9 +172,9 @@ void loop() {
     avg_lux= vtolux(sensorValue);
 
 
-    Serial.print(u);
-    Serial.print("\t");
-    Serial.print(lux_ref);
+    //Serial.print(u);
+    //Serial.print("\t");
+    Serial.print(iTerm);
     Serial.print("\t");
     Serial.println(avg_lux);
     //Serial.print('\t');
