@@ -34,8 +34,8 @@ private:
 	const float y_origin = -6.9365;
 
 	// Voltage to lux
-	const float a_lux = -0.74; // declive da reta aproximada do LDR
-	const float b_lux = 1.92; // ordenada na origem da reta aproximada do LDR
+	float a_lux = 0.0; // declive da reta aproximada do LDR
+	float b_lux = 0.0; // ordenada na origem da reta aproximada do LDR
 
 	int sensorValue = 0; // VAI SER USADO?
 
@@ -62,7 +62,7 @@ public:
 
 	// constructor
 	PID();
-	PID(int actMin, int actMax, int ocupationMax, int ocupationMin, int ref, float antiWk, 
+	PID(float a_ldr, float b_ldr, int actMin, int actMax, int ocupationMax, int ocupationMin, int ref, float antiWk, 
 														int antiFlag, int deadflag, float deadMin, float deadMax, int FFWD_flag, float kp, float ki, float kd, float samplingTime);
 	void setAntiWindupParam(float k);
 	void setActuatorLimits(int min, int max);
