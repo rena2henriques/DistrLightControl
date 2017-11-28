@@ -8,6 +8,7 @@ float lux = 0.0;
 
 //actuatorMin, actuatorMax, ocupationlux, unocupationlux, ref, antiWgain, antiWFlag, deadFlag, deadMin, deadMax, FFWDFlag, kp, ki, kd, T
 PID pid(0, 255, 70, 35, 35, 0.74, 1, 1, -0.2, 0.2, 1, 1.35, 0.019, 0, 30);
+//PID pid(0, 255, 70, 35, 35, 0.74, 0, 0, -0.2, 0.2, 1, 0, 0, 0, 30);
 
 // time variables (ms)
 unsigned long currentTime = 0;
@@ -109,6 +110,7 @@ void loop() {
 
     // converts the voltage to Lux
   	lux = pid.vtolux(avg_value);
+    //lux=lux*1.425; <--- para novo ldr?
 
   	outputValue = pid.calculate(lux);
 
@@ -118,13 +120,13 @@ void loop() {
     // printing the data format requested
   	Serial.print(pid.getReference());
   	Serial.print(' ');
-  	Serial.print(lux);
-    Serial.print(' ');
+  	Serial.println(lux);
+   /* Serial.print(' ');
   	Serial.print( ( (float) outputValue/255)*100);
   	Serial.print(' ');
   	Serial.print(pid.getFFWDFlag());
   	Serial.print(' ');
-  	Serial.println(currentTime);
+  	Serial.println(currentTime);*/
 
     // used for testing the ref change
     count++;

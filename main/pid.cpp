@@ -210,6 +210,7 @@ int PID::calculate(float lux) {
         first_iteration = 0;
 	} else {   
 		// calculation of the error between the output and the objective
+    
 		error = reference - lux;
 
     if (deadFlag == 1){

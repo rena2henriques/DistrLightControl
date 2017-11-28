@@ -48,7 +48,7 @@ void loop() {
   
 
       if(dutyCycle<250)
-        dutyCycle+=1;
+        dutyCycle+=5;
 
       else
        testEnd=1;
