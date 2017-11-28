@@ -5,6 +5,11 @@
 using namespace std;
 
 PID::PID() {
+
+  // Parameters of the LDR
+  a_lux = -0.74;
+  b_lux = 1.92;
+
 	// actuator saturation limits
 	actuatorMin = 0;
 	actuatorMax = 255;
@@ -40,9 +45,14 @@ PID::PID() {
 	setPIDparameters(1.35, 0.019, 0);
 }
 
-PID::PID(int actMin, int actMax, int ocupationMax, int ocupationMin, int ref,
+PID::PID(float a_ldr, float b_ldr, int actMin, int actMax, int ocupationMax, int ocupationMin, int ref,
                              float antiWk,int antiFlag, int deadflag, float deadMin, float deadMax, int FFW_flag, float kp, float ki, float kd, float samplingTime) {
-	// actuator saturation limits
+	
+  // Parameters of the LDR
+  a_lux = a_ldr;
+  b_lux = b_ldr;
+
+  // actuator saturation limits
 	actuatorMin = actMin;
 	actuatorMax = actMax;
 
