@@ -23,18 +23,19 @@ inline void idCheck(const int idPin) {
 
 void receiveHandler(int numBytes) {
 
-	if (numBytes == 2) {
+	while(Wire.available() > 0) {
 		// reads first received byte, shift right 8
 	    int receivedValue  = Wire.read() << 8; 
 	    // reads second received byte, or and assign
 	    receivedValue |= Wire.read();
+
+	    // -----------------------------------
+		Serial.println(receivedValue);
+
+		// ---------------------------------
 	   
 	    i2c.msgDecoder(receivedValue);
-
-	} else {
-	    Serial.print("Unexpected number of bytes received: ");
-	    Serial.println(numBytes);
-	}
+	} 
 }
 
 void setup() {
@@ -42,6 +43,8 @@ void setup() {
 
   // gets i2c address from digital pin
   idCheck(idPin);
+
+  i2c.setAddress(myaddress);
 
   // -----------------------------------
   Serial.print("my addr =");
@@ -52,7 +55,7 @@ void setup() {
   Wire.begin(myaddress);
 
   // checks the number of nodes in the network and their address
-  int nNodes =  i2c.findNodes();
+  int nNodes = i2c.findNodes();
 
     // -----------------------------------
   Serial.print("n_nodes =");
