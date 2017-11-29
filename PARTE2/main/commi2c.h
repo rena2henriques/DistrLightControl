@@ -24,10 +24,6 @@ private:
 	
 public:
 
-	CommI2C();
-
-	CommI2C(int ldrPin_,int ledPin_);
-
 	void setAddress(int address);
 
 	int findNodes();
@@ -45,6 +41,10 @@ public:
 	void checkTurnEnd();
 
 	void ledON();
+
+	CommI2C();
+
+	CommI2C(int ldrPin_,int ledPin_);
 };
 
 #endif

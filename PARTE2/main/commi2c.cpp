@@ -7,6 +7,7 @@ CommI2C::CommI2C() {
 
 	n_ack = 0;
 	myaddress = 0;
+
 }
 
 CommI2C::CommI2C(int ldrPin_, int ledPin_) {
@@ -16,6 +17,7 @@ CommI2C::CommI2C(int ldrPin_, int ledPin_) {
 
 	ledPin = ledPin_;
 	myaddress = 0;
+
 }
 
 void CommI2C::setAddress(int address) {

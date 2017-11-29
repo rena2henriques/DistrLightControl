@@ -25,10 +25,23 @@ void setup() {
   // gets i2c address from digital pin
   idCheck(idPin);
 
+  // -----------------------------------
+  Serial.print("my addr =");
+  Serial.println(myaddress);
+
+  // ---------------------------------
+
   Wire.begin(myaddress);
 
   // checks the number of nodes in the network and their address
-  i2c.findNodes();
+  int nNodes =  i2c.findNodes();
+
+    // -----------------------------------
+  Serial.print("n_nodes =");
+  Serial.println(nNodes);
+
+  // ---------------------------------
+
 
   delay(100);
 

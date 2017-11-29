@@ -10,6 +10,8 @@ const int idPin = 7;
 // my i2c address
 int myaddress = -1;
 
+CommI2C i2c(A0, 9); 
+
 // used only for the case of our problem (2 arduinos)
 inline void idCheck(const int idPin) {
   // if pin idPin is HIGH = arduino nº1
@@ -19,13 +21,51 @@ inline void idCheck(const int idPin) {
     myaddress = 2; // I'm not the arduino nº1
 }
 
+void receiveHandler(int numBytes) {
+
+	if (numBytes == 2) {
+		// reads first received byte, shift right 8
+	    int receivedValue  = Wire.read() << 8; 
+	    // reads second received byte, or and assign
+	    receivedValue |= Wire.read();
+	   
+	    i2c.msgDecoder(receivedValue);
+
+	} else {
+	    Serial.print("Unexpected number of bytes received: ");
+	    Serial.println(numBytes);
+	}
+}
+
 void setup() {
   Serial.begin(9600);
 
+  // gets i2c address from digital pin
   idCheck(idPin);
 
+  // -----------------------------------
+  Serial.print("my addr =");
+  Serial.println(myaddress);
+
+  // ---------------------------------
+
   Wire.begin(myaddress);
+
+  // checks the number of nodes in the network and their address
+  int nNodes =  i2c.findNodes();
+
+    // -----------------------------------
+  Serial.print("n_nodes =");
+  Serial.println(nNodes);
+
+  // ---------------------------------
+
+  delay(100);
   
+  Wire.onReceive(receiveHandler);
+
+  // calibration of the network to get K values
+  i2c.calibration(myaddress);
 }
 
 void loop() {
