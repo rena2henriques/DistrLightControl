@@ -106,7 +106,7 @@ void CommI2C::msgDecoder(int message){
 		// Checks if the arduino can turn the led off
 		checkTurnEnd();
 	} else if (label == 3) {
-
+    ledON();
 	}
 
 }
@@ -118,8 +118,8 @@ void CommI2C::readADC(int address) {
 
 	// Juntar a um vetor e converter para lux
 
+  
 	// temp
-	Serial.print("ADC = ");
 	Serial.println(ADC);
 
 	it++;
@@ -186,7 +186,7 @@ void CommI2C::ledON(){
 	// sends message to all arduinos to read their lux values
 	for(int i=0; i < addrList.size(); i++) {
 		Wire.beginTransmission(addrList.get(i));
-		Wire.write(4); // sends 1100
+		Wire.write(4); // sends 0100
 		Wire.write(myaddress); // no data needed
 		Wire.endTransmission();
 	}

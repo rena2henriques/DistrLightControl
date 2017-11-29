@@ -1,0 +1,13 @@
+DUVIDAS
+
+- como passar o addres do master
+- como mandar os bytes
+- na calibração por os nossos pwm a high e low a outras refmais perto das nossas?
+- o led aceso manda ler os outros mas depois também tem que ler o dele e saber que já leu? 
+- delays?
+
+FALTA:
+-obter perturbacao externa na calib
+
+CENAS PARA O RELATORIO:
+- o programa é extensivel até 127 arduinos na rede porque o i2c só aceita endereços até 7 bits.

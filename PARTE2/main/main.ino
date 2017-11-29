@@ -23,18 +23,17 @@ inline void idCheck(const int idPin) {
 
 void receiveHandler(int numBytes) {
 
-	if (numBytes == 2) {
+	while (Wire.available()>0) {
 		// reads first received byte, shift right 8
-	    int receivedValue  = Wire.read() << 8; 
+	    int receivedValue  = Wire.read() ;//<< 8;
+     Serial.println(receivedValue); 
 	    // reads second received byte, or and assign
-	    receivedValue |= Wire.read();
-	   
+	    receivedValue=Wire.read() ;//|= Wire.read();
+
+      Serial.println(receivedValue);
 	    i2c.msgDecoder(receivedValue);
 
-	} else {
-	    Serial.print("Unexpected number of bytes received: ");
-	    Serial.println(numBytes);
-	}
+	} 
 }
 
 void setup() {

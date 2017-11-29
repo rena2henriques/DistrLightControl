@@ -1,6 +1,6 @@
-void ReadADCCalib(){	
+void ReadADCCalib(int address){	
 
-	ADC= analogRead(InPin); //reading ADC values
+	ADC= analogRead(InPi n); //reading ADC values
 
 	//sending read ack
 	Wire.beginTransmission(address);	

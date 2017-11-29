@@ -13,7 +13,5 @@ void HighCalib(){
 		Wire.write(c);	//second byte
 		Wire.endTransmission();
 	}
-
-	//reads its own values
-
+ 
 }
