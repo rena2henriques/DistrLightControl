@@ -1,0 +1,55 @@
+- Frequência do PWM:
+	500 Hz -> suficientemente alto para diminuir ruido
+- Condensador:
+	Serve como filtro passa-baixo para atenuar as oscilações de alta frequência que ocorrem devido à freq. de corte o PWM
+
+- Tivemos que converter para lux porque:
+	O ganho do LDR varia com o ponto de funcionamento
+
+- PWM
+	0 a 255, 0 a 100%
+
+- O condensador equivale a um circuito aberto para as freq que trabalhamos (~500Hz) logo podemos desprezar a sua impedância
+ao fazer o calculo da resistência que passa no LDR
+
+- O tau e o K0 variam com o ponto de funcionamento e com o carregamento e descarregamento do condensador
+
+- Porque escolhemos aquele valor para o ganho do antiwindup
+	Começámos por testar os limites do integral
+	depois fizemos o antiwindup com ganho igual a Kp e deu parecido com os limites
+	Por fim vimos na net pessoas a dizerem que 1/Kp era uma escolha decente, testámos e deu um bocadinho melhor
+
+- Porque escolhemos aqueles limites para a deadzone
+	Observámos a amplitude do ruido para as ref HIGH e LOW, vimos que eram diferentes
+	Por isso escolhemos limites para o deadzone que diminuiam decentemente as oscilações em ambas as referências
+
+- O que é o windup
+	Acontece quando ocorre uma alteração muito grande no sistema e deve-se ao facto do termo integrado do PID continuar a somar
+	sucessivamente esse erro, excendendo os limites de funcionamento do atuator. O que isto provoca é que depois de deixar de haver esta
+	perturbação, o sistema demore muito tempo ou nem consiga voltar a estabilizar.
+
+- Saber explicar como se faz o anti windup 
+	
+- Saber explicar como convertemos de lux para pwm
+	Usamos uma reta invés da tabela. A formula da reta foi obtida pelo ajuste dos pontos LUX/PWM segundo o método dos minimos quadrados
+	
+- Dizer o porquê de termos usado esta time constant/sample time
+	Vimos as respostas aos escalões com diferentes PWM. O pior era o caso em que a caixa estava escura e correspondia a cerca de 10ms.
+	O prof Kung Fu sugeriu-nos escolher um valor de samplingTime de cerca de 3*o valor do pior caso da estabilização, logo 30ms. 		
+
+- Como escolhemos os K do PID (PID tuning)
+	Ziegler Nichols: Frequency Response Method
+	Aumentar o K até o sistema ter polos no eixo imaginário e por isso ter sustained oscillations.
+	Como não é possivel ver o sistema a divergir (devido aos limites do atuador), utilizámos o 1º valor de K
+	que não levava o sistema à convergência.
+
+- Para que serve o pTerm, iTerm, dTerms
+	
+	pTerm -> compara a ref com o valor atual. Não elimina erros residuais
+	iTerm -> Soma continuamente os erros residuais até estes terem um valor suficientemente grande para serem eliminados pelo pTerm
+	dTerm -> Faz previsões do comportamento do sistema, ajuda a ser mais rápido, mas aumenta a instabilidadde
+
+	Não usámos termo derivativo porque este é mais necessário para sistemas com muita inércia, o que não é este caso.
+
+- Seleção tempo
+	time pooling -> millis

@@ -15,7 +15,7 @@ int k2 = 0;
 
 char command = 'n';
 
-inline void idCheck(const int idPin) {
+int idCheck(const int idPin) {
   // if pin idPin is HIGH = arduino nº1
   if(digitalRead(idPin) == HIGH)
     myaddress = 1; // I'm the arduino nº1
