@@ -29,7 +29,7 @@ void receiveHandler(int numBytes) {
 
 	byte first8;
 	byte last8;
-
+  
 	while(Wire.available() > 0) {
 		// reads first received byte, shift right 8
 	     last8 = Wire.read();// << 8;
@@ -66,6 +66,7 @@ void setup() {
 
   // calibration of the network to get K values
   i2c.calibration(myaddress);
+  Serial.print("calib ended");
 }
 
 void loop() {
