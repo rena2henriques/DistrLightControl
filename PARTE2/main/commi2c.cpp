@@ -26,6 +26,8 @@ void CommI2C::setAddress(int address) {
 
 int CommI2C::findNodes() {
 
+	// broadcast address is 0
+
 	unsigned char error, address;
 
 	// the devices have 7-bit I2C addresses 
@@ -76,22 +78,28 @@ void CommI2C::calibration(int myaddress) {
 
 
 // decodes the message in label and data
-void CommI2C::msgDecoder(int last8, int first8){
+void CommI2C::msgDecoder(byte last8, byte first8){
   
-      int label = last8 >> 2;
-      int two_bits = last8 & 3;
+    byte label = last8 >> 2;
+    byte two_bits = last8 & 3;
       
-      int value = 1024*(two_bits >> 1) + 512*(two_bits & 1) + first8;
-    // Serial.println(value);
-    // Serial.println(label);
+    Serial.print("label="); // work
+    Serial.println(label);
+
+    Serial.print("two_bits="); // work
+    Serial.println(two_bits);
+
+    // 512 because the power starts at 0!!!!
+	int value = 512*(two_bits >> 1) + 256*(two_bits & 1) + first8;
+
 	if (label == 1) {
 		// reads the lux value from ldr and ACKs
 		readADC(value);
-	} else if (label == 2) {
-		// Checks if the arduino can turn the led off
-		checkTurnEnd();
-	} else if (label == 3) {
-    ledON();
+	// } else if (label == 2) {
+	// 	// Checks if the arduino can turn the led off
+	// 	checkTurnEnd();
+	// } else if (label == 3) {
+ //    ledON();
 
 	}
 
@@ -100,20 +108,25 @@ void CommI2C::msgDecoder(int last8, int first8){
 // reads the LUX Value at the moment
 void CommI2C::readADC(int address) {
 
+	Serial.println("enter"); // working
+
+
 	ADC = analogRead(ldrPin);
 
 	// Juntar a um vetor e converter para lux
 
-  
-	// temp
+	// temp - working
+	Serial.print("ADC=");
 	Serial.println(ADC);
 
 	it++;
 
-	Wire.beginTransmission(address);
-	Wire.write(8); //sends 00001000
-	Wire.write(0); //XXXXXX no data needed
-	Wire.endTransmission();
+	// NOT WORKING
+
+	// Wire.beginTransmission((byte) address);
+	// // Wire.write((byte) 8); //sends 00001000
+	// // Wire.write((byte) 0); //XXXXXX no data needed
+	// Wire.endTransmission();
 }
 
 // checks if their time of LED High has ended
@@ -173,7 +186,7 @@ void CommI2C::ledON(){
 	// sends message to all arduinos to read their lux values
 	for(int i=0; i < addrList.size(); i++) {
 		Wire.beginTransmission(addrList.get(i));
-		Wire.write(4); // sends 0100
+		Wire.write((byte) 7); // sends 0100
 		Wire.write(myaddress); // no data needed
 		Wire.endTransmission();
 	}

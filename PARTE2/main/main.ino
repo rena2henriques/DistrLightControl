@@ -23,36 +23,32 @@ inline void idCheck(const int idPin) {
 
 void receiveHandler(int numBytes) {
 
-<<<<<<< HEAD
-	while (Wire.available()>0) {
-=======
+	// Initial ACK
+	if (numBytes == 0)
+		return;
+
+	byte first8;
+	byte last8;
+
+	// temp
+	Serial.print("nº of B=");
+    Serial.println(numBytes);
+
 	while(Wire.available() > 0) {
->>>>>>> 22152d8b2634736039e3baaed4ecc211331b5ee3
 		// reads first received byte, shift right 8
-	    int last8  = Wire.read();// << 8;
-      int first8 = Wire.read();
-     
-      
-      //Serial.println(receivedValue); 
-	    // reads second received byte, or and assign
-<<<<<<< HEAD
-	    //receivedValue = Wire.read();
-//      Serial.println(receivedValue);  
-      //Serial.println(receivedValue);
-      //DAR NOMES GIROS
-	    i2c.msgDecoder(last8, first8);
+	     last8 = Wire.read();// << 8;
+      	 first8 = Wire.read();  
 
-=======
-	    receivedValue |= Wire.read();
+      	 // temp
+      	 Serial.print("last8=");
+      	 Serial.println(last8);
+      	 Serial.print("first8=");
+	 	 Serial.println(first8);
 
-	    // -----------------------------------
-		Serial.println(receivedValue);
+	   	 i2c.msgDecoder(last8, first8);
+	 }
 
-		// ---------------------------------
-	   
-	    i2c.msgDecoder(receivedValue);
->>>>>>> 22152d8b2634736039e3baaed4ecc211331b5ee3
-	} 
+
 }
 
 void setup() {
@@ -67,8 +63,8 @@ void setup() {
   Serial.print("my addr =");
   Serial.println(myaddress);
 
-  Serial.print("int =");
-  Serial.println(sizeof(int));
+  Serial.print("char =");
+  Serial.println(sizeof(char));
 
   // ---------------------------------
 
