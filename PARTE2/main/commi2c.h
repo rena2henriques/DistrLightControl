@@ -34,7 +34,7 @@ public:
 
 	void receiveHandler(int numBytes);
 
-	void msgDecoder(int message);
+	void msgDecoder(int last8, int first8);
 
 	void readADC(int address);
 

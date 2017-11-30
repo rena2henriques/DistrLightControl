@@ -73,29 +73,17 @@ void CommI2C::calibration(int myaddress) {
 }
 
 
-// void CommI2C::receiveHandler(int numBytes) {
-
-// 	if (numBytes == 2) {
-// 		// reads first received byte, shift right 8
-// 	    int receivedValue  = Wire.read() << 8; 
-// 	    // reads second received byte, or and assign
-// 	    receivedValue |= Wire.read();
-	   
-// 	    msgDecoder(receivedValue);
-
-// 	} else {
-// 	    Serial.print("Unexpected number of bytes received: ");
-// 	    Serial.println(numBytes);
-// 	}
-// }
 
 
 // decodes the message in label and data
-void CommI2C::msgDecoder(int message){
-
-	int label = message >> 10; //retrieves 6 label bits
-	int value = message & 1023; //retrieves 10 last bits
-
+void CommI2C::msgDecoder(int last8, int first8){
+  
+      int label = last8 >> 2;
+      int two_bits = last8 & 3;
+      
+      int value = 1024*(two_bits >> 1) + 512*(two_bits & 1) + first8;
+    // Serial.println(value);
+    // Serial.println(label);
 	if (label == 1) {
 		// reads the lux value from ldr and ACKs
 		readADC(value);
@@ -103,7 +91,8 @@ void CommI2C::msgDecoder(int message){
 		// Checks if the arduino can turn the led off
 		checkTurnEnd();
 	} else if (label == 3) {
-		ledON();
+    ledON();
+
 	}
 
 }
@@ -115,6 +104,7 @@ void CommI2C::readADC(int address) {
 
 	// Juntar a um vetor e converter para lux
 
+  
 	// temp
 	Serial.println(ADC);
 
@@ -183,8 +173,8 @@ void CommI2C::ledON(){
 	// sends message to all arduinos to read their lux values
 	for(int i=0; i < addrList.size(); i++) {
 		Wire.beginTransmission(addrList.get(i));
-		Wire.write(4);
-		Wire.write(1); 
+		Wire.write(4); // sends 0100
+		Wire.write(myaddress); // no data needed
 		Wire.endTransmission();
 	}
 
