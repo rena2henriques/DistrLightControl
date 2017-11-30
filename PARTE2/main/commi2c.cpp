@@ -75,7 +75,7 @@ void CommI2C::calibration(int myaddress) {
 			sendAck = 0;
 		} else if (turnEnd != 0){
 
-			Serial.println("sendAck");
+			Serial.println("turnEnd");
 
 			// tells the HIGH node that it has read
 			send((byte) turnEnd, (byte) 12, (byte) 0);
@@ -91,6 +91,7 @@ void CommI2C::calibration(int myaddress) {
 				// requests lux reading
 				send((byte) addrList.get(i), (byte) 7, (byte) myaddress);
 			}
+     ledFlag=0;
 		}
 
 
@@ -111,17 +112,9 @@ void CommI2C::msgDecoder(byte last8, byte first8){
     byte label = last8 >> 2;
     byte two_bits = last8 & 3;
       
-    Serial.print("label="); // work
-    Serial.println(label);
-
-    Serial.print("two_bits="); // work
-    Serial.println(two_bits);
 
     // 512 because the power starts at 0!!!!
-	int value = 512*(two_bits >> 1) + 256*(two_bits & 1) + first8;
-
-	Serial.print("value="); // work
-    Serial.println(value);
+	  int value = 512*(two_bits >> 1) + 256*(two_bits & 1) + first8;
 
 	if (label == 1) {
 		// reads the lux value from ldr and ACKs
@@ -162,7 +155,7 @@ void CommI2C::checkTurnEnd() {
 
 	n_ack++;
 
-	if(n_ack == addrList.size()) {
+	if(n_ack == addrList.size() && n_reads != addrList.size() + 1) {
 		// resets n_ack flag
 		n_ack = 0;
 
@@ -196,6 +189,8 @@ void CommI2C::ledON(){
 	// reads the lux value of its own led
 	ADC = analogRead(ldrPin);
 
+  Serial.print("ADC=");
+  Serial.println(ADC);
 	// The number of columns of my K matrix
 	n_reads++;
 
