@@ -65,7 +65,27 @@ void CommI2C::calibration(int myaddress) {
 	} 
 
 	// runs until we read every led lux including ourself
-	while(it != addrList.size() + 1 ) {
+	while(n_reads != addrList.size() + 1 ) {
+
+		if(sendAck != 0){
+
+			Serial.println("sendAck");
+
+			// tells the HIGH node that it has read
+			send((byte) sendAck, (byte) 8, (byte) 0);
+
+			sendAck = 0;
+		} else if (turnEnd != 0){
+
+			Serial.println("sendAck");
+
+			// tells the HIGH node that it has read
+			send((byte) turnEnd, (byte) 12, (byte) 0);
+
+			turnEnd = 0;
+		}
+
+
 		delay(10);
 	}
 
@@ -92,15 +112,18 @@ void CommI2C::msgDecoder(byte last8, byte first8){
     // 512 because the power starts at 0!!!!
 	int value = 512*(two_bits >> 1) + 256*(two_bits & 1) + first8;
 
+	Serial.print("value="); // work
+    Serial.println(value);
+
 	if (label == 1) {
 		// reads the lux value from ldr and ACKs
 		readADC(value);
-	// } else if (label == 2) {
-	// 	// Checks if the arduino can turn the led off
-	// 	checkTurnEnd();
-	// } else if (label == 3) {
- //    ledON();
-
+	} else if (label == 2) {
+		// Checks if the arduino can turn the led off
+		checkTurnEnd();
+	} else if (label == 3) {
+		// sets the LED ON and asks for reading
+ 	   	ledON();
 	}
 
 }
@@ -108,25 +131,20 @@ void CommI2C::msgDecoder(byte last8, byte first8){
 // reads the LUX Value at the moment
 void CommI2C::readADC(int address) {
 
-	Serial.println("enter"); // working
-
-
+	// Reads from LDR
 	ADC = analogRead(ldrPin);
 
-	// Juntar a um vetor e converter para lux
+	// Juntar a um vetor e converter para lux <-----------------
 
 	// temp - working
 	Serial.print("ADC=");
 	Serial.println(ADC);
+	// -------------------------------------
 
-	it++;
+	// The number of columns of my K matrix
+	n_reads++;
 
-	// NOT WORKING
-
-	// Wire.beginTransmission((byte) address);
-	// // Wire.write((byte) 8); //sends 00001000
-	// // Wire.write((byte) 0); //XXXXXX no data needed
-	// Wire.endTransmission();
+	sendAck = address;
 }
 
 // checks if their time of LED High has ended
@@ -152,10 +170,7 @@ void CommI2C::checkTurnEnd() {
 			}	
 		}
 
-		Wire.beginTransmission(nextaddress);
-		Wire.write(12); // sends 1100
-		Wire.write(0); // no data needed
-		Wire.endTransmission();
+		turnEnd = nextaddress;
 	}
 
 	return;
@@ -173,15 +188,8 @@ void CommI2C::ledON(){
 	// reads the lux value of its own led
 	ADC = analogRead(ldrPin);
 
-	// temp
-	it++;
-
-	// test -------------------------
-	Serial.print("my addr = ");
-	Serial.println(myaddress);
-
-	// ------------------------------
-
+	// The number of columns of my K matrix
+	n_reads++;
 
 	// sends message to all arduinos to read their lux values
 	for(int i=0; i < addrList.size(); i++) {
@@ -191,4 +199,14 @@ void CommI2C::ledON(){
 		Wire.endTransmission();
 	}
 
+}
+
+
+// used just to simplifying the proccess of sending messages
+byte CommI2C::send(byte address, byte firstByte, byte secondByte) {
+
+	Wire.beginTransmission(address);
+	Wire.write(firstByte);
+	Wire.write(secondByte);
+	return Wire.endTransmission();
 }

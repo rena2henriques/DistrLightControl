@@ -20,7 +20,10 @@ private:
 
 	int n_ack;
 
-	int it = 0;
+	int n_reads = 0;
+
+	int sendAck = 0;
+	int turnEnd = 0;
 	
 public:
 
@@ -45,6 +48,8 @@ public:
 	CommI2C();
 
 	CommI2C(int ldrPin_,int ledPin_);
+
+	byte send(byte address, byte firstByte, byte secondByte);
 };
 
 #endif

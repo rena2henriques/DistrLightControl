@@ -30,10 +30,6 @@ void receiveHandler(int numBytes) {
 	byte first8;
 	byte last8;
 
-	// temp
-	Serial.print("nº of B=");
-    Serial.println(numBytes);
-
 	while(Wire.available() > 0) {
 		// reads first received byte, shift right 8
 	     last8 = Wire.read();// << 8;
@@ -58,16 +54,6 @@ void setup() {
   idCheck(idPin);
 
   i2c.setAddress(myaddress);
-
-  // -----------------------------------
-  Serial.print("my addr =");
-  Serial.println(myaddress);
-
-  Serial.print("char =");
-  Serial.println(sizeof(char));
-
-  // ---------------------------------
-
 
   Wire.begin(myaddress);
 
