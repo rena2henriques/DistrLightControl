@@ -25,28 +25,35 @@ void receiveHandler(int numBytes) {
 
 	while (Wire.available()>0) {
 		// reads first received byte, shift right 8
-	    int receivedValue  = Wire.read() ;//<< 8;
-     Serial.println(receivedValue); 
+	    int last8  = Wire.read();// << 8;
+      int first8 = Wire.read();
+     
+      
+      //Serial.println(receivedValue); 
 	    // reads second received byte, or and assign
-	    receivedValue=Wire.read() ;//|= Wire.read();
-
-      Serial.println(receivedValue);
-	    i2c.msgDecoder(receivedValue);
+	    //receivedValue = Wire.read();
+//      Serial.println(receivedValue);  
+      //Serial.println(receivedValue);
+      //DAR NOMES GIROS
+	    i2c.msgDecoder(last8, first8);
 
 	} 
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   // gets i2c address from digital pin
   idCheck(idPin);
+
+  i2c.setAddress(myaddress);
 
   // -----------------------------------
   Serial.print("my addr =");
   Serial.println(myaddress);
 
   // ---------------------------------
+
 
   Wire.begin(myaddress);
 
