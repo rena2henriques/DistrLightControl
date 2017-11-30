@@ -35,12 +35,6 @@ void receiveHandler(int numBytes) {
 	     last8 = Wire.read();// << 8;
       	 first8 = Wire.read();  
 
-      	 // temp
-      	 Serial.print("last8=");
-      	 Serial.println(last8);
-      	 Serial.print("first8=");
-	 	 Serial.println(first8);
-
 	   	 i2c.msgDecoder(last8, first8);
 	 }
 
