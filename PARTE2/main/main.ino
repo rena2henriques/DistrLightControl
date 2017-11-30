@@ -39,7 +39,7 @@ void receiveHandler(int numBytes) {
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   // gets i2c address from digital pin
   idCheck(idPin);
@@ -49,6 +49,9 @@ void setup() {
   // -----------------------------------
   Serial.print("my addr =");
   Serial.println(myaddress);
+
+  Serial.print("int =");
+  Serial.println(sizeof(int));
 
   // ---------------------------------
 

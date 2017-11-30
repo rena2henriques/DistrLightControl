@@ -183,8 +183,8 @@ void CommI2C::ledON(){
 	// sends message to all arduinos to read their lux values
 	for(int i=0; i < addrList.size(); i++) {
 		Wire.beginTransmission(addrList.get(i));
-		Wire.write(4); // sends 1100
-		Wire.write(myaddress); // no data needed
+		Wire.write(4);
+		Wire.write(1); 
 		Wire.endTransmission();
 	}
 
