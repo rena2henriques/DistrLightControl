@@ -24,6 +24,7 @@ private:
 
 	int sendAck = 0;
 	int turnEnd = 0;
+	int ledFlag = 0;
 	
 public:
 
