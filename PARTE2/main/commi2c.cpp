@@ -64,14 +64,13 @@ void CommI2C::calibration(int myaddress) {
 
 	// runs until we read every led lux including ourself
 	while(it != addrList.size() + 1 ) {
-
+		delay(10);
 	}
 
 	// NÂO ESQUECER QUE ELE TEM QUE LER OS O
 
 	return;
 }
-
 
 
 
@@ -93,6 +92,7 @@ void CommI2C::msgDecoder(int last8, int first8){
 		checkTurnEnd();
 	} else if (label == 3) {
     ledON();
+
 	}
 
 }
@@ -164,8 +164,9 @@ void CommI2C::ledON(){
 	it++;
 
 	// test -------------------------
-	Serial.print("my adc = ");
-	Serial.println(ADC);
+	Serial.print("my addr = ");
+	Serial.println(myaddress);
+
 	// ------------------------------
 
 

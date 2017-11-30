@@ -23,7 +23,11 @@ inline void idCheck(const int idPin) {
 
 void receiveHandler(int numBytes) {
 
+<<<<<<< HEAD
 	while (Wire.available()>0) {
+=======
+	while(Wire.available() > 0) {
+>>>>>>> 22152d8b2634736039e3baaed4ecc211331b5ee3
 		// reads first received byte, shift right 8
 	    int last8  = Wire.read();// << 8;
       int first8 = Wire.read();
@@ -31,12 +35,23 @@ void receiveHandler(int numBytes) {
       
       //Serial.println(receivedValue); 
 	    // reads second received byte, or and assign
+<<<<<<< HEAD
 	    //receivedValue = Wire.read();
 //      Serial.println(receivedValue);  
       //Serial.println(receivedValue);
       //DAR NOMES GIROS
 	    i2c.msgDecoder(last8, first8);
 
+=======
+	    receivedValue |= Wire.read();
+
+	    // -----------------------------------
+		Serial.println(receivedValue);
+
+		// ---------------------------------
+	   
+	    i2c.msgDecoder(receivedValue);
+>>>>>>> 22152d8b2634736039e3baaed4ecc211331b5ee3
 	} 
 }
 
@@ -58,7 +73,7 @@ void setup() {
   Wire.begin(myaddress);
 
   // checks the number of nodes in the network and their address
-  int nNodes =  i2c.findNodes();
+  int nNodes = i2c.findNodes();
 
     // -----------------------------------
   Serial.print("n_nodes =");
