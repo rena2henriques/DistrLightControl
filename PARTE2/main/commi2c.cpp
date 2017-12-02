@@ -99,8 +99,6 @@ void CommI2C::calibration(int myaddress) {
 
 		}
 
-
-		delay(10);
 	}
 
 	analogWrite(ledPin, LOW);
@@ -223,3 +221,6 @@ byte CommI2C::send(byte address, byte firstByte, byte secondByte) {
 	Wire.write(secondByte);
 	return Wire.endTransmission();
 }
+
+}
+

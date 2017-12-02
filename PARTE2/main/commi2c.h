@@ -36,7 +36,6 @@ public:
 
 	void calibration(int myaddress);
 
-	void receiveHandler(int numBytes);
 
 	void msgDecoder(byte last8, byte first8);
 
