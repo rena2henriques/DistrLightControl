@@ -217,6 +217,7 @@ byte CommI2C::send(byte address, byte firstByte, byte secondByte) {
 	return Wire.endTransmission();
 }
 
+
 void CommI2C::sendToAll(byte firstByte, byte secondByte) {
 
 	// sends message to all arduinos to read their lux values
