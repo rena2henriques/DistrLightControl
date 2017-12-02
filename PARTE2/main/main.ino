@@ -49,11 +49,11 @@ void setup() {
 
   Wire.begin(myaddress);
 
-  // tells the system to recablibrate
-  i2c.sendToAll((byte) 16, (byte) 0);
-
   // checks the number of nodes in the network and their address
   int nNodes = i2c.findNodes();
+
+    // tells the system to recablibrate
+  i2c.sendToAll((byte) 16, (byte) 0);
 
   // -----------------------------------
   Serial.print("n_nodes =");
@@ -68,6 +68,7 @@ void setup() {
   // calibration of the network to get K values
   i2c.calibration();
   Serial.print("calib ended");
+
 }
 
 void loop() {

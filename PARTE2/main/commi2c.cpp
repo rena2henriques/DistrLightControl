@@ -95,7 +95,10 @@ void CommI2C::calibration() {
 
 	}
 
-	analogWrite(ledPin, LOW);
+	// temp
+	//analogWrite(ledPin, LOW);
+
+	calibFlag = 0;
 
 	// NÂO ESQUECER QUE ELE TEM QUE LER OS O
 

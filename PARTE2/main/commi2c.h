@@ -19,13 +19,7 @@ private:
 	int ldrPin, ledPin;
 
 	int n_ack;
-
 	int n_reads = 0;
-
-	int sendAck = 0;
-	int turnEnd = 0;
-	int ledFlag = 0;
-	int calibFlag = 0;
 	
 public:
 	CommI2C();
@@ -53,6 +47,12 @@ public:
 	void sendToAll(byte firstByte, byte secondByte);
 
 	void checkFlags();
+
+	// Flags
+	int sendAck = 0;
+	int turnEnd = 0;
+	int ledFlag = 0;
+	int calibFlag = 0;
 };
 
 #endif
