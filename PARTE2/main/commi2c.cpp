@@ -54,7 +54,7 @@ unsigned char CommI2C::getAddr(int i) {
 	return addrList.get(i);
 }
 
-void CommI2C::calibration(int myaddress) {
+void CommI2C::calibration() {
 
 	// the arduino that begins the calibration is the 1
 	if (myaddress == 1) {
@@ -67,33 +67,27 @@ void CommI2C::calibration(int myaddress) {
 	while(n_reads != addrList.size() + 1 ) {
 
 		if(sendAck != 0){
-			Serial.println("sendAck");
-      n_reads++;
-      //i've read the high node
+
+			// read another one
+      		n_reads++;
+     		
 			// tells the HIGH node that it has read
 			send((byte) sendAck, (byte) 8, (byte) 0);
     
-
 			sendAck = 0;
 		} else if (turnEnd != 0){
- 
-      n_reads++;
+ 			
+ 			// read my own
+     		n_reads++;
      
 			// tells the next high node to light it up
 			send((byte) turnEnd, (byte) 12, (byte) 0);
       
 			turnEnd = 0;
+
 		} else if (ledFlag != 0) {
 
-			Serial.println("ledFlag");
-
-			// sends message to all arduinos to read their lux values
-			for(int i=0; i < addrList.size(); i++) {
-
-				// requests lux reading
-				send((byte) addrList.get(i), (byte) 7, (byte) myaddress);
-			}
-
+			sendToAll((byte) 7, (byte) myaddress);
 
 			ledFlag = 0;
 
@@ -129,8 +123,10 @@ void CommI2C::msgDecoder(byte last8, byte first8){
 		checkTurnEnd();
 	} else if (label == 3) {
 		// sets the LED ON and asks for reading
- 	   	ledON();
-      
+ 	   	ledON(); 
+	} else if (label == 4) {
+		// recalibrate
+		calibFlag == 1;
 	}
 
 }
@@ -148,8 +144,6 @@ void CommI2C::readADC(int address) {
 	Serial.println(ADC);
 	// -------------------------------------
 
-	// The number of columns of my K matrix
-	//n_reads++;
 
 	sendAck = address;
 }
@@ -164,7 +158,8 @@ void CommI2C::checkTurnEnd() {
 	if(n_ack == addrList.size() && n_reads != addrList.size() + 1) {
 		// resets n_ack flag
 		n_ack = 0;
-    int im_last_one = 1;
+
+    	int im_last_one = 1;
 		// turns off led
 		analogWrite(ledPin, LOW);
 
@@ -173,14 +168,15 @@ void CommI2C::checkTurnEnd() {
 			// até encontrar a address imediatamente a seguir à minha
 			if (addrList.get(i) > myaddress) {
 				nextaddress = addrList.get(i);
-        im_last_one = 0;
+        		im_last_one = 0;
 				break;
 			}	
 		}
-    if(im_last_one == 1)
-      turnEnd = 100; //100 is irrelevant, just to make sure nextaddr not 0
+
+	    if(im_last_one == 1)
+	    	turnEnd = 100; //100 is irrelevant, just to make sure nextaddr not 0
 		else
-		  turnEnd = nextaddress; //not last node
+			turnEnd = nextaddress; //not last node
  
 	}
 
@@ -204,10 +200,6 @@ void CommI2C::ledON(){
 	Serial.println(ADC);
 	// -------------------------------------
 
-	// The number of columns of my K matrix
-	//n_reads++;
-
-
 	ledFlag = 1;
 
 }
@@ -222,5 +214,28 @@ byte CommI2C::send(byte address, byte firstByte, byte secondByte) {
 	return Wire.endTransmission();
 }
 
+
+void CommI2C::sendToAll(byte firstByte, byte secondByte) {
+
+	// sends message to all arduinos to read their lux values
+	for(int i=0; i < addrList.size(); i++) {
+		// requests lux reading
+		send((byte) addrList.get(i), (byte) firstByte, (byte) secondByte);
+	}
+}
+
+// checks flags during to loop of the main program
+void CommI2C::checkFlags() {
+
+	if (calibFlag == 1){
+		// clears the list
+		addrList.clear();
+		// find nodes again
+		findNodes();
+		// recalibration
+		calibration();
+	}
+
+	return;
 }
 

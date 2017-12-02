@@ -25,8 +25,12 @@ private:
 	int sendAck = 0;
 	int turnEnd = 0;
 	int ledFlag = 0;
+	int calibFlag = 0;
 	
 public:
+	CommI2C();
+
+	CommI2C(int ldrPin_,int ledPin_);
 
 	void setAddress(int address);
 
@@ -34,8 +38,7 @@ public:
 
 	unsigned char getAddr(int i);
 
-	void calibration(int myaddress);
-
+	void calibration();
 
 	void msgDecoder(byte last8, byte first8);
 
@@ -45,11 +48,11 @@ public:
 
 	void ledON();
 
-	CommI2C();
-
-	CommI2C(int ldrPin_,int ledPin_);
-
 	byte send(byte address, byte firstByte, byte secondByte);
+
+	void sendToAll(byte firstByte, byte secondByte);
+
+	void checkFlags();
 };
 
 #endif

@@ -37,8 +37,6 @@ void receiveHandler(int numBytes) {
 
 	   	 i2c.msgDecoder(last8, first8);
 	 }
-
-
 }
 
 void setup() {
@@ -51,10 +49,13 @@ void setup() {
 
   Wire.begin(myaddress);
 
+  // tells the system to recablibrate
+  i2c.sendToAll((byte) 16, (byte) 0);
+
   // checks the number of nodes in the network and their address
   int nNodes = i2c.findNodes();
 
-    // -----------------------------------
+  // -----------------------------------
   Serial.print("n_nodes =");
   Serial.println(nNodes);
 
@@ -65,11 +66,13 @@ void setup() {
   Wire.onReceive(receiveHandler);
 
   // calibration of the network to get K values
-  i2c.calibration(myaddress);
+  i2c.calibration();
   Serial.print("calib ended");
 }
 
 void loop() {
+
+	i2c.checkFlags();
   
   
 }
