@@ -74,9 +74,12 @@ void CommI2C::calibration() {
     
 			sendAck = 0;
 		} else if (turnEnd != 0){
- 			
+
  			// read my own
      		n_reads++;
+
+     		Serial.print("n_reads=");
+			Serial.println(n_reads);
      
 			// tells the next high node to light it up
 			send((byte) turnEnd, (byte) 12, (byte) 0);
@@ -87,23 +90,37 @@ void CommI2C::calibration() {
 
       //wait for the system to stabilize
       delay(100);
-		
+
 			sendToAll((byte) 7, (byte) myaddress);
 
 			ledFlag = 0;
 
+		} else if (calibFlag == 1) {
+
+			sendAck = 0;
+			turnEnd = 0;
+			ledFlag = 0;
+			calibFlag = 0;
+			n_reads = 0;
+
+			// clears the list
+			addrList.clear();
+			// find nodes again
+			findNodes();
+			// recalibration
+			calibration();	
 		}
 
 	}
-
-	// temp
-	analogWrite(ledPin, LOW);
 
 	sendAck = 0;
 	turnEnd = 0;
 	ledFlag = 0;
 	calibFlag = 0;
 	n_reads = 0;
+
+	// temp
+	analogWrite(ledPin, LOW);
 
 	Serial.println("calib ended");
 
@@ -171,13 +188,13 @@ void CommI2C::checkTurnEnd() {
 
 	if(n_ack == addrList.size() && n_reads != addrList.size() + 1) {
 
-     //read my own value
-    ADC = analogRead(ldrPin);
-    
-      // temp - working
-    Serial.print("ADC=");
-    Serial.println(ADC);
-    
+		//read my own value
+  		ADC = analogRead(ldrPin);
+
+  		// temp - working
+		Serial.print("ADC=");
+		Serial.println(ADC);
+
 		// resets n_ack flag
 		n_ack = 0;
 
@@ -209,7 +226,6 @@ void CommI2C::checkTurnEnd() {
 void CommI2C::ledON(){
 
 	// turns led ON
- 
 	analogWrite(ledPin, HIGH);
 
 	ledFlag = 1;
@@ -242,6 +258,13 @@ void CommI2C::checkFlags() {
 	if (calibFlag == 1){
 		Serial.println("Recalib");
 		
+		// Resets flags
+		sendAck = 0;
+		turnEnd = 0;
+		ledFlag = 0;
+		calibFlag = 0;
+		n_reads = 0;
+
 		// clears the list
 		addrList.clear();
 		// find nodes again
