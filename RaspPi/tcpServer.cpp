@@ -13,13 +13,17 @@
 
 #include <cstdlib>
 #include <iostream>
+#include "command.h"
 #include <boost/bind.hpp>
-#define BOOST_ASIO_ENABLE_HANDLER_TRACKING
+//#define BOOST_ASIO_ENABLE_HANDLER_TRACKING <<--- for debug
 #include <boost/asio.hpp>
-using boost::asio::ip::tcp;
-using namespace std;
 
-class session {
+using boost::asio::ip::tcp;
+
+class Command Cmd;
+
+class session
+{
 public:
   session(boost::asio::io_service& io_service)
     : socket_(io_service)
@@ -38,28 +42,41 @@ public:
   }
 
 private:
-  void handle_read(const boost::system::error_code& error, size_t bytes_transferred) {
-    if (!error)
-    {
+  void handle_read(const boost::system::error_code& error,
+      size_t bytes_transferred)
+  {
+    if (!error) {
+
       std::cout << "received: " << request_ ;
+
+      if (request_[0] == 'g') {
+        // takes care of get requests
+        Cmd.getCommand(request_);
+        
+      }
 
       boost::asio::async_write(socket_,
           boost::asio::buffer(request_, bytes_transferred),
           boost::bind(&session::handle_write, this, _1));
 
       memset(request_, 0, sizeof(request_));
-
-    } else {
+    }
+    else
+    {
       delete this;
     }
   }
 
   void handle_write(const boost::system::error_code& error)
   {
-    if (!error) {
+    if (!error)
+    {
       socket_.async_read_some(boost::asio::buffer(request_, max_length),
-          boost::bind(&session::handle_read, this, _1, _2));
-    } else {
+          boost::bind(&session::handle_read, this,
+           _1, _2));
+    }
+    else
+    {
       delete this;
     }
   }
@@ -69,7 +86,8 @@ private:
   char request_[max_length];
 };
 
-class server {
+class server
+{
 public:
   server(boost::asio::io_service& io_service, short port)
     : io_service_(io_service),
@@ -82,15 +100,15 @@ public:
   }
 
 private:
-  void start_accept()
-  {
+  void start_accept() {
+
     session* new_session = new session(io_service_);
     acceptor_.async_accept(new_session->socket(),
         boost::bind(&server::handle_accept, this, new_session, _1));
   }
 
-  void start_read_input()
-  {
+  void start_read_input() {
+
     // Read a line of input entered by the user.
     boost::asio::async_read_until(input_, input_buffer_, '\n',
           boost::bind(&server::handle_read_input, this, _1, _2));
