@@ -26,8 +26,6 @@ void CommI2C::setAddress(int address) {
 
 int CommI2C::findNodes() {
 
-	// broadcast address is 0
-
 	unsigned char error, address;
 
 	// the devices have 7-bit I2C addresses 
@@ -98,8 +96,13 @@ void CommI2C::calibration() {
 	// temp
 	analogWrite(ledPin, LOW);
 
+	sendAck = 0;
+	turnEnd = 0;
+	ledFlag = 0;
 	calibFlag = 0;
-  n_reads = 0;
+	n_reads = 0;
+
+	Serial.println("calib ended");
 
 	// NÂO ESQUECER QUE ELE TEM QUE LER OS O
 
@@ -118,8 +121,8 @@ void CommI2C::msgDecoder(byte last8, byte first8){
     // 512 because the power starts at 0!!!!
 	int value = 512*(two_bits >> 1) + 256*(two_bits & 1) + first8;
 
-  Serial.print("label=");
-  Serial.println(label);
+	Serial.print("label=");
+	Serial.println(label);
 
 	if (label == 1) {
 		// reads the lux value from ldr and ACKs
@@ -132,6 +135,8 @@ void CommI2C::msgDecoder(byte last8, byte first8){
  	   	ledON(); 
 	} else if (label == 4) {
 		// recalibrate
+		Serial.println("calibFlag ON");
+
 		calibFlag = 1;
 	}
 
@@ -234,6 +239,8 @@ void CommI2C::sendToAll(byte firstByte, byte secondByte) {
 void CommI2C::checkFlags() {
 
 	if (calibFlag == 1){
+		Serial.println("Recalib");
+		
 		// clears the list
 		addrList.clear();
 		// find nodes again
