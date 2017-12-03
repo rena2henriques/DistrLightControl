@@ -85,6 +85,9 @@ void CommI2C::calibration() {
 
 		} else if (ledFlag != 0) {
 
+      //wait for the system to stabilize
+      delay(500);
+		
 			sendToAll((byte) 7, (byte) myaddress);
 
 			ledFlag = 0;
@@ -162,6 +165,9 @@ void CommI2C::readADC(int address) {
 // checks if their time of LED High has ended
 void CommI2C::checkTurnEnd() {
 
+  //read my own value
+  ADC = analogRead(ldrPin);
+  
 	int nextaddress;
   
 	n_ack++;
@@ -200,16 +206,6 @@ void CommI2C::ledON(){
 	// turns led ON
  
 	analogWrite(ledPin, 255);
-	// waits for the system to stabilize
-	delay(100);
-
-	// reads the lux value of its own led
-	ADC = analogRead(ldrPin);
-
-	// temp - working
-	Serial.print("ADC=");
-	Serial.println(ADC);
-	// -------------------------------------
 
 	ledFlag = 1;
 
