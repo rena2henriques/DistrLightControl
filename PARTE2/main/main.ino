@@ -31,11 +31,11 @@ void receiveHandler(int numBytes) {
 	byte last8;
   
 	while(Wire.available() > 0) {
-		// reads first received byte, shift right 8
-	     last8 = Wire.read();// << 8;
-      	 first8 = Wire.read();  
+    // reads first received byte, shift right 8
+	  last8 = Wire.read();// << 8;
+    first8 = Wire.read();  
 
-	   	 i2c.msgDecoder(last8, first8);
+	  i2c.msgDecoder(last8, first8);
 	 }
 }
 
@@ -67,12 +67,10 @@ void setup() {
 
   // calibration of the network to get K values
   i2c.calibration();
-  Serial.print("calib ended");
 
 }
 
 void loop() {
-
 	i2c.checkFlags();
   
   
