@@ -54,11 +54,12 @@ unsigned char CommI2C::getAddr(int i) {
 
 void CommI2C::calibration() {
 
-   sendAck = 0;
-   turnEnd = 0;
-   ledFlag = 0;
-   calibFlag = 0;
-   n_reads = 0;
+	// Resets flags
+	sendAck = 0;
+	turnEnd = 0;
+	ledFlag = 0;
+	calibFlag = 0;
+	n_reads = 0;
 
 	// the arduino that begins the calibration is the 1
 	if (myaddress == 1) {
@@ -94,9 +95,9 @@ void CommI2C::calibration() {
 
 		} else if (ledFlag != 0) {
 
-      //wait for the system to stabilize
-      delay(100);
-
+		    //wait for the system to stabilize
+		    delay(100);
+		
 			sendToAll((byte) 7, (byte) myaddress);
 
 			ledFlag = 0;
@@ -107,7 +108,7 @@ void CommI2C::calibration() {
 			addrList.clear();
 			// find nodes again
 			findNodes();
-			// recalibration
+			// recalibration	
 			calibration();	
 		}
 
@@ -251,13 +252,6 @@ void CommI2C::checkFlags() {
 
 	if (calibFlag == 1){
 		Serial.println("Recalib");
-		
-		// Resets flags
-		sendAck = 0;
-		turnEnd = 0;
-		ledFlag = 0;
-		calibFlag = 0;
-		n_reads = 0;
 
 		// clears the list
 		addrList.clear();
