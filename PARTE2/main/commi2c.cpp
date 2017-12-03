@@ -95,8 +95,6 @@ void CommI2C::calibration() {
 
 		} else if (ledFlag != 0) {
 
-			Serial.println("Led Flag");
-
 		    //wait for the system to stabilize
 		    delay(100);
 		
