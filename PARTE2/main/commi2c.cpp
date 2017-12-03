@@ -68,8 +68,6 @@ void CommI2C::calibration() {
 
 			// read another one
       		n_reads++;
-
-      		Serial.println("I read");
      		
 			// tells the HIGH node that it has read
 			send((byte) sendAck, (byte) 8, (byte) 0);
@@ -201,7 +199,7 @@ void CommI2C::ledON(){
 
 	// turns led ON
  
-	analogWrite(ledPin, HIGH);
+	analogWrite(ledPin, 255);
 	// waits for the system to stabilize
 	delay(100);
 
