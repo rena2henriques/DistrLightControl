@@ -54,6 +54,12 @@ unsigned char CommI2C::getAddr(int i) {
 
 void CommI2C::calibration() {
 
+   sendAck = 0;
+   turnEnd = 0;
+   ledFlag = 0;
+   calibFlag = 0;
+   n_reads = 0;
+
 	// the arduino that begins the calibration is the 1
 	if (myaddress == 1) {
 
@@ -97,12 +103,6 @@ void CommI2C::calibration() {
 
 		} else if (calibFlag == 1) {
 
-			sendAck = 0;
-			turnEnd = 0;
-			ledFlag = 0;
-			calibFlag = 0;
-			n_reads = 0;
-
 			// clears the list
 			addrList.clear();
 			// find nodes again
@@ -112,12 +112,6 @@ void CommI2C::calibration() {
 		}
 
 	}
-
-	sendAck = 0;
-	turnEnd = 0;
-	ledFlag = 0;
-	calibFlag = 0;
-	n_reads = 0;
 
 	// temp
 	analogWrite(ledPin, LOW);
