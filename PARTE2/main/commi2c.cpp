@@ -96,9 +96,10 @@ void CommI2C::calibration() {
 	}
 
 	// temp
-	//analogWrite(ledPin, LOW);
+	analogWrite(ledPin, LOW);
 
 	calibFlag = 0;
+  n_reads = 0;
 
 	// NÂO ESQUECER QUE ELE TEM QUE LER OS O
 
@@ -117,6 +118,8 @@ void CommI2C::msgDecoder(byte last8, byte first8){
     // 512 because the power starts at 0!!!!
 	int value = 512*(two_bits >> 1) + 256*(two_bits & 1) + first8;
 
+  Serial.print("label=");
+  Serial.println(label);
 
 	if (label == 1) {
 		// reads the lux value from ldr and ACKs
@@ -129,7 +132,7 @@ void CommI2C::msgDecoder(byte last8, byte first8){
  	   	ledON(); 
 	} else if (label == 4) {
 		// recalibrate
-		calibFlag == 1;
+		calibFlag = 1;
 	}
 
 }
@@ -191,7 +194,7 @@ void CommI2C::ledON(){
 
 	// turns led ON
  
-	analogWrite(ledPin, HIGH);
+	analogWrite(ledPin, 255);
 	// waits for the system to stabilize
 	delay(100);
 
