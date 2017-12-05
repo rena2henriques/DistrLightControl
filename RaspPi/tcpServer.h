@@ -19,59 +19,55 @@
 #include <cstdlib>
 #include <iostream>
 #include <boost/bind.hpp>
-#define BOOST_ASIO_ENABLE_HANDLER_TRACKING
+//#define BOOST_ASIO_ENABLE_HANDLER_TRACKING
 #include <boost/asio.hpp>
 #include "command.h"
 using boost::asio::ip::tcp;
-using namespace std;
 
 // Asynchronous TCP server
 
 class session {
 
 public:
-
 	session(boost::asio::io_service& io_service);
 
 	tcp::socket& socket();
 
 	void start();
 
-	void handle_read(const boost::system::error_code& error,size_t bytes_transferred);
+private:
+	void handle_read(const boost::system::error_code& error,
+      size_t bytes_transferred);
 
 	void handle_write(const boost::system::error_code& error);
 
-private:
-
 	tcp::socket socket_;
-
   	enum { max_length = 1024 };
-  	
   	char request_[max_length];
+  	std::string response_;
 };
 
 
 class Tcp_server {
 
+public:
+	Tcp_server(boost::asio::io_service& io_service, short port);
+
 private:
+	void start_accept();
 
 	void start_read_input();
 
-	void handle_read_input(const boost::system::error_code& error, std::size_t length);
+	void handle_read_input(const boost::system::error_code& error,
+      std::size_t length);
 
+	void handle_accept(session* new_session,
+      const boost::system::error_code& error);
+
+	boost::asio::io_service& io_service_;
+	tcp::acceptor acceptor_;
 	boost::asio::posix::stream_descriptor input_;
 	boost::asio::streambuf input_buffer_;
-	tcp::acceptor acceptor_;
-	boost::asio::io_service& io_service_;
-
-public:
-
-	Tcp_server(boost::asio::io_service& io_service, short port);
-
-	void handle_accept(session* new_session, const boost::system::error_code& error);
-
-	void start_accept();
-
 };
 
 #endif

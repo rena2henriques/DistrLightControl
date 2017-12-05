@@ -1,28 +1,52 @@
 #include "command.h"
 
-void Command::getCommand(char message[]) {
+string Command::getCommand(char message[]) {
 
-	cout << "Get command " << message;
+	cout << "Get command " << message << endl;
 
-	return;
+	return "Work in progress";
 }
 
 
-void Command::setCommand() {
+string Command::setCommand(char message[]) {
 
+	char desk[4] = "";
+	char flag[2] = ""; // 0 non-ocuppied, 1 occupied
 
-	return;
+	/* get the first token, should be 's' in this case*/
+	char * token = strtok(message, " ");
+
+	// second parameter   
+	token = strtok(NULL, " ");
+	if (token != NULL) {
+		strncpy(desk, token, 3); // watch out
+	}
+	
+	// third parameter - state   
+	token = strtok(NULL, " ");
+	if (token != NULL){
+		strncpy(flag, token, 1); // watch out
+	}
+
+	printf("%s %s\n", desk, flag); // test
+
+	//sendSerialMsg(desk, flag);
+
+	return "Work in progress";
 }
 
-void Command::restartCommand() {
+string Command::restartCommand() {
 
+	// sends a restart flag to the main arduino 
 
-	return;
+	//sendSerialMsg("r");
+
+	return "ack";
 }
 
-void Command::streamCommand() {
+string Command::streamCommand() {
 
 
 
-	return;
+	return "Work in progress";
 }
