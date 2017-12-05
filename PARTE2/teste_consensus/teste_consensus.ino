@@ -84,7 +84,7 @@ void setup() {
 
   //c1.setKmatrix_user(1,2);
   //c1.setO(0.0);
-  int d= c1.consensusIter(myaddress,i2c);
+  int d= c1.consensusIter(myaddress,&i2c);
 
   Serial.print("pwm=");
   Serial.println(d);

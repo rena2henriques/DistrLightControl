@@ -66,7 +66,7 @@ void Consensus::setKmatrix_user(LinkedList<float> Klist_){
   Klist=Klist_;
 }
 
-int Consensus::consensusIter(int myaddress, CommI2C i2c){
+int Consensus::consensusIter(int myaddress, CommI2C * i2c){
 
 
   double rho = 0.01;
@@ -84,7 +84,7 @@ int Consensus::consensusIter(int myaddress, CommI2C i2c){
   if(myaddress==1){ 
     k11 = Klist.get(0);
     k12=  Klist.get(1); 
-    i2c.consensusFlag=1;
+    i2c->consensusFlag=1;
   }
   else{
     k11 = Klist.get(1);
@@ -94,10 +94,12 @@ int Consensus::consensusIter(int myaddress, CommI2C i2c){
  int i=0;
   while(i<50){
 
-    if(i2c.consensusFlag!=0){
+    if(i2c->getConsensusFlag()!=0){
 
-      Serial.println("consensus iteration");
-        d2_copy[0]=
+      Serial.print("consensus iteration, flag=");
+      Serial.println(i2c->getConsensusFlag());
+      d2_copy[0]=i2c->dList.get(0);
+      d2_copy[1]=i2c->dList.get(1);
 
       double d11_best = -1;
       double d12_best = -1;
@@ -111,7 +113,7 @@ int Consensus::consensusIter(int myaddress, CommI2C i2c){
       double z11 = -c1 - y1[0] + rho*d1_av[0];
       double z12 = -y1[1] + rho*d1_av[1];
       double u1 = o1-L1;
-      double u2 = 0;
+    double u2 = 0;
       double u3 = 100;
       double p11 = 1/(rho+q1);
       double p12 = 1/rho;
@@ -249,15 +251,18 @@ int Consensus::consensusIter(int myaddress, CommI2C i2c){
       d1_copy[0]= (int) d1_copy[1];
       d1_copy[1]= (int) daux;   
 
-      i2c.consensusFlag=0;
+      i2c->consensusFlag=0;
 
       Serial.print("d1 value=");
       Serial.println(d1_copy[0]);
       Serial.print("d2 value=");
       Serial.println(d1_copy[1]);
       //mandar variavel ao outro arduino
-      i2c.send((byte) i2c.getAddr(0),(byte) 20, (byte) d1_copy[0]);
-      i2c.send((byte) i2c.getAddr(0),(byte) 20, (byte) d1_copy[1]);
+      i2c->send((byte) i2c->getAddr(0),(byte) 20, (byte) d1_copy[0]);
+      i2c->send((byte) i2c->getAddr(0),(byte) 20, (byte) d1_copy[1]);
+
+      Serial.print("consensus iteration, flag=");
+      Serial.println(i2c->getConsensusFlag());
 
       i++;
 
