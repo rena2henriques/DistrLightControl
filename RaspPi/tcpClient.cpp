@@ -229,8 +229,8 @@ private:
       std::getline(is, line);
 
       // Empty messages are heartbeats and so ignored.
-      if (!line.empty())
-      {
+      if (!line.empty()) {
+        
         std::cout << "Sending: " << line << "\n";
         terminated_line = line + std::string("\n");
         std::size_t n = terminated_line.size();

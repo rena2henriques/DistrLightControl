@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <string.h>
 using namespace std;
 
 class Command {
@@ -12,16 +13,16 @@ private:
 public:
 
 	// for commands of the type 'g'
-	void getCommand(char message[]);
+	string getCommand(char message[]);
 
 	// for commands of the type 's'
-	void setCommand();
+	string setCommand(char message[]);
 
 	// for commands of the type 'r'
-	void restartCommand();
+	string restartCommand();
 
 	// other commands
-	void streamCommand();
+	string streamCommand();
 
 };
 
