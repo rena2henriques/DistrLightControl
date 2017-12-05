@@ -1,4 +1,5 @@
 #include "commi2c.h"
+#include "consensus.h"
 #include <Wire.h>
 #include <LinkedList.h>
 
@@ -12,6 +13,12 @@ int myaddress = -1;
 
 CommI2C i2c(A0, 9); 
 
+Consensus c1(1, 0.0, 150, -0.62,1.96);
+//Consensus c1(1, 0.0, 80, -0.62,1.96);
+
+
+
+
 // used only for the case of our problem (2 arduinos)
 inline void idCheck(const int idPin) {
   // if pin idPin is HIGH = arduino nº1
@@ -24,20 +31,20 @@ inline void idCheck(const int idPin) {
 
 void receiveHandler(int numBytes) {
 
-	// Initial ACK
-	if (numBytes == 0)
-		return;
+  // Initial ACK
+  if (numBytes == 0)
+    return;
 
-	byte first8;
-	byte last8;
+  byte first8;
+  byte last8;
   
-	while(Wire.available() > 0) {
+  while(Wire.available() > 0) {
     // reads first received byte, shift right 8
-	  last8 = Wire.read();// << 8;
+    last8 = Wire.read();// << 8;
     first8 = Wire.read();  
 
-	  i2c.msgDecoder(last8, first8);
-	 }
+    i2c.msgDecoder(last8, first8);
+   }
 }
 
 
@@ -55,7 +62,7 @@ void setup() {
   int nNodes = i2c.findNodes();
 
     // tells the system to recablibrate
-  i2c.sendToAll((byte) 16, (byte) 0);
+  //i2c.sendToAll((byte) 16, (byte) 0);
 
   // -----------------------------------
   Serial.print("n_nodes =");
@@ -68,12 +75,25 @@ void setup() {
   Wire.onReceive(receiveHandler);     
 
   // calibration of the network to get K values
-  i2c.calibration();
+ // i2c.calibration();
+ LinkedList<float> Klist = LinkedList<float>();
+ Klist.add(2);
+ Klist.add(1);  
+  c1.setKmatrix_user(Klist);
+  c1.setO(30.0);
+
+  //c1.setKmatrix_user(1,2);
+  //c1.setO(0.0);
+  int d= c1.consensusIter(myaddress,i2c);
+
+  Serial.print("pwm=");
+  Serial.println(d);
+  
 
 }
 
 void loop() {
-	i2c.checkFlags();
+  i2c.checkFlags();
   
   
 }

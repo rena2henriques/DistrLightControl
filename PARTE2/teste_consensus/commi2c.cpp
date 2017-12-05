@@ -8,6 +8,9 @@ CommI2C::CommI2C() {
 	n_ack = 0;
 	myaddress = 0;
 
+  //just to initialize the 2 first positions for Consensus
+  dList.add(0);
+  dList.add(0);
 }
 
 CommI2C::CommI2C(int ldrPin_, int ledPin_) {
@@ -17,6 +20,10 @@ CommI2C::CommI2C(int ldrPin_, int ledPin_) {
 
 	ledPin = ledPin_;
 	myaddress = 0;
+
+  //just to initialize the 2 first positions for Consensus
+  dList.add(0);
+  dList.add(0);
 }
 
 void CommI2C::setAddress(int address) {
@@ -167,9 +174,6 @@ void CommI2C::msgDecoder(byte last8, byte first8){
 			twod_flag=0;
 
 		}
-
-		// one more iteration of Consensus --> meter flag
-
 	}
 
 }

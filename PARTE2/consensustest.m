@@ -5,7 +5,7 @@ K = [k11, k12 ; k21 , k22];
 L = [L1;L2]; o = [o1;o2];
 
 %The cost function
-c1 = 1; c2 = 1; q1 = 0.1; q2 = 0.1;
+c1 = 1; c2 = 1; q1 = 0.0; q2 = 0.0;
 c = [c1 c2]; Q = [q1 0; 0 q2];
 
 % SOLVE WITH CONSENSUS
@@ -24,7 +24,8 @@ y2 = [0;0];
 k2 = [k21;k22]; 
 %iterations
 for i=1:50,
-   % node 1
+
+% node 1
    d11_best = -1;
    d12_best = -1;
    min_best_1(i) = 100000; %big number
