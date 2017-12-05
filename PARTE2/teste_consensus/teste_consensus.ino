@@ -62,7 +62,7 @@ void setup() {
   int nNodes = i2c.findNodes();
 
     // tells the system to recablibrate
-  i2c.sendToAll((byte) 16, (byte) 0);
+  //i2c.sendToAll((byte) 16, (byte) 0);
 
   // -----------------------------------
   Serial.print("n_nodes =");
