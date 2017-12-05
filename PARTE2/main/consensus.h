@@ -1,0 +1,37 @@
+#ifndef Consensus
+#define Consensus
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <Wire.h>
+#include "Arduino.h"
+#include "commi2c.h"
+
+// https://github.com/ivanseidel/LinkedList
+#include <LinkedList.h>
+
+class Consensus {
+private:
+
+	LinkedList<float> Klist = LinkedList<float>(); // K matrix;
+	float o1; // background illumination;
+	float c1;
+	float q1;
+	float L1;
+	float a_lux, b_lux;
+
+public:
+
+	Consensus();
+
+	Consensus(float c_, float q_, float ref_, float a_lux_, float b_lux_);
+
+	LinkedList<float> adcToLux(LinkedList<float> adclist);
+
+	void setKmatrix(LinkedList<float> adclist, int pwmHigh);
+
+	int consensusIter(int myaddress,  CommI2C i2c);
+
+};
+
+#endif

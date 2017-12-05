@@ -20,6 +20,7 @@ inline void idCheck(const int idPin) {
   else 
     myaddress = 2; // I'm not the arduino nº1
 }
+  
 
 void receiveHandler(int numBytes) {
 
@@ -38,6 +39,7 @@ void receiveHandler(int numBytes) {
 	  i2c.msgDecoder(last8, first8);
 	 }
 }
+
 
 void setup() {
   Serial.begin(115200);
@@ -63,7 +65,7 @@ void setup() {
 
   delay(100);
   
-  Wire.onReceive(receiveHandler);
+  Wire.onReceive(receiveHandler);     
 
   // calibration of the network to get K values
   i2c.calibration();

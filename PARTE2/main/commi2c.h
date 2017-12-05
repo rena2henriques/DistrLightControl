@@ -16,11 +16,16 @@ private:
 
 	LinkedList<unsigned char> addrList = LinkedList<unsigned char>();
 
+	LinkedList<float> ADCList = LinkedList<float>();
+
 	int ldrPin, ledPin;
 
 	int n_ack;
 	int n_reads = 0;
-	
+
+	int twod_flag=0;
+
+
 public:
 	CommI2C();
 
@@ -48,11 +53,17 @@ public:
 
 	void checkFlags();
 
+	LinkedList<float> getADCvalues();
+
+
 	// Flags
 	int sendAck = 0;
 	int turnEnd = 0;
 	int ledFlag = 0;
 	int calibFlag = 0;
+	int consensusFlag=0;
+	
+	LinkedList<int> dList = LinkedList<int>();
 };
 
 #endif

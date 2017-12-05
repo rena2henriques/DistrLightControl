@@ -17,7 +17,6 @@ CommI2C::CommI2C(int ldrPin_, int ledPin_) {
 
 	ledPin = ledPin_;
 	myaddress = 0;
-
 }
 
 void CommI2C::setAddress(int address) {
@@ -119,7 +118,12 @@ void CommI2C::calibration() {
 
 	Serial.println("calib ended");
 
-	// NÂO ESQUECER QUE ELE TEM QUE LER OS O
+	//-------mudar este delay - ver qual o melhor
+	delay(50); //waits until all leds are turned off
+
+	//reads background illumination
+	ADCList.add(analogRead(ldrPin));
+
 
 	return;
 }
@@ -153,6 +157,19 @@ void CommI2C::msgDecoder(byte last8, byte first8){
 		Serial.println("calibFlag ON");
 
 		calibFlag = 1;
+	} else if (label==5){
+		
+		dList.set(twod_flag, value);
+		twod_flag++;
+
+		if(twod_flag==2){
+			consensusFlag=1;
+			twod_flag=0;
+
+		}
+
+		// one more iteration of Consensus --> meter flag
+
 	}
 
 }
@@ -161,7 +178,7 @@ void CommI2C::msgDecoder(byte last8, byte first8){
 void CommI2C::readADC(int address) {
 
 	// Reads from LDR
-	ADC = analogRead(ldrPin);
+	ADCList.add(analogRead(ldrPin));
 
 	// Juntar a um vetor e converter para lux <-----------------
 
@@ -184,7 +201,7 @@ void CommI2C::checkTurnEnd() {
 	if(n_ack == addrList.size() && n_reads != addrList.size() + 1) {
 
 		//read my own value
-  		ADC = analogRead(ldrPin);
+  		ADCList.add(analogRead(ldrPin));
 
   		// temp - working
 		Serial.print("ADC=");
@@ -262,4 +279,9 @@ void CommI2C::checkFlags() {
 	}
 
 	return;
+}
+
+
+LinkedList<float> CommI2C::getADCvalues(){
+	return ADCList;
 }
