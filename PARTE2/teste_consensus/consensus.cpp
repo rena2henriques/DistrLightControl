@@ -58,12 +58,16 @@ void Consensus::setKmatrix(LinkedList<float> adclist, int pwmHigh){
 
 }
 
+void Consensus::setO( float o_){
+  o1=o_;
+}
 
-void setKmatrix_user(LinkedList<float> Klist_){
+void Consensus::setKmatrix_user(LinkedList<float> Klist_){
   Klist=Klist_;
 }
 
 int Consensus::consensusIter(int myaddress, CommI2C i2c){
+
 
   double rho = 0.01;
   //node 1 initialization
@@ -91,6 +95,9 @@ int Consensus::consensusIter(int myaddress, CommI2C i2c){
   while(i<50){
 
     if(i2c.consensusFlag!=0){
+
+      Serial.println("consensus iteration");
+
 
       double d11_best = -1;
       double d12_best = -1;

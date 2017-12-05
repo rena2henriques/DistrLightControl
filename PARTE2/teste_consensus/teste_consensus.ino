@@ -76,7 +76,10 @@ void setup() {
 
   // calibration of the network to get K values
  // i2c.calibration();
-  c1.setKmatrix_user(2,1);
+ LinkedList<float> Klist = LinkedList<float>();
+ Klist.add(2);
+ Klist.add(1);  
+  c1.setKmatrix_user(Klist);
   c1.setO(30.0);
 
   //c1.setKmatrix_user(1,2);
