@@ -32,8 +32,6 @@ public:
 
   void setKmatrix_user(LinkedList<float> Klist_);
 
-  void setO ( float o_);
-
 	int consensusIter(int myaddress,  CommI2C i2c);
 
 };

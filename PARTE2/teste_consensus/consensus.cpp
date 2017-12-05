@@ -58,11 +58,8 @@ void Consensus::setKmatrix(LinkedList<float> adclist, int pwmHigh){
 
 }
 
-void Consensus::setO( float o_){
-  o1=o_;
-}
 
-void Consensus::setKmatrix_user(LinkedList<float> Klist_){
+void setKmatrix_user(LinkedList<float> Klist_){
   Klist=Klist_;
 }
 
