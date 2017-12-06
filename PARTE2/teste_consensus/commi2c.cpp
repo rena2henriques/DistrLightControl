@@ -284,6 +284,7 @@ void CommI2C::checkFlags() {
 		findNodes();
 		// recalibration
 		calibration();
+    reconsensusFlag=1;
 	}
 
 	return;

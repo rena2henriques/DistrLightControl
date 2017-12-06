@@ -1,11 +1,11 @@
 %The system
 k11 = 2; k12 = 1; k21 = 1; k22 = 2;
-L1 = 150; o1 = 30; L2 = 80; o2 = 0;
+L1 = 100; o1 = 30; L2 = 50; o2 = 0;
 K = [k11, k12 ; k21 , k22];
 L = [L1;L2]; o = [o1;o2];
 
 %The cost function
-c1 = 1; c2 = 1; q1 = 0.0; q2 = 0.0;
+c1 = 1; c2 = 1; q1 = 0.1; q2 = 0.1;
 c = [c1 c2]; Q = [q1 0; 0 q2];
 
 % SOLVE WITH CONSENSUS

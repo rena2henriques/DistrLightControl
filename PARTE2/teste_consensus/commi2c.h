@@ -63,7 +63,8 @@ public:
 	int turnEnd = 0;
 	int ledFlag = 0;
 	int calibFlag = 0;
-	int consensusFlag;
+	int consensusFlag=0;
+  int reconsensusFlag=0;
 	
 	LinkedList<int> dList = LinkedList<int>();
 };
