@@ -31,12 +31,18 @@ public:
 	void read_handler(const error_code &ec);
 
 private:
+	void start_read_input();
+	void handle_read_input(const boost::system::error_code& error, std::size_t length);
+
 	int counter = 0;
 
 	boost::asio::io_service& io;
  	boost::asio::serial_port sp;
   	boost::asio::streambuf read_buf;
   	steady_timer tim;
+
+  	boost::asio::posix::stream_descriptor input_;
+	boost::asio::streambuf input_buffer_;
 };
 
 #endif
