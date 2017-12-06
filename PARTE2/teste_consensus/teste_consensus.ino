@@ -62,7 +62,7 @@ void setup() {
   int nNodes = i2c.findNodes();
 
     // tells the system to recablibrate
-  //i2c.sendToAll((byte) 16, (byte) 0);
+  i2c.sendToAll((byte) 16, (byte) 0);
 
   // -----------------------------------
   Serial.print("n_nodes =");
@@ -99,7 +99,7 @@ void loop() {
     int d= c1.consensusIter(myaddress,&i2c);
     Serial.print("pwm=");
     Serial.println(d); 
-    i2c.reconsensusFlag=1;
+    i2c.reconsensusFlag=0;
   }
   
 }
