@@ -18,7 +18,6 @@ Consensus c1(1, 0.1, 100, -0.62,1.96);
 
 
 
-
 // used only for the case of our problem (2 arduinos)
 inline void idCheck(const int idPin) {
   // if pin idPin is HIGH = arduino nº1
@@ -62,7 +61,7 @@ void setup() {
   int nNodes = i2c.findNodes();
 
     // tells the system to recablibrate
-  //i2c.sendToAll((byte) 16, (byte) 0);
+  i2c.sendToAll((byte) 16, (byte) 0);
 
   // -----------------------------------
   Serial.print("n_nodes =");
@@ -75,15 +74,15 @@ void setup() {
   Wire.onReceive(receiveHandler);     
 
   // calibration of the network to get K values
- // i2c.calibration();
- LinkedList<float> Klist = LinkedList<float>();
+   i2c.calibration();
+   LinkedList<float> Klist = LinkedList<float>();
+   LinkedList<float> ADCList = i2c.getADCvalues();
+   // c1.setKmatrix(ADCList,200); //esta a dar problema
+    Klist = c1.getKlist();
   Klist.add(2);
   Klist.add(1);  
   c1.setKmatrix_user(Klist);
-  c1.setO(30.0);
-
-  //c1.setKmatrix_user(1,2);
-  //c1.setO(0.0);
+  c1.setO(0.0);
   int d= c1.consensusIter(myaddress,&i2c);
 
   Serial.print("pwm=");
@@ -93,7 +92,13 @@ void setup() {
 }
 
 void loop() {
-  i2c.checkFlags();
   
+  i2c.checkFlags();
+  if(i2c.reconsensusFlag!=0){
+    int d= c1.consensusIter(myaddress,&i2c);
+    Serial.print("pwm=");
+    Serial.println(d); 
+    i2c.reconsensusFlag=0;
+  }
   
 }

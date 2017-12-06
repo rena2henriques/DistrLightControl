@@ -245,8 +245,8 @@ void CommI2C::checkTurnEnd() {
 
 void CommI2C::ledON(){
 
-	// turns led ON
-	analogWrite(ledPin, HIGH);
+	// turns led ON aqui se usarmos HIGH dá uma luminosidade muito baixinha
+	analogWrite(ledPin, 200);
 
 	ledFlag = 1;
 
@@ -284,6 +284,7 @@ void CommI2C::checkFlags() {
 		findNodes();
 		// recalibration
 		calibration();
+    reconsensusFlag=1;
 	}
 
 	return;
