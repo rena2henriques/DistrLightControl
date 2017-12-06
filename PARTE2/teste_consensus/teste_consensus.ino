@@ -82,7 +82,7 @@ void setup() {
   Klist.add(2);
   Klist.add(1);  
   c1.setKmatrix_user(Klist);
-  c1.setO(0.0);
+  c1.setO(0.0); 
   int d= c1.consensusIter(myaddress,&i2c);
 
   Serial.print("pwm=");
