@@ -169,7 +169,7 @@ void CommI2C::msgDecoder(byte last8, byte first8){
 
 		calibFlag = 1;
 	} else if (label==5){
-		
+
 		dList.set(twod_flag, value);
 		twod_flag++;
 
