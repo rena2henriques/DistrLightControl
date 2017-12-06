@@ -247,15 +247,15 @@ int Consensus::consensusIter(int myaddress, CommI2C * i2c){
 
       ///TROCAR A VARIAVEL
       double daux=d1_copy[0];
-      d1_copy[0]= (int) d1_copy[1];
-      d1_copy[1]= (int) daux;   
+      d1_copy[0]= (int) (d1_copy[1] + 0.5);
+      d1_copy[1]= (int) (daux +0.5);   
 
       i2c->consensusFlag=0;
 
       Serial.print("d1 value=");
-      Serial.println(d1_copy[0]);
+      Serial.println(d1[0]);
       Serial.print("d2 value=");
-      Serial.println(d1_copy[1]);
+      Serial.println(d1[1]);
       //mandar variavel ao outro arduino
       i2c->send((byte) i2c->getAddr(0),(byte) 20, (byte) d1_copy[0]);
       i2c->send((byte) i2c->getAddr(0),(byte) 20, (byte) d1_copy[1]);
@@ -268,6 +268,6 @@ int Consensus::consensusIter(int myaddress, CommI2C * i2c){
     }
   }
 
-  return (int) d1[0];
+  return (int) d1[1];
 
 }
