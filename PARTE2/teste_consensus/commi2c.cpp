@@ -70,6 +70,7 @@ void CommI2C::calibration() {
 	ledFlag = 0;
 	calibFlag = 0;
 	n_reads = 0;
+  ADCList.clear(); 
 
 	// the arduino that begins the calibration is the 1
 	if (myaddress == 1) {
@@ -245,8 +246,8 @@ void CommI2C::checkTurnEnd() {
 
 void CommI2C::ledON(){
 
-	// turns led ON
-	analogWrite(ledPin, HIGH);
+	// turns led ON aqui se usarmos HIGH dá uma luminosidade muito baixinha
+	analogWrite(ledPin, 200);
 
 	ledFlag = 1;
 

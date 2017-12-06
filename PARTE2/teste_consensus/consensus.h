@@ -28,13 +28,16 @@ public:
 
 	LinkedList<float> adcToLux(LinkedList<float> adclist);
 
-	void setKmatrix(LinkedList<float> adclist, int pwmHigh);
+	//void setKmatrix(LinkedList<float> adclist, int pwmHigh);
+  void SetKmatrix(float adc1, float adc2, float adc3, int pwmHigh);
 
   void setKmatrix_user(LinkedList<float> Klist_);
 
   void setO ( float o_);
 
 	int consensusIter(int myaddress,  CommI2C *i2c);
+  
+  LinkedList<float> getKlist();
 
 };
 
