@@ -41,7 +41,7 @@ LinkedList<float> Consensus::adcToLux(LinkedList<float> adclist){
     luxlist.add(pow(aux/(pow(10,b_lux)), 1/a_lux));
   }
 
-  o1=luxlist.get(luxlist.size()-1); // setting background illumination
+  o1=luxlist.get(luxlist.size() -1); // setting background illumination
 
   return luxlist;
 }
@@ -51,9 +51,9 @@ void Consensus::setKmatrix(LinkedList<float> adclist, int pwmHigh){
 
   LinkedList<float> luxlist= adcToLux(adclist);
 
-  for (int i=0; i< luxlist.size(); i++)
+  for (int i=0; i< (luxlist.size()-1); i++)
   {
-    Klist.add(luxlist.get(i)/pwmHigh);
+    Klist.add(luxlist.get(i)/pwmHigh); 
   }
 
 }
@@ -64,6 +64,10 @@ void Consensus::setO( float o_){
 
 void Consensus::setKmatrix_user(LinkedList<float> Klist_){
   Klist=Klist_;
+}
+
+LinkedList<float> Consensus::getKlist(){
+  return Klist;
 }
 
 int Consensus::consensusIter(int myaddress, CommI2C * i2c){
@@ -94,9 +98,6 @@ int Consensus::consensusIter(int myaddress, CommI2C * i2c){
   while(i<50){
 
     if(i2c->getConsensusFlag()!=0){
-
-      Serial.print("consensus iteration, flag=");
-      Serial.println(i2c->getConsensusFlag());
       d2_copy[0]=i2c->dList.get(0);
       d2_copy[1]=i2c->dList.get(1);
 
@@ -247,8 +248,8 @@ int Consensus::consensusIter(int myaddress, CommI2C * i2c){
 
       ///TROCAR A VARIAVEL
       double daux=d1_copy[0];
-      d1_copy[0]= (int) (d1_copy[1] +0.5);
-      d1_copy[1]= (int) (daux+0.5);   
+      d1_copy[0]= (int) (d1_copy[1] + 0.5);
+      d1_copy[1]= (int) (daux +0.5);   
 
       i2c->consensusFlag=0;
 
@@ -260,8 +261,6 @@ int Consensus::consensusIter(int myaddress, CommI2C * i2c){
       i2c->send((byte) i2c->getAddr(0),(byte) 20, (byte) d1_copy[0]);
       i2c->send((byte) i2c->getAddr(0),(byte) 20, (byte) d1_copy[1]);
 
-      Serial.print("consensus iteration, flag=");
-      Serial.println(i2c->getConsensusFlag());
 
       i++;
 
