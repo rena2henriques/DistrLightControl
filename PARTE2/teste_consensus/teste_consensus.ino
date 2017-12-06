@@ -75,18 +75,22 @@ void setup() {
 
   // calibration of the network to get K values
    i2c.calibration();
-   LinkedList<float> Klist = LinkedList<float>();
+   //LinkedList<float> Klist = LinkedList<float>();
    LinkedList<float> ADCList = i2c.getADCvalues();
-   // c1.setKmatrix(ADCList,200); //esta a dar problema
-    Klist = c1.getKlist();
-  Klist.add(2);
+   Serial.print("tamanho ADC=");
+   Serial.println(ADCList.size());
+   c1.setKmatrix(ADCList.get(0),ADCList.get(1),ADCList.get(2),(int)(100*200/255)); //esta a dar problema
+  // LinkedList<float> Klist = c1.getKlist();
+   Serial.print("Please k1=");
+  // Serial.println(Klist.get(0));
+  /*Klist.add(2);
   Klist.add(1);  
   c1.setKmatrix_user(Klist);
-  c1.setO(0.0); 
-  int d= c1.consensusIter(myaddress,&i2c);
+  c1.setO(0.0); */
+ // int d= c1.consensusIter(myaddress,&i2c);
 
-  Serial.print("pwm=");
-  Serial.println(d);
+  //Serial.print("pwm=");
+  //Serial.println(d);
   
 
 }
@@ -94,11 +98,11 @@ void setup() {
 void loop() {
   
   i2c.checkFlags();
-  if(i2c.reconsensusFlag!=0){
+ /* if(i2c.reconsensusFlag!=0){
     int d= c1.consensusIter(myaddress,&i2c);
     Serial.print("pwm=");
     Serial.println(d); 
     i2c.reconsensusFlag=0;
-  }
+  }*/
   
 }

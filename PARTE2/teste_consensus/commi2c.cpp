@@ -70,6 +70,7 @@ void CommI2C::calibration() {
 	ledFlag = 0;
 	calibFlag = 0;
 	n_reads = 0;
+  ADCList.clear(); 
 
 	// the arduino that begins the calibration is the 1
 	if (myaddress == 1) {
