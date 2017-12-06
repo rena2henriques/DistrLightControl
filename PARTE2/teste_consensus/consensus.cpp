@@ -68,7 +68,6 @@ void Consensus::setKmatrix_user(LinkedList<float> Klist_){
 
 int Consensus::consensusIter(int myaddress, CommI2C * i2c){
 
-
   double rho = 0.01;
   //node 1 initialization
   double d1[2] = {0, 0}; 
