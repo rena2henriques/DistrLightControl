@@ -34,7 +34,7 @@ public:
 
   void setO ( float o_);
 
-	int consensusIter(int myaddress,  CommI2C i2c);
+	int consensusIter(int myaddress,  CommI2C *i2c);
 
 };
 

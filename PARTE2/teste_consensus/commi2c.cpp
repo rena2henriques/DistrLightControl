@@ -11,6 +11,8 @@ CommI2C::CommI2C() {
   //just to initialize the 2 first positions for Consensus
   dList.add(0);
   dList.add(0);
+  
+  consensusFlag=0;
 }
 
 CommI2C::CommI2C(int ldrPin_, int ledPin_) {
@@ -24,6 +26,8 @@ CommI2C::CommI2C(int ldrPin_, int ledPin_) {
   //just to initialize the 2 first positions for Consensus
   dList.add(0);
   dList.add(0);
+
+  consensusFlag=0;
 }
 
 void CommI2C::setAddress(int address) {
@@ -165,14 +169,14 @@ void CommI2C::msgDecoder(byte last8, byte first8){
 
 		calibFlag = 1;
 	} else if (label==5){
-		
+
 		dList.set(twod_flag, value);
 		twod_flag++;
 
 		if(twod_flag==2){
 			consensusFlag=1;
 			twod_flag=0;
-
+          
 		}
 	}
 
@@ -280,6 +284,7 @@ void CommI2C::checkFlags() {
 		findNodes();
 		// recalibration
 		calibration();
+    reconsensusFlag=1;
 	}
 
 	return;
@@ -289,3 +294,13 @@ void CommI2C::checkFlags() {
 LinkedList<float> CommI2C::getADCvalues(){
 	return ADCList;
 }
+
+int CommI2C::getConsensusFlag(){
+  if(consensusFlag!=0)
+  {
+  Serial.print("consensus flag=");
+  Serial.println(consensusFlag);
+  }
+  return consensusFlag;
+}
+

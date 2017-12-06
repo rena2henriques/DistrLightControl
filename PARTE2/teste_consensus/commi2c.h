@@ -55,6 +55,8 @@ public:
 
 	LinkedList<float> getADCvalues();
 
+  int getConsensusFlag();
+
 
 	// Flags
 	int sendAck = 0;
@@ -62,6 +64,7 @@ public:
 	int ledFlag = 0;
 	int calibFlag = 0;
 	int consensusFlag=0;
+  int reconsensusFlag=0;
 	
 	LinkedList<int> dList = LinkedList<int>();
 };

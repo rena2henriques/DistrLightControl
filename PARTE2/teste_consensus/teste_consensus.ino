@@ -13,8 +13,8 @@ int myaddress = -1;
 
 CommI2C i2c(A0, 9); 
 
-Consensus c1(1, 0.0, 150, -0.62,1.96);
-//Consensus c1(1, 0.0, 80, -0.62,1.96);
+//Consensus c1(1, 0.0, 150, -0.62,1.96);
+Consensus c1(1, 0.1, 50, -0.62,1.96);
 
 
 
@@ -77,14 +77,14 @@ void setup() {
   // calibration of the network to get K values
  // i2c.calibration();
  LinkedList<float> Klist = LinkedList<float>();
- Klist.add(2);
- Klist.add(1);  
+ Klist.add(1);
+ Klist.add(2);  
   c1.setKmatrix_user(Klist);
-  c1.setO(30.0);
+  c1.setO(0.0);
 
   //c1.setKmatrix_user(1,2);
   //c1.setO(0.0);
-  int d= c1.consensusIter(myaddress,i2c);
+  int d= c1.consensusIter(myaddress,&i2c);
 
   Serial.print("pwm=");
   Serial.println(d);
@@ -93,7 +93,13 @@ void setup() {
 }
 
 void loop() {
-  i2c.checkFlags();
   
+  i2c.checkFlags();
+  if(i2c.reconsensusFlag!=0){
+    int d= c1.consensusIter(myaddress,&i2c);
+    Serial.print("pwm=");
+    Serial.println(d); 
+    i2c.reconsensusFlag=1;
+  }
   
 }
