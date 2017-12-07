@@ -53,7 +53,7 @@ public:
 
 	void checkFlags();
 
-	LinkedList<float> getADCvalues();
+	LinkedList<float>* getADCvalues();
 
   int getConsensusFlag();
 
