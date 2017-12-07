@@ -47,15 +47,29 @@ LinkedList<float> Consensus::adcToLux(LinkedList<float> adclist){
 }
 
 
-void Consensus::setKmatrix(LinkedList<float> adclist, int pwmHigh){
+void Consensus::setKmatrix(float adc1, float adc2, float adc3, int pwmHigh){
 
-  LinkedList<float> luxlist= adcToLux(adclist);
+  LinkedList<float> adclist = LinkedList<float>();
+  adclist.add(adc1);
+    adclist.add(adc2);
+      adclist.add(adc3);
+      LinkedList<float> luxlist = adcToLux(adclist);
+  
+  float j;
+  
 
   for (int i=0; i< (luxlist.size()-1); i++)
   {
-    Klist.add(luxlist.get(i)/pwmHigh); 
+    j = luxlist.get(i)/pwmHigh;
+    Klist.add(j);
+  
   }
-
+  
+   Serial.print("kvalue0 =");
+    Serial.println(Klist.get(0));
+    Serial.print("kvalue1 =");
+    Serial.println(Klist.get(1));
+  
 }
 
 void Consensus::setO( float o_){

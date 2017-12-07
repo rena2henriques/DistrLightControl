@@ -28,7 +28,8 @@ public:
 
 	LinkedList<float> adcToLux(LinkedList<float> adclist);
 
-	void setKmatrix(LinkedList<float> adclist, int pwmHigh);
+	//void setKmatrix(LinkedList<float> adclist, int pwmHigh);
+  void setKmatrix(float adc1, float adc2, float adc3, int pwmHigh);
 
   void setKmatrix_user(LinkedList<float> Klist_);
 
