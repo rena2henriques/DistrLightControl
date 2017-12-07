@@ -2,6 +2,7 @@
 #include <boost/asio.hpp>
 #include <thread>
 #include "tcpServer.h"
+#include "serialComm.h"
 
 using namespace std;
 using namespace boost::asio;
@@ -16,9 +17,12 @@ int main(int argc, char* argv[])
       return 1;
     }
 
+    // creating io services for tcp and arduino
     boost::asio::io_service io_service;
 
-    Tcp_server s(io_service, std::atoi(argv[1]));
+    shared_ptr <SerialComm> arduino (new SerialComm(io_service, "/dev/ttyACM0"));
+
+    Tcp_server s(io_service, std::atoi(argv[1]), arduino);
 
     io_service.run();
   }

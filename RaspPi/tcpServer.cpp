@@ -100,11 +100,13 @@ class Command Cmd;
     }
   }
 
-  Tcp_server::Tcp_server(boost::asio::io_service& io_service, short port)
+/** SERVER FUNCTIONS **/
+
+  Tcp_server::Tcp_server(boost::asio::io_service& io_service, short port, shared_ptr <SerialComm> arduino_)
     : io_service_(io_service),
+      acceptor_(io_service, tcp::endpoint(tcp::v4(), port)),
       input_(io_service, ::dup(STDIN_FILENO)),
-      input_buffer_(1024),
-      acceptor_(io_service, tcp::endpoint(tcp::v4(), port)) {
+      input_buffer_(1024), arduino(arduino_) {
     start_accept();
     start_read_input();
   }
@@ -128,6 +130,8 @@ class Command Cmd;
     if (!error)
     {
        std::cout << &input_buffer_ << std::endl;
+
+       arduino->sendMessage("Teste serial");
     }
     start_read_input();
   }

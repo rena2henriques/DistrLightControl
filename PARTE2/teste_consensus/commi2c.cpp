@@ -70,8 +70,7 @@ void CommI2C::calibration() {
 	ledFlag = 0;
 	calibFlag = 0;
 	n_reads = 0;
-
-  ADCList.clear();
+  ADCList.clear(); 
 
 	// the arduino that begins the calibration is the 1
 	if (myaddress == 1) {
@@ -282,6 +281,7 @@ void CommI2C::checkFlags() {
 
 		// clears the list
 		addrList.clear();
+    n_ack=0;
 		// find nodes again
 		findNodes();
 		// recalibration
@@ -293,8 +293,8 @@ void CommI2C::checkFlags() {
 }
 
 
-LinkedList<float> CommI2C::getADCvalues(){
-	return ADCList;
+LinkedList<float>* CommI2C::getADCvalues(){
+	return &ADCList;
 }
 
 int CommI2C::getConsensusFlag(){

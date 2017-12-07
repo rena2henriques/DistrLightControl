@@ -22,6 +22,7 @@
 //#define BOOST_ASIO_ENABLE_HANDLER_TRACKING
 #include <boost/asio.hpp>
 #include "command.h"
+#include "serialComm.h"
 using boost::asio::ip::tcp;
 
 // Asynchronous TCP server
@@ -51,7 +52,7 @@ private:
 class Tcp_server {
 
 public:
-	Tcp_server(boost::asio::io_service& io_service, short port);
+	Tcp_server(boost::asio::io_service& io_service, short port, shared_ptr <SerialComm> arduino_);
 
 private:
 	void start_accept();
@@ -68,6 +69,8 @@ private:
 	tcp::acceptor acceptor_;
 	boost::asio::posix::stream_descriptor input_;
 	boost::asio::streambuf input_buffer_;
+
+	shared_ptr <SerialComm> arduino;
 };
 
 #endif
