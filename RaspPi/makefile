@@ -22,7 +22,7 @@ CPPFLAGS = -g -O -Wall -pedantic -std=c++11
 CFLAGS = -lpthread -lboost_system
 
 #  Sources
-SOURCES = tcpServer.cpp command.cpp serialComm.cpp raspServer.cpp
+SOURCES = serialComm.cpp tcpServer.cpp raspServer.cpp
 
 server: $(SOURCES)
 	$(CXX) $(CPPFLAGS) $(SOURCES) $(CFLAGS) -o server

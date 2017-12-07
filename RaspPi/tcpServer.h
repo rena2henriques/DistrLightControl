@@ -21,7 +21,7 @@
 #include <boost/bind.hpp>
 //#define BOOST_ASIO_ENABLE_HANDLER_TRACKING
 #include <boost/asio.hpp>
-#include "command.h"
+//#include "command.h"
 #include "serialComm.h"
 using boost::asio::ip::tcp;
 
@@ -30,7 +30,7 @@ using boost::asio::ip::tcp;
 class session {
 
 public:
-	session(boost::asio::io_service& io_service);
+	session(boost::asio::io_service& io_service, std::shared_ptr <SerialComm> arduino_);
 
 	tcp::socket& socket();
 
@@ -46,13 +46,16 @@ private:
   	enum { max_length = 1024 };
   	char request_[max_length];
   	std::string response_;
+
+  	std::shared_ptr <SerialComm> arduino;
 };
 
+//----------------------------------------------------------------------------
 
 class Tcp_server {
 
 public:
-	Tcp_server(boost::asio::io_service& io_service, short port, shared_ptr <SerialComm> arduino_);
+	Tcp_server(boost::asio::io_service& io_service, short port, std::shared_ptr <SerialComm> arduino_);
 
 private:
 	void start_accept();
@@ -70,7 +73,7 @@ private:
 	boost::asio::posix::stream_descriptor input_;
 	boost::asio::streambuf input_buffer_;
 
-	shared_ptr <SerialComm> arduino;
+	std::shared_ptr <SerialComm> arduino;
 };
 
 #endif
