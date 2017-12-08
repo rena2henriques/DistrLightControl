@@ -64,21 +64,16 @@ void setup() {
 
    //temp
    Calibration c1= Calibration(i2c, myaddress, analogInPin, ledPin, -0.62, 1.96);
+   c1.start_calibration();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  howLongItsBeen = millis() - lastTimeItHappened;
+  
+
+
+  
+ /* howLongItsBeen = millis() - lastTimeItHappened;
   if(howLongItsBeen >= howLongToWait){
-    if(myaddress == 2){
-        lastTimeItHappened = millis();
-        float y = 105.23;
-        byte label = 2;
-        byte src = 3;
-        char s[7];
-        //dtostrf(sourcefloat, tamanho minimo da string, nº de casas decimais, string destino) RPI pode ter que se mudar
-        dtostrf(y, 6, 2,s);       
-        i2c->sendToAll(label,s);
-     }
-  }
+   
+  }*/
 }
