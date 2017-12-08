@@ -54,8 +54,8 @@ void setup() {
    Wire.begin(myaddress);
    Wire.onReceive(receiveHandler);
 
-   
-
+   i2c->findNodes();
+   Serial.println(i2c->getAddr(0));
 }
 
 void loop() {

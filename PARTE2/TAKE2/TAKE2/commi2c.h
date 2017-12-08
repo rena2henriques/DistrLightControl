@@ -13,6 +13,8 @@ private:
   int ledPin;
   int myAddress;
 
+  LinkedList<int> addrList = LinkedList<int>(); //neighbours list
+
 
 public:
 	CommI2C();  //default constructor
@@ -22,6 +24,10 @@ public:
   void msgDecoder(int label, int src_addr, String data); //decodes the message received from i2c
 
   void setMyAddress (int address);  //set arduino's own address in the object
+
+  int getAddr(int index);
+
+  void findNodes (); //finds other arduino in the network
  
 };
 

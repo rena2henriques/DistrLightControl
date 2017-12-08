@@ -33,6 +33,33 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
    float value = data.toFloat();
    Serial.print("value = ");
    Serial.println(value);
+ 
+}
+
+int CommI2C::getAddr(int index) {
+  return addrList.get(index);
+}
+
+
+void CommI2C::findNodes() {
+
+  int error, address;
+
+  // the devices have 7-bit I2C addresses 
+  for(address = 1; address<127;address++){
+
+      // We use the Write.endTransmisstion return value to see if
+      // a device did acknowledge to the address.
+      Wire.beginTransmission(address);
+      error = Wire.endTransmission();
+
+      // The data was send successfully
+      if (error == 0) {
+        // Inserts the discovered address in the list
+      addrList.add(address);
+      }
+  }
   
+  return addrList.size();
 }
 
