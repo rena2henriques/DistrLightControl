@@ -3,15 +3,6 @@
 //default constructor
 CommI2C::CommI2C() {
 
-	ldrPin = A0;
-	ledPin = 9;
-
-}
-
-//constructor
-CommI2C::CommI2C(int ldrPin_, int ledPin_) {
-   int ldrPin = ldrPin_;
-   int ledPin = ledPin_;
 }
 
 //set arduino's own address in the object

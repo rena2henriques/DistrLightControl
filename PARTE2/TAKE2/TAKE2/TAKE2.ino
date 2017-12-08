@@ -16,7 +16,7 @@ int howLongToWait = 100;
 int lastTimeItHappened = 0;
 int howLongItsBeen = 0;
 
-CommI2C* i2c = new CommI2C(analogInPin, ledPin);
+CommI2C* i2c = new CommI2C();
 
 
 void receiveHandler(int howMany) {
@@ -63,7 +63,7 @@ void setup() {
    Serial.println(i2c->getAddr(0));
 
    //temp
-   Calibration c1= Calibration(i2c, myaddress);
+   Calibration c1= Calibration(i2c, myaddress, analogInPin, ledPin, -0.62, 1.96);
 }
 
 void loop() {

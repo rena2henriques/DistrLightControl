@@ -9,9 +9,9 @@
 
 class CommI2C {
 private:
-  int ldrPin;
-  int ledPin;
+
   int myAddress;
+
 
   LinkedList<int> addrList = LinkedList<int>(); //neighbours list
 
@@ -27,8 +27,6 @@ public:
   
   //functions
 	CommI2C();  //default constructor
-
-	CommI2C(int ldrPin_,int ledPin_); //constructor
 
   void msgDecoder(int label, int src_addr, String data); //decodes the message received from i2c
 
