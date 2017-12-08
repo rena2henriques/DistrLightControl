@@ -94,8 +94,3 @@ void CommI2C::sendToAll(byte label, char data[7]) {
   }
 }
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> fc9c97e328adaeec4178b036faf368baac24553e

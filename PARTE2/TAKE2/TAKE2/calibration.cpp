@@ -23,6 +23,7 @@ void Calibration::start_calibration() {
      ledON();
     
   while(nreads != i2calib->getAddrListSize() +1){ //if i read all nodes including myself (+1)
+
       if(i2calib->recalibration != 0) {  //someone hit reset
           nacks = 0;
           nreads = 0;
@@ -51,7 +52,7 @@ void Calibration::start_calibration() {
   
 }
 
-void Calibration::check_TurnEnd (int nacks, int nreads) {
+void Calibration::check_TurnEnd (int nacks, int &nreads) {
   int nextAddress;
   char empty[] = "";
   if(nacks == i2calib->getAddrListSize()) {//if all neighbours sent me an ack
@@ -75,6 +76,8 @@ void Calibration::readADCvalue(int address) {
      char empty[] = "";
      int adc = analogRead(ldrPin);
      Klist.add(adcToLux(adc)/(100*pwm/255)); //to calculate K, set pwm to % and calculate
+     Serial.print("K = "); 
+     Serial.println(adcToLux(adc)/(100*pwm/255));
      
      //send an ACK to the HIGH node
      i2calib->send((byte) 2, (byte) address, empty); //cuidado com a string
@@ -97,7 +100,6 @@ void Calibration::ledON() {
  
     char empty[] = "";
     analogWrite(ledPin, pwm);
-    Serial.print("estou no led Oon");
     howLongItsBeen = millis();
     while(true){  //waits for the led to stabilize beofre doing anything
       if(millis() - howLongItsBeen >= howLongToWait){
