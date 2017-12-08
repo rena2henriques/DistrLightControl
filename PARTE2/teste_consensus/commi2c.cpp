@@ -281,6 +281,7 @@ void CommI2C::checkFlags() {
 
 		// clears the list
 		addrList.clear();
+    n_ack=0;
 		// find nodes again
 		findNodes();
 		// recalibration
@@ -292,8 +293,8 @@ void CommI2C::checkFlags() {
 }
 
 
-LinkedList<float> CommI2C::getADCvalues(){
-	return ADCList;
+LinkedList<float>* CommI2C::getADCvalues(){
+	return &ADCList;
 }
 
 int CommI2C::getConsensusFlag(){

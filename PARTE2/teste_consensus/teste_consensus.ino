@@ -34,14 +34,14 @@ void receiveHandler(int numBytes) {
   if (numBytes == 0)
     return;
 
-  byte first8;
-  byte last8;
+  byte first8=0;
+  byte last8=0;
   
   while(Wire.available() > 0) {
     // reads first received byte, shift right 8
     last8 = Wire.read();// << 8;
     first8 = Wire.read();  
-
+  
     i2c.msgDecoder(last8, first8);
    }
 }
@@ -54,15 +54,18 @@ void setup() {
   idCheck(idPin);
 
   i2c.setAddress(myaddress);
-
+  if(myaddress == 1) {
+    c1.setL1(100);
+  } else {
+    c1.setL1(50);
+  }
   Wire.begin(myaddress);
-
+  
   // checks the number of nodes in the network and their address
   int nNodes = i2c.findNodes();
-
     // tells the system to recablibrate
   i2c.sendToAll((byte) 16, (byte) 0);
-
+  
   // -----------------------------------
   Serial.print("n_nodes =");
   Serial.println(nNodes);
@@ -75,22 +78,21 @@ void setup() {
 
   // calibration of the network to get K values
    i2c.calibration();
-   //LinkedList<float> Klist = LinkedList<float>();
-   LinkedList<float> ADCList = i2c.getADCvalues();
-   Serial.print("tamanho ADC=");
-   Serial.println(ADCList.size());
-   c1.setKmatrix(ADCList.get(0),ADCList.get(1),ADCList.get(2),(int)(100*200/255)); //esta a dar problema
-  // LinkedList<float> Klist = c1.getKlist();
-   Serial.print("Please k1=");
-  // Serial.println(Klist.get(0));
-  /*Klist.add(2);
-  Klist.add(1);  
-  c1.setKmatrix_user(Klist);
-  c1.setO(0.0); */
- // int d= c1.consensusIter(myaddress,&i2c);
+   LinkedList<float> *ADCList = (i2c.getADCvalues()); //isto agora é com endereços 
 
-  //Serial.print("pwm=");
-  //Serial.println(d);
+  
+   c1.setKmatrix(ADCList,(int)(100*200/255)); //setMatrix agora recebe ponteiro
+ /* LinkedList<float> Klist = c1.getKlist();
+  c1.setKmatrix_user(Klist);
+  Klist.add(2);
+  Klist.add(1);  
+  
+  c1.setO(0.0);*/
+ int d= c1.consensusIter(myaddress,&i2c);
+
+  Serial.print("pwm=");
+  Serial.println(d);
+
   
 
 }
@@ -98,11 +100,11 @@ void setup() {
 void loop() {
   
   i2c.checkFlags();
- /* if(i2c.reconsensusFlag!=0){
+  if(i2c.reconsensusFlag!=0){
     int d= c1.consensusIter(myaddress,&i2c);
-    Serial.print("pwm=");
+    Serial.print("pwm1=");
     Serial.println(d); 
     i2c.reconsensusFlag=0;
-  }*/
+  }
   
 }

@@ -26,15 +26,15 @@ Consensus::Consensus(float c_, float q_, float ref_, float a_lux_, float b_lux_)
 }
 
 
-LinkedList<float> Consensus::adcToLux(LinkedList<float> adclist){
+LinkedList<float> Consensus::adcToLux(LinkedList<float> *adclist){
 
   float aux=0.0;
 
   LinkedList<float> luxlist = LinkedList<float>();
 
-  for(int i=0; i<adclist.size(); i++){
+  for(int i=0; i<adclist->size(); i++){
       // bits to voltage
-    aux = adclist.get(i)*5.0/1024.0;
+    aux = adclist->get(i)*5.0/1024.0;
     // voltage to resistance
     aux = 10.0*(5-aux)/aux;
     // resistance to lux
@@ -47,17 +47,14 @@ LinkedList<float> Consensus::adcToLux(LinkedList<float> adclist){
 }
 
 
-void Consensus::setKmatrix(float adc1, float adc2, float adc3, int pwmHigh){
+void Consensus::setKmatrix(LinkedList<float> *adclist, int pwmHigh){
 
-  LinkedList<float> adclist= LinkedList<float>();
-  adclist.add(adc1);
-  adclist.add(adc2);
-  adclist.add(adc3);
   LinkedList<float> luxlist= adcToLux(adclist);
 
   float j=0;
   for (int i=0; i< (luxlist.size()-1); i++)
   {
+
     j=luxlist.get(i)/pwmHigh;
     Klist.add(j); 
   }
@@ -76,6 +73,10 @@ void Consensus::setKmatrix(float adc1, float adc2, float adc3, int pwmHigh){
 
 void Consensus::setO( float o_){
   o1=o_;
+}
+
+void Consensus::setL1(float L1_){
+  L1 = L1_;
 }
 
 void Consensus::setKmatrix_user(LinkedList<float> Klist_){

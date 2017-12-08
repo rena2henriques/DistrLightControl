@@ -12,12 +12,9 @@
 //
 
 #include "tcpServer.h"
-#include "command.h"
 
-class Command Cmd;
-
-  session::session(boost::asio::io_service& io_service)
-    : socket_(io_service), response_("") {
+  session::session(boost::asio::io_service& io_service, std::shared_ptr <SerialComm> arduino_)
+    : socket_(io_service), response_(""), arduino(arduino_) {
   }
 
   tcp::socket& session::socket() {
@@ -33,18 +30,18 @@ class Command Cmd;
   void session::handle_read(const boost::system::error_code& error, size_t bytes_transferred) {
     if (!error) {
 
-      std::cout << "received: " << request_ << endl;
+      std::cout << "received: " << request_ << std::endl;
 
       if (request_[0] == 'g') {
         // takes care of get requests
-        response_ = Cmd.getCommand(request_);
+        response_ = arduino->getCommand(request_);
 
         boost::asio::async_write(socket_, boost::asio::buffer(response_, response_.length()),
               boost::bind(&session::handle_write, this, boost::asio::placeholders::error));
         
       } else if (request_[0] == 'r'){
 
-        response_ = Cmd.restartCommand();
+        response_ = arduino->restartCommand();
 
         // sends the info to the client
         boost::asio::async_write(socket_, boost::asio::buffer(response_, response_.length()),
@@ -53,7 +50,10 @@ class Command Cmd;
       } else if (request_[0] == 's') {
 
         // gets the response requested
-        response_ = Cmd.setCommand(request_);
+        response_ = arduino->setCommand(request_);
+
+        // send message to arduino
+        arduino->sendMessage(response_);
 
         // sends the info to the client
         boost::asio::async_write(socket_, boost::asio::buffer(response_, response_.length()),
@@ -61,7 +61,7 @@ class Command Cmd;
 
       } else if (request_[0] == 'b' || request_[0] == 'c' || request_[0] == 'd') {
 
-        response_ = Cmd.streamCommand();
+        response_ = arduino->streamCommand();
 
         // sends the info to the client
         boost::asio::async_write(socket_, boost::asio::buffer(response_, response_.length()),
@@ -100,18 +100,20 @@ class Command Cmd;
     }
   }
 
-  Tcp_server::Tcp_server(boost::asio::io_service& io_service, short port)
+/** SERVER FUNCTIONS **/
+
+  Tcp_server::Tcp_server(boost::asio::io_service& io_service, short port, std::shared_ptr <SerialComm> arduino_)
     : io_service_(io_service),
+      acceptor_(io_service, tcp::endpoint(tcp::v4(), port)),
       input_(io_service, ::dup(STDIN_FILENO)),
-      input_buffer_(1024),
-      acceptor_(io_service, tcp::endpoint(tcp::v4(), port)) {
+      input_buffer_(1024), arduino(arduino_) {
     start_accept();
     start_read_input();
   }
 
   void Tcp_server::start_accept() {
 
-    session* new_session = new session(io_service_);
+    session* new_session = new session(io_service_, arduino);
     acceptor_.async_accept(new_session->socket(),
         boost::bind(&Tcp_server::handle_accept, this, new_session, _1));
   }
@@ -128,6 +130,8 @@ class Command Cmd;
     if (!error)
     {
        std::cout << &input_buffer_ << std::endl;
+
+       arduino->sendMessage("Teste serial");
     }
     start_read_input();
   }

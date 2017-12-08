@@ -26,11 +26,14 @@ public:
 
 	Consensus(float c_, float q_, float ref_, float a_lux_, float b_lux_);
 
-	LinkedList<float> adcToLux(LinkedList<float> adclist);
+	LinkedList<float> adcToLux(LinkedList<float> *adclist);
 
-	//void setKmatrix(LinkedList<float> adclist, int pwmHigh);
-  void setKmatrix(float adc1, float adc2, float adc3, int pwmHigh);
+	void setKmatrix(LinkedList<float> *adclist, int pwmHigh);
 
+
+  //void setKmatrix(float adc1, float adc2, float adc3, int pwmHigh);
+
+  void setL1(float L1);
   void setKmatrix_user(LinkedList<float> Klist_);
 
   void setO ( float o_);

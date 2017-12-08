@@ -1,9 +1,10 @@
-#ifndef TCP_SERVER
-#define TCP_SERVER
+#ifndef SERIAL_COMM
+#define SERIAL_COMM
 
 //Compile as:  g++ -std=c++11 async_tcp_echo_server.cpp -lpthread -lboost_system -o server
 //Run in a separate terminal, before starting client : ./server 17000
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -11,6 +12,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/bind.hpp>
+#include <string.h>
 using namespace boost::system;
 using namespace boost::asio;
 
@@ -24,22 +26,26 @@ public:
 
 	~SerialComm();
 
-	void write_handler(const error_code &ec);
+	void sendMessage(std::string message);
 
-	void timer_handler(const error_code &ec);
+	// for commands of the type 'g'
+	std::string getCommand(char message[]);
 
-	void read_handler(const error_code &ec);
+	// for commands of the type 's'
+	std::string setCommand(char message[]);
+
+	// for commands of the type 'r'
+	std::string restartCommand();
+
+	// other commands
+	std::string streamCommand();
 
 private:
-	void start_read_input();
-	void handle_read_input(const boost::system::error_code& error, std::size_t length);
 
-	int counter = 0;
+	void sendMessageHandler(const boost::system::error_code& ec);
 
 	boost::asio::io_service& io;
  	boost::asio::serial_port sp;
-  	boost::asio::streambuf read_buf;
-  	steady_timer tim;
 
   	boost::asio::posix::stream_descriptor input_;
 	boost::asio::streambuf input_buffer_;
