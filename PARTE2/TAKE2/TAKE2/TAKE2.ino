@@ -17,7 +17,7 @@ int lastTimeItHappened = 0;
 int howLongItsBeen = 0;
 
 CommI2C* i2c = new CommI2C();
-Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96);
+Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 100, 1, 0);
 
 //just an empty string
 char empty[] = "";
@@ -71,6 +71,7 @@ void setup() {
    //temp
    if(i2c->getAddrListSize() > 0) {
       c1.start_calibration();
+      c1.consensusIter();
    }
 }
 
