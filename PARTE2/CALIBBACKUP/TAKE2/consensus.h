@@ -1,9 +1,9 @@
-#ifndef CALIB
-#define CALIB
+#ifndef CONS
+#define CONS
 
 #include "commi2c.h"
 
-class Calibration {
+class Consensus {
 private:
   CommI2C *i2calib;
   
@@ -24,9 +24,9 @@ private:
 
 public:
   //functions
-  Calibration();  //default constructor
+  Consensus();  //default constructor
 
-  Calibration(CommI2C *I2C, int ldrPin, int ledPin, float a_lux, float b_lux); //constructor
+  Consensus(CommI2C *I2C, int ldrPin, int ledPin, float a_lux, float b_lux); //constructor
 
   void start_calibration();
 
@@ -42,8 +42,10 @@ public:
 
   void setMyAddress(int address_);
 
+  void getExternalIlluminance();
+
   //variables
-  int howLongToWait = 50;
+  int howLongToWait = 200;
   int lastTimeItHappened = 0;
   int howLongItsBeen = 0;
 
