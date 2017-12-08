@@ -23,6 +23,7 @@ void Calibration::start_calibration() {
       if(i2calib->readADC != 0) {
          nreads++;                              //i've read one more lux
          readADCvalue(i2calib->readADC);            //readADC flag contains the address to the HIGH node
+         i2calib->readADC=0;  //resets flag
       }
   }
   
