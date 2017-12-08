@@ -17,6 +17,7 @@ int lastTimeItHappened = 0;
 int howLongItsBeen = 0;
 
 CommI2C* i2c = new CommI2C();
+Calibration c1= Calibration(i2c, analogInPin, ledPin, -0.62, 1.96);
 
 
 void receiveHandler(int howMany) {
@@ -53,6 +54,7 @@ void setup() {
    // gets i2c address from digital pin
    idCheck(idPin);
    i2c->setMyAddress(myaddress);
+   c1.setMyAddress(myaddress);
     
    Wire.begin(myaddress);
    Wire.onReceive(receiveHandler);
@@ -63,14 +65,18 @@ void setup() {
    Serial.println(i2c->getAddr(0));
 
    //temp
-   Calibration c1= Calibration(i2c, myaddress, analogInPin, ledPin, -0.62, 1.96);
-   c1.start_calibration();
+   if(i2c->getAddrListSize() > 0) {
+      c1.start_calibration();
+   }
 }
 
 void loop() {
+  if(i2c->recalibration == 1) {
+    c1.cleanCalibVars();  //clean all variables used in calibration
+    c1.start_calibration(); //starts a new calibration
+  }
   
-
-
+  
   
  /* howLongItsBeen = millis() - lastTimeItHappened;
   if(howLongItsBeen >= howLongToWait){
