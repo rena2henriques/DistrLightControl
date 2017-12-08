@@ -47,7 +47,16 @@ void Calibration::start_calibration() {
       }
         
   }
+  //to guarantee that all nodes ended calibration
+  howLongItsBeen = millis();
+  while(true) {
+    if(millis() - howLongItsBeen >= howLongToWait){
+      break; 
+    }
+  }
 
+  int adc_o = analogRead(ldrPin);
+  O1 = adcToLux(adc_o);
   Serial.println("cheguei ao fim da calibração");
   
 }
@@ -108,27 +117,27 @@ void Calibration::ledON() {
         Serial.println(adcToLux(adc)/(100*pwm/255));
         break;  //se recebermos um reset temos de fazer analog low
       }
-      //if reset flag limpar merdas led ???
+
     }
    
 }
 
 void Calibration::cleanCalibVars(){
     //clears flags to recalibration
-    i2calib->recalibration = 0;
     i2calib->readADC = 0;
     i2calib->checkTurnEnd = 0;
     i2calib->ledON = 0;
     i2calib->recalibration = 0;
-
+    
 
     //turns the led off
     analogWrite(ledPin, LOW);
 
     //limpar a lista e find nodes
     if(Klist.size() != 0)
-    Klist.clear();  //?criar função para limpar variaveis e recalibrar?
-  
+      Klist.clear();  //?criar função para limpar variaveis e recalibrar?
+    
+    O1 = 0;
 }
 
 

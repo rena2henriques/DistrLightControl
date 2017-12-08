@@ -17,6 +17,8 @@ private:
   
   int pwm = 200;
 
+  int O1 = 0; //background illumin
+
   //line of K matrix
   LinkedList<float> Klist = LinkedList<float>();
 
