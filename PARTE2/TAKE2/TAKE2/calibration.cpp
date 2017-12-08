@@ -1,26 +1,35 @@
 #include "calibration.h"  
 
 
-Calibration::Calibration(CommI2C *I2C, int myAddress_, int ldrPin_, int ledPin_, float a_lux_, float b_lux_){ //constructor
+Calibration::Calibration(CommI2C *I2C, int ldrPin_, int ledPin_, float a_lux_, float b_lux_){ //constructor
   
   i2calib = I2C;
-  myAddress = myAddress_;
   ldrPin = ldrPin_;
   ledPin = ledPin_;
   a_lux = a_lux_;
   b_lux = b_lux_;
-  
 }
+
+void Calibration::setMyAddress(int address_) {
+   myAddress = address_;
+}
+
 
 void Calibration::start_calibration() {
   int nreads=0;
   int nacks=0;
-  if(Klist.size() != 0)
-    Klist.clear();  //?criar função para limpar variaveis e recalibrar?
+  
   if(myAddress == 1)
      ledON();
     
   while(nreads != i2calib->getAddrListSize() +1){ //if i read all nodes including myself (+1)
+      if(i2calib->recalibration != 0) {  //someone hit reset
+          nacks = 0;
+          nreads = 0;
+          cleanCalibVars();
+          if(myAddress == 1)
+            ledON();
+      }
       if(i2calib->readADC != 0) {
          nreads++;                              //i've read one more lux
          readADCvalue(i2calib->readADC);        //readADC flag contains the address to the HIGH node
@@ -83,8 +92,10 @@ float Calibration::adcToLux(int ADCvalue){
 }
 
 void Calibration::ledON() {
+ 
     char empty[] = "";
     analogWrite(ledPin, pwm);
+    Serial.print("estou no led Oon");
     howLongItsBeen = millis();
     while(true){  //waits for the led to stabilize beofre doing anything
       if(millis() - howLongItsBeen >= howLongToWait){
@@ -99,4 +110,25 @@ void Calibration::ledON() {
     }
    
 }
+
+void Calibration::cleanCalibVars(){
+    //clears flags to recalibration
+    i2calib->recalibration = 0;
+    i2calib->readADC = 0;
+    i2calib->checkTurnEnd = 0;
+    i2calib->ledON = 0;
+    i2calib->recalibration = 0;
+
+
+    //turns the led off
+    analogWrite(ledPin, LOW);
+
+    //limpar a lista e find nodes
+    if(Klist.size() != 0)
+    Klist.clear();  //?criar função para limpar variaveis e recalibrar?
+  
+}
+
+
+
 
