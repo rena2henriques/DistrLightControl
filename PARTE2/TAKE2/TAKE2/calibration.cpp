@@ -49,6 +49,8 @@ void Calibration::check_TurnEnd (int nacks, int nreads) {
     analogWrite(ledPin, LOW); //turn my own led off
     nreads++; //all nodes (including myself) have read my led
     if(nreads != i2calib->getAddrListSize() + 1) { //calibration hasn't reach the end
+
+      Serial.print("É a tua vez");
       for(int i = 0; i < i2calib->getAddrListSize(); i++) {
           if(i2calib->getAddr(i) > myAddress){
             nextAddress = i2calib->getAddr(i);  //finds the imediate next node after mine and orders him to turn his led on
@@ -91,7 +93,7 @@ void Calibration::ledON() {
         i2calib->sendToAll((byte) 1, empty);    //sends the order to neighbours read their ADC with my led on
         int adc = analogRead(ldrPin);
         Klist.add(adcToLux(adc)/(100*pwm/255)); //read my adc with (only) my led on
-        Serial.print("K = ");
+        Serial.print("K = "); 
         Serial.println(adcToLux(adc)/(100*pwm/255));
         break;  //se recebermos um reset temos de fazer analog low
       }
