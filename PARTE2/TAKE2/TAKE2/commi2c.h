@@ -9,25 +9,44 @@
 
 class CommI2C {
 private:
-  int ldrPin;
-  int ledPin;
+
   int myAddress;
+
 
   LinkedList<int> addrList = LinkedList<int>(); //neighbours list
 
 
 public:
-	CommI2C();  //default constructor
+  //variables
+    //flags
+    int readADC = 0;
+    int checkTurnEnd = 0;
+    int ledON = 0;
+    int recalibration = 0;
 
-	CommI2C(int ldrPin_,int ledPin_); //constructor
+  
+  //functions
+	CommI2C();  //default constructor
 
   void msgDecoder(int label, int src_addr, String data); //decodes the message received from i2c
 
   void setMyAddress (int address);  //set arduino's own address in the object
-
+  
   int getAddr(int index);
 
+<<<<<<< HEAD
   int findNodes (); //finds other arduino in the network
+=======
+  int getAddrListSize(); //get the number of neihgbours
+  
+  int findNodes (); //finds other arduino in the network
+
+  byte send(byte label, byte dest_address, char data[7]);
+
+  void sendToAll(byte label, char data[7]);
+
+
+>>>>>>> 2ade92437400046f5d5868e9a1d676719d4d6054
  
 };
 
