@@ -75,6 +75,10 @@ void Consensus::setO( float o_){
   o1=o_;
 }
 
+void Consensus::setL1(float L1_){
+  L1 = L1_;
+}
+
 void Consensus::setKmatrix_user(LinkedList<float> Klist_){
   Klist=Klist_;
 }

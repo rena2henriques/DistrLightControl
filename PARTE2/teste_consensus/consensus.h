@@ -32,7 +32,7 @@ public:
 
   //void setKmatrix(float adc1, float adc2, float adc3, int pwmHigh);
 
-
+  void setL1(float L1);
   void setKmatrix_user(LinkedList<float> Klist_);
 
   void setO ( float o_);

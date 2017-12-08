@@ -54,7 +54,11 @@ void setup() {
   idCheck(idPin);
 
   i2c.setAddress(myaddress);
-
+  if(myaddress == 1) {
+    c1.setL1(100);
+  } else {
+    c1.setL1(50);
+  }
   Wire.begin(myaddress);
   
   // checks the number of nodes in the network and their address
@@ -76,7 +80,7 @@ void setup() {
    i2c.calibration();
    LinkedList<float> *ADCList = (i2c.getADCvalues()); //isto agora é com endereços 
 
-
+  
    c1.setKmatrix(ADCList,(int)(100*200/255)); //setMatrix agora recebe ponteiro
  /* LinkedList<float> Klist = c1.getKlist();
   c1.setKmatrix_user(Klist);
