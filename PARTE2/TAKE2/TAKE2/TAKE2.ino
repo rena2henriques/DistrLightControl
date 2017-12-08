@@ -54,8 +54,10 @@ void setup() {
    Wire.begin(myaddress);
    Wire.onReceive(receiveHandler);
 
-   i2c->findNodes();
-   Serial.println(i2c->getAddr(0));
+  int netSize= i2c->findNodes();
+  Serial.print("tamanho e address=");
+  Serial.print(netSize);
+  Serial.println(i2c->getAddr(0));
 }
 
 void loop() {
@@ -65,13 +67,13 @@ void loop() {
     if(myaddress == 1){
         lastTimeItHappened = millis();
         float y = 105.23;
-        int label = 2;
-        int src = 3;
+        byte label = 2;
+        byte src = 3;
         char s[7];
         //dtostrf(sourcefloat, tamanho minimo da string, nº de casas decimais, string destino) RPI pode ter que se mudar
         dtostrf(y, 6, 2,s);       
         Wire.beginTransmission(2); // transmit to device #2
-        Wire.write(label);
+        Wire.write( label);
         Wire.write(src);
         Wire.write(s);          // manda string
         Wire.endTransmission();    // stop transmitting

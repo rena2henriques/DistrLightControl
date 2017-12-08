@@ -27,7 +27,7 @@ public:
 
   int getAddr(int index);
 
-  void findNodes (); //finds other arduino in the network
+  int findNodes (); //finds other arduino in the network
  
 };
 

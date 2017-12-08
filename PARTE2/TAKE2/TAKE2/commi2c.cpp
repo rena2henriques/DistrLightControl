@@ -41,7 +41,7 @@ int CommI2C::getAddr(int index) {
 }
 
 
-void CommI2C::findNodes() {
+int CommI2C::findNodes() {
 
   int error, address;
 
@@ -51,6 +51,7 @@ void CommI2C::findNodes() {
       // We use the Write.endTransmisstion return value to see if
       // a device did acknowledge to the address.
       Wire.beginTransmission(address);
+      Wire.write((byte)255);
       error = Wire.endTransmission();
 
       // The data was send successfully
