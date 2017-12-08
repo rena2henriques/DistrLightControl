@@ -11,7 +11,7 @@ SerialComm::SerialComm(io_service& io_serv,std::string port_name)
     // opens port
 		sp.open(port_name);
     // sets baudrate
-	  sp.set_option(serial_port_base::baud_rate(115200));
+	  sp.set_option(serial_port_base::baud_rate(115200 ));
 
 		//start_read_input();
 		
@@ -48,7 +48,7 @@ std::string SerialComm::getCommand(char message[]) { // <---------- TODO
 
   std::cout << "Get command " << message << std::endl;
 
-  return "Work in progress";
+  return "Work in progress\n";
 }
 
 
@@ -76,7 +76,7 @@ std::string SerialComm::setCommand(char message[]) { // <---------- TODO
 
   //sendSerialMsg(desk, flag); <--------------- TODO
 
-  return "Work in progress";
+  return "Work in progress\n";
 }
 
 std::string SerialComm::restartCommand() { // <---------- TODO
@@ -85,10 +85,10 @@ std::string SerialComm::restartCommand() { // <---------- TODO
 
   //sendSerialMsg("r");
 
-  return "ack";
+  return "ack\n";
 }
 
 std::string SerialComm::streamCommand() { // <---------- TODO
 
-  return "Work in progress";
+  return "Work in progress\n";
 }

@@ -70,12 +70,12 @@
       } else if (request_[0] == '\n') {
 
         // do nothing
-        boost::asio::async_write(socket_, boost::asio::buffer("Ping received."),
+        boost::asio::async_write(socket_, boost::asio::buffer("Ping received.\n"),
               boost::bind(&session::handle_write, this, boost::asio::placeholders::error));
 
       } else {
         // not a recognizable command 
-        boost::asio::async_write(socket_, boost::asio::buffer("Request not found."),
+        boost::asio::async_write(socket_, boost::asio::buffer("Request not found.\n"),
               boost::bind(&session::handle_write, this, boost::asio::placeholders::error));
       }
 
