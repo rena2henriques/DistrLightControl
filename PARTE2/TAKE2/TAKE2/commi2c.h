@@ -41,8 +41,6 @@ public:
   byte send(byte label, byte dest_address, char data[7]);
 
   void sendToAll(byte label, char data[7]);
-
-
  
 };
 

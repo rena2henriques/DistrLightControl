@@ -65,7 +65,6 @@ void setup() {
    //temp
    Calibration c1= Calibration(i2c, myaddress, analogInPin, ledPin, -0.62, 1.96);
    c1.start_calibration();
-   
 }
 
 void loop() {
@@ -75,6 +74,7 @@ void loop() {
   
  /* howLongItsBeen = millis() - lastTimeItHappened;
   if(howLongItsBeen >= howLongToWait){
+
    
   }*/
 }
