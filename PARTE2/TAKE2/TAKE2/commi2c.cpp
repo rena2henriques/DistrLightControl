@@ -42,6 +42,7 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
           break;
       case 5:
           consensusFlag = 1;
+          string_consensus = data;
           break;
    }
  
@@ -96,4 +97,6 @@ void CommI2C::sendToAll(byte label, char data[7]) {
     send(label, addrList.get(i), data);
   }
 }
+
+
 
