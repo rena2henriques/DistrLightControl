@@ -15,7 +15,7 @@ private:
   float a_lux;
   float b_lux;
   
-  int pwm = 150;
+  int pwm = 200;
 
   //line of K matrix
   LinkedList<float> Klist = LinkedList<float>();
@@ -34,7 +34,7 @@ public:
 
   void ledON();
 
-  void check_TurnEnd (int nacks, int nreads);
+  void check_TurnEnd (int nacks, int &nreads);
 
   void cleanCalibVars();
 
