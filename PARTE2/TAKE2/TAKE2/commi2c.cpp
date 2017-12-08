@@ -73,9 +73,6 @@ int CommI2C::findNodes() {
   }
   return addrList.size();
 }
-<<<<<<< HEAD
-
-=======
 
 byte CommI2C::send(byte label, byte dest_address, char data[7]) {
 
@@ -96,6 +93,3 @@ void CommI2C::sendToAll(byte label, char data[7]) {
   }
 }
 
-
-
->>>>>>> 2ade92437400046f5d5868e9a1d676719d4d6054

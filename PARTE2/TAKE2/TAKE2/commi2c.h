@@ -34,9 +34,6 @@ public:
   
   int getAddr(int index);
 
-<<<<<<< HEAD
-  int findNodes (); //finds other arduino in the network
-=======
   int getAddrListSize(); //get the number of neihgbours
   
   int findNodes (); //finds other arduino in the network
@@ -44,9 +41,6 @@ public:
   byte send(byte label, byte dest_address, char data[7]);
 
   void sendToAll(byte label, char data[7]);
-
-
->>>>>>> 2ade92437400046f5d5868e9a1d676719d4d6054
  
 };
 
