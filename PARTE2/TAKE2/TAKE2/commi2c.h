@@ -17,6 +17,15 @@ private:
 
 
 public:
+  //variables
+    //flags
+    int readADC = 0;
+    int checkTurnEnd = 0;
+    int ledON = 0;
+    int recalibration = 0;
+
+  
+  //functions
 	CommI2C();  //default constructor
 
 	CommI2C(int ldrPin_,int ledPin_); //constructor
@@ -24,10 +33,18 @@ public:
   void msgDecoder(int label, int src_addr, String data); //decodes the message received from i2c
 
   void setMyAddress (int address);  //set arduino's own address in the object
-
+  
   int getAddr(int index);
 
-  void findNodes (); //finds other arduino in the network
+  int getAddrListSize(); //get the number of neihgbours
+  
+  int findNodes (); //finds other arduino in the network
+
+  byte send(byte label, byte dest_address, char data[7]);
+
+  void sendToAll(byte label, char data[7]);
+
+
  
 };
 
