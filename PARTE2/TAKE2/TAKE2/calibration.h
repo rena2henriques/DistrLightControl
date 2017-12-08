@@ -34,6 +34,8 @@ public:
 
   void ledON();
 
+  void check_TurnEnd (int nacks, int nreads);
+
   //variables
   int howLongToWait = 50;
   int lastTimeItHappened = 0;
