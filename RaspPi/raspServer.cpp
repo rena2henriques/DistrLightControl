@@ -1,3 +1,8 @@
+
+//Compile as:  // g++ -g -O -Wall -pedantic -std=c++11 tcpServer.cpp
+// serialComm.cpp raspServer.cpp -lpthread -lboost_system -o server
+//Run in a separate terminal, before starting client : ./server 17000
+
 #include <iostream>
 #include <boost/asio.hpp>
 #include <thread>
