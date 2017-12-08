@@ -58,7 +58,7 @@ void Calibration::start_calibration() {
   int adc_o = analogRead(ldrPin);
   O1 = adcToLux(adc_o);
   Serial.print("O value=");
-  Serial.print(O1);
+  Serial.println(O1);
   Serial.println("cheguei ao fim da calibração");
   
 }
@@ -87,8 +87,8 @@ void Calibration::readADCvalue(int address) {
      char empty[] = "";
      int adc = analogRead(ldrPin);
      Klist.add(adcToLux(adc)/(100*pwm/255)); //to calculate K, set pwm to % and calculate
-     Serial.println("other k = ");
-     Serial.print(adcToLux(adc)/(100*pwm/255));
+     Serial.print("other k = ");
+     Serial.println(adcToLux(adc)/(100*pwm/255));
 
      //send an ACK to the HIGH node
      i2calib->send((byte) 2, (byte) address, empty); //cuidado com a string

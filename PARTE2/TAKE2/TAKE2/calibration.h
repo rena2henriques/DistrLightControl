@@ -16,11 +16,8 @@ private:
   float b_lux;
   
   int pwm = 200;
-<<<<<<< HEAD
-=======
 
   int O1 = 0; //background illumin
->>>>>>> 3dc7b0411f22984012ff27427cb14e0ca9ec309a
 
   //line of K matrix
   LinkedList<float> Klist = LinkedList<float>();
