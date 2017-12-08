@@ -2,6 +2,7 @@
 #define CONS
 
 #include "commi2c.h"
+#include <string.h>
 
 class Consensus {
 private:
@@ -17,7 +18,13 @@ private:
   
   int pwm = 200;
 
-  int O1 = 0; //background illumin
+  int o1 = 0; //background illumin
+
+  //consensus vars
+  float c1 = 1;
+  float q1 = 0; 
+  float L1;
+  
 
   //line of K matrix
   LinkedList<float> Klist = LinkedList<float>();
@@ -26,7 +33,7 @@ public:
   //functions
   Consensus();  //default constructor
 
-  Consensus(CommI2C *I2C, int ldrPin, int ledPin, float a_lux, float b_lux); //constructor
+  Consensus(CommI2C *I2C, int ldrPin, int ledPin, float a_lux, float b_lux, float L1_, float c1_, float q1_); //constructor
 
   void start_calibration();
 
@@ -42,7 +49,9 @@ public:
 
   void setMyAddress(int address_);
 
-  void getExternalIlluminance();
+  float getExternalIlluminance();
+
+  float consensusIter();
 
   //variables
   int howLongToWait = 200;

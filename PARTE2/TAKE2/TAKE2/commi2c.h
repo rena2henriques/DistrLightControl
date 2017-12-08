@@ -23,6 +23,7 @@ public:
     int checkTurnEnd = 0;
     int ledON = 0;
     int recalibration = 0;
+    int consensusFlag = 0; 
 
   
   //functions
