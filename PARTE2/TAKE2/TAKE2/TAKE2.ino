@@ -19,6 +19,9 @@ int howLongItsBeen = 0;
 CommI2C* i2c = new CommI2C();
 Calibration c1= Calibration(i2c, analogInPin, ledPin, -0.62, 1.96);
 
+//just an empty string
+char empty[] = "";
+
 
 void receiveHandler(int howMany) {
   int label;
@@ -59,7 +62,8 @@ void setup() {
    Wire.begin(myaddress);
    Wire.onReceive(receiveHandler);
 
-   int netSize = i2c->findNodes();
+   int netSize = i2c->findNodes();    //finds all nodes in the network
+   i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
    Serial.print("tamanho e address = ");
    Serial.print(netSize);
    Serial.println(i2c->getAddr(0));
