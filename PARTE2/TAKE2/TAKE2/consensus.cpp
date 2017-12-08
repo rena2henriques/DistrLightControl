@@ -179,7 +179,7 @@ float Consensus::consensusIter(){
     if(i2calib->consensusFlag !=0){
      /* d2_copy[0]=i2calib->dList.get(0);
       d2_copy[1]=i2calib->dList.get(1);*/
-      if(i = 0 && myAddress == 1) {
+      if((i != 0 && myAddress == 1) || myAddress != 1) {
         char aux_string[20];
         i2calib->string_consensus.toCharArray(aux_string, sizeof(i2calib->string_consensus));
         char *token = strtok(aux_string, " ");
@@ -191,7 +191,9 @@ float Consensus::consensusIter(){
         if(token != NULL)
           strcpy(str2, token);
         d2_copy[0] = atof(str);
-        d2_copy[0] = atof(str2);
+        d2_copy[1] = atof(str2);
+        Serial.print("str2 = ");
+        Serial.println(str2);
       }
 
         
