@@ -30,6 +30,7 @@ public:
 
 	void setKmatrix(LinkedList<float> *adclist, int pwmHigh);
 
+
   //void setKmatrix(float adc1, float adc2, float adc3, int pwmHigh);
 
   void setL1(float L1);
