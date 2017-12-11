@@ -39,11 +39,19 @@ char temp_fl[20] = "";
 
 //classes
 CommI2C* i2c = new CommI2C();
-Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 50);
+Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 100);
 PID pid(-0.62, 1.96, 0, 255, 70, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
 
 //just an empty string
 char empty[] = "";
+
+//evaluation metric variables
+float energy =0.0;
+float cError=0.0;
+float vFlicker=0.0;
+int Ncount=0;
+float lux_penult=0.0;
+float lux_antepenult=0.0;
 
 
 // reads the serial buffer and changes the variables accordingly
@@ -136,10 +144,10 @@ void setup() {
    Wire.onReceive(receiveHandler);
 
    int netSize = i2c->findNodes();    //finds all nodes in the network
-   
+   i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
+
    //temp
    if(i2c->getAddrListSize() > 0) {
-    i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
       c1.start_calibration();
       pwmconsensus = c1.consensusIter();
       Serial.print("Pwm=");
@@ -147,10 +155,6 @@ void setup() {
       Serial.print("luxconsensus=");
       Serial.println(c1.getRefConsensus());
       pid.cleanvars();
-      Serial.print("pwm =");
-    Serial.println(pwmconsensus);
-    Serial.print("lux =");
-    Serial.println(c1.getRefConsensus());
       pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
       pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
 
@@ -180,7 +184,6 @@ void loop() {
   if(i2c->recalibration == 1) {
     c1.cleanCalibVars();  //clean all variables used in calibration
     c1.start_calibration(); //starts a new calibration
-
     pwmconsensus = c1.consensusIter();   
     Serial.print("Pwm=");
     Serial.println(pwmconsensus);
@@ -195,6 +198,19 @@ void loop() {
   currentTime = millis();
   if(currentTime - previousTime > sampleInterval) {
 
+    Ncount++;
+
+    //keeping lux from the 2 previous iterations 
+    if(Ncount>2)
+      lux_antepenult=lux_penult;
+
+    if(Ncount>1)
+      lux_penult=lux;
+    
+    //computing energy comsumed - after first iteration
+    if(Ncount>1)
+    energy=energy+outputValue/255*(previousTime-currentTime);
+
     // LOW PASS filter
     for(i = 0; i < n_samples; i++)
         sensorValue = sensorValue + analogRead(analogInPin);
@@ -203,6 +219,15 @@ void loop() {
 
     // converts the voltage to Lux
     lux = pid.vtolux(avg_value);
+       
+    //comfort error - only when measured lux is below the reference lux
+    if( pid.getReference-lux >0){
+      cError=cError+(pid.getReference-lux);
+    }
+
+    //error flickering - only after the 3rd iteration
+    if(Ncount>2)
+    vFlicker=vFlicker+abs(lux-2*lux_penult+lux_antepenult)/(currentTime-previousTime)/(currentTime-previousTime);
     
     outputValue = pid.calculate(lux);
 
