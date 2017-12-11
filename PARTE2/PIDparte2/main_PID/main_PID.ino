@@ -37,6 +37,15 @@ String rx_str = "";
 char temp_str[20] = "";
 char temp_fl[20] = "";
 
+//classes
+CommI2C* i2c = new CommI2C();
+Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 100);
+PID pid(-0.62, 1.96, 0, 255, 70, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
+
+//just an empty string
+char empty[] = "";
+
+
 // reads the serial buffer and changes the variables accordingly
 void analyseString(String serial_string) {
     
@@ -83,16 +92,6 @@ void analyseString(String serial_string) {
     memset(temp_fl, 0, 20);
     memset(temp_str, 0, 20);  
 }
-
-
-//classes
-CommI2C* i2c = new CommI2C();
-Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 100);
-PID pid(-0.62, 1.96, 0, 255, 70, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
-
-//just an empty string
-char empty[] = "";
-
 
 void receiveHandler(int howMany) {
   int label;
