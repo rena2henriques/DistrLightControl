@@ -155,19 +155,18 @@ float Consensus::consensusIter(){
   double d1_av[2] = {0,0}; //manter esta variavel
   double d2_copy[2] = {0, 0}; //esta variavel vem do outro gajo
   double y1[2] = {0,0}; //manter esta variavel
-  double min_best_1[100];
-  double best_d11[100];
-  double best_d12[100];
+  //double best_d11[100];
+  //double best_d12[100];
 
   double k11=0;
   double k12=0;
-  if(myAddress==1){ 
+  if(myAddress==1){     //because arduino1 gets the k11 first, because he lights up first
     k11 = Klist.get(0);
     k12=  Klist.get(1); 
     i2calib->consensusFlag=1;
   }
   else{
-    k11 = Klist.get(1);
+    k11 = Klist.get(1); //arduino2 gets his k22 after getting k21, he reads his own lux after reading arduino1's
     k12 = Klist.get(0); 
   }
 
@@ -177,44 +176,26 @@ float Consensus::consensusIter(){
        return -1; //someone pressed reset
     
     if(i2calib->consensusFlag !=0){
-     /* d2_copy[0]=i2calib->dList.get(0);
-      d2_copy[1]=i2calib->dList.get(1);*/
-      if((i != 0 && myAddress == 1) || myAddress != 1) {
-        char aux_string[20];
+      i2calib->consensusFlag=0; //reset flag
+      if((i != 0 && myAddress == 1) || myAddress != 1) {  //if it's iteration 1 in arduino 1 there's nothing in the i2c to read
+        char aux_string[20];  //the string received from other nodes has format: "d1 d2", needed to break it down
         i2calib->string_consensus.toCharArray(aux_string, i2calib->string_consensus.length());
         char *token = strtok(aux_string, " ");
-
-        Serial.print("token = ");
-        Serial.println(token);
-
         char str[7];
         char str2[7];
         if(token != NULL) 
           strcpy(str, token);
-
-        Serial.print("str = ");
-        Serial.println(str);
-
         token = strtok(NULL, " ");
         if(token != NULL)
           strcpy(str2, token);
-        d2_copy[0] = atof(str);
+        d2_copy[0] = atof(str);   //save the copy received from other arduino
         d2_copy[1] = atof(str2);
-        
-
-        Serial.print("d2_copy[0] = ");
-        Serial.println(d2_copy[0]);
-
-        Serial.print("str2 = ");
-        Serial.println(str2);
-        Serial.print("d2_copy[1] = ");
-        Serial.println(d2_copy[1]);
       }
 
         
       double d11_best = -1;
       double d12_best = -1;
-      min_best_1[i] = 100000; //big number
+      double min_best_1 = 100000; //big number, o prof tem esta variavel como vector
       double sol_unconstrained = 1;
       double sol_boundary_linear = 1;
       double sol_boundary_0 = 1;
@@ -242,10 +223,10 @@ float Consensus::consensusIter(){
       //compute function value and if best store new optimum
       if (sol_unconstrained) {
         double min_unconstrained = 0.5*q1*pow(d11u,2) + c1*d11u + y1[0]*(d11u-d1_av[0]) + y1[1]*(d12u-d1_av[1]) + rho/2*pow((d11u-d1_av[0]),2) + rho/2*pow((d12u-d1_av[1]),2);
-        if (min_unconstrained < min_best_1[i]) {
+        if (min_unconstrained < min_best_1) {
           d11_best = d11u;
           d12_best = d12u;
-          min_best_1[i] = min_unconstrained;
+          min_best_1 = min_unconstrained;
         }
       }
       //compute minimum constrained to linear boundary   
@@ -258,10 +239,10 @@ float Consensus::consensusIter(){
       // compute function value and if best store new optimum
       if (sol_boundary_linear ) {
         double min_boundary_linear = 0.5*q1*pow(d11bl,2) + c1*d11bl + y1[0]*(d11bl-d1_av[0]) + y1[1]*(d12bl-d1_av[1]) + rho/2*pow((d11bl-d1_av[0]),2) + rho/2*pow((d12bl-d1_av[1]),2);
-        if (min_boundary_linear < min_best_1[i]){
+        if (min_boundary_linear < min_best_1){
           d11_best = d11bl;
           d12_best = d12bl;
-          min_best_1[i] = min_boundary_linear;
+          min_best_1 = min_boundary_linear;
         }
       }
       //compute minimum constrained to 0 boundary
@@ -273,10 +254,10 @@ float Consensus::consensusIter(){
       //compute function value and if best store new optimum
       if (sol_boundary_0) {
         double min_boundary_0 = 0.5*q1*pow(d11b0,2) + c1*d11b0 + y1[0]*(d11b0-d1_av[0]) + y1[1]*(d12b0-d1_av[1]) + rho/2*pow((d11b0-d1_av[0]),2) + rho/2*pow((d12b0-d1_av[1]),2);
-        if (min_boundary_0 < min_best_1[i]) {
+        if (min_boundary_0 < min_best_1) {
           d11_best = d11b0;
           d12_best = d12b0;
-          min_best_1[i] = min_boundary_0;
+          min_best_1 = min_boundary_0;
            }
       }
       //compute minimum constrained to 100 boundary
@@ -288,10 +269,10 @@ float Consensus::consensusIter(){
       // compute function value and if best store new optimum
       if (sol_boundary_100) {
         double min_boundary_100 = 0.5*q1*pow(d11b100,2) + c1*d11b100 + y1[0]*(d11b100-d1_av[0]) + y1[1]*(d12b100-d1_av[1]) + rho/2*pow((d11b100-d1_av[0]),2) + rho/2*pow((d12b100-d1_av[1]),2);
-        if (min_boundary_100 < min_best_1[i]){
+        if (min_boundary_100 < min_best_1){
           d11_best = d11b100;
           d12_best = d12b100;
-          min_best_1[i] = min_boundary_100;
+          min_best_1 = min_boundary_100;
         }
       }
       //compute minimum constrained to linear and zero boundary
@@ -311,10 +292,10 @@ float Consensus::consensusIter(){
       // compute function value and if best store new optimum
       if (sol_linear_0) {
         double min_linear_0 = 0.5*q1*pow(d11l0,2) + c1*d11l0 + y1[0]*(d11l0-d1_av[0]) + y1[1]*(d12l0-d1_av[1]) + rho/2*pow((d11l0-d1_av[0]),2) + rho/2*pow((d12l0-d1_av[1]),2);
-        if (min_linear_0 < min_best_1[i]){
+        if (min_linear_0 < min_best_1){
           d11_best = d11l0;
           d12_best = d12l0;
-          min_best_1[i] = min_linear_0;
+          min_best_1 = min_linear_0;
            }
       }
       //compute minimum constrained to linear and 100 boundary
@@ -334,15 +315,15 @@ float Consensus::consensusIter(){
       // compute function value and if best store new optimum
       if (sol_linear_100){
         double min_linear_100 = 0.5*q1*pow(d11l100,2) + c1*d11l100 + y1[0]*(d11l100-d1_av[0]) + y1[1]*(d12l100-d1_av[1]) + rho/2*pow((d11l100-d1_av[0]),2) + rho/2*pow((d12l100-d1_av[1]),2);
-        if (min_linear_100 < min_best_1[i]){
+        if (min_linear_100 < min_best_1){
           d11_best = d11u;
           d12_best = d12u;
-          min_best_1[i] = min_linear_100;
+          min_best_1 = min_linear_100;
            }
       }
       //store data and save for next cycle
-      best_d11[i] = d11_best;
-      best_d12[i] = d12_best;
+      //best_d11[i] = d11_best; o prof tem esta variavel mas acho que nao faz falta
+      //best_d12[i] = d12_best; aspas aspas
       d1[0] = d11_best;
       d1[1] = d12_best;
   
@@ -357,32 +338,24 @@ float Consensus::consensusIter(){
       // send node 1 solution to neighboors
       double *d1_copy = d1; //mandar a variavel para o vizinho
 
-      ///TROCAR A VARIAVEL
+     
     /* double daux=d1_copy[0];
       d1_copy[0]= d1_copy[1];
       d1_copy[1]= daux;  */
 
-      i2calib->consensusFlag=0;
-
-      Serial.print("d1 value=");
-      Serial.println(d1[0]);
-      Serial.print("d2 value=");
-      Serial.println(d1[1]);
-      //mandar variavel ao outro arduino
+ 
+      //mandar variavel ao outro arduino,
       char d_vector[20];
       char d_aux[7];
       char space[] = " ";
+      //trocar os indices ja que todos os arduinos assumem i=1, em que i é o indice
       dtostrf(d1_copy[1], 7, 2,d_vector);
       dtostrf(d1_copy[0], 7, 2,d_aux);
       strcat(d_vector, space);
       strcat(d_vector, d_aux);
-      Serial.print("String junta = ");
-      Serial.println(d_vector);
 
       i2calib->send((byte) 5, (byte) i2calib->getAddr(0), d_vector);
 
-      Serial.print("i = ");
-      Serial.println(i);
 
       i++;
 
@@ -390,6 +363,8 @@ float Consensus::consensusIter(){
   }
   Serial.print("lux = ");
   Serial.println((k11*d1[1]+d1[2]*k12));
+  Serial.print("pwm% = ");
+  Serial.println(d1[1]);
   return d1[1];
 
 }
