@@ -358,9 +358,9 @@ float Consensus::consensusIter(){
       double *d1_copy = d1; //mandar a variavel para o vizinho
 
       ///TROCAR A VARIAVEL
-      double daux=d1_copy[0];
+    /* double daux=d1_copy[0];
       d1_copy[0]= d1_copy[1];
-      d1_copy[1]= daux;  
+      d1_copy[1]= daux;  */
 
       i2calib->consensusFlag=0;
 
@@ -372,8 +372,8 @@ float Consensus::consensusIter(){
       char d_vector[20];
       char d_aux[7];
       char space[] = " ";
-      dtostrf(d1_copy[0], 7, 2,d_vector);
-      dtostrf(d1_copy[1], 7, 2,d_aux);
+      dtostrf(d1_copy[1], 7, 2,d_vector);
+      dtostrf(d1_copy[0], 7, 2,d_aux);
       strcat(d_vector, space);
       strcat(d_vector, d_aux);
       Serial.print("String junta = ");
@@ -388,7 +388,8 @@ float Consensus::consensusIter(){
 
     }
   }
-
+  Serial.print("lux = ");
+  Serial.println((k11*d1[1]+d1[2]*k12));
   return d1[1];
 
 }

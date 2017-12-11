@@ -84,6 +84,7 @@ void loop() {
     c1.cleanCalibVars();  //clean all variables used in calibration
     c1.start_calibration(); //starts a new calibration
     pwm = c1.consensusIter();
+    
        
   }
   
