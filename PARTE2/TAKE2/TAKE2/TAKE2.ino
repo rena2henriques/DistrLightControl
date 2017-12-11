@@ -73,6 +73,8 @@ void setup() {
    //temp
    if(i2c->getAddrListSize() > 0) {
       c1.start_calibration();
+
+      Serial.println("Sai do calibration");
       pwm = c1.consensusIter();
    }
 }

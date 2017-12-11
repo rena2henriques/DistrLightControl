@@ -44,7 +44,7 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
           consensusFlag = 1;
           string_consensus = data;
           Serial.print("string consensus");
-          Serial.print(string_consensus);
+          Serial.println(string_consensus);
           break;
    }
  

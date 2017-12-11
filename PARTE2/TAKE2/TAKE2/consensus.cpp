@@ -181,20 +181,34 @@ float Consensus::consensusIter(){
       d2_copy[1]=i2calib->dList.get(1);*/
       if((i != 0 && myAddress == 1) || myAddress != 1) {
         char aux_string[20];
-        i2calib->string_consensus.toCharArray(aux_string, 20);
-        Serial.print("to char array = ");
-        Serial.println(aux_string);
+        i2calib->string_consensus.toCharArray(aux_string, i2calib->string_consensus.length());
         char *token = strtok(aux_string, " ");
+
+        Serial.print("token = ");
+        Serial.println(token);
+
         char str[7];
         char str2[7];
         if(token != NULL) 
           strcpy(str, token);
+
+        Serial.print("str = ");
+        Serial.println(str);
+
         token = strtok(NULL, " ");
         if(token != NULL)
           strcpy(str2, token);
         d2_copy[0] = atof(str);
         d2_copy[1] = atof(str2);
-       
+        
+
+        Serial.print("d2_copy[0] = ");
+        Serial.println(d2_copy[0]);
+
+        Serial.print("str2 = ");
+        Serial.println(str2);
+        Serial.print("d2_copy[1] = ");
+        Serial.println(d2_copy[1]);
       }
 
         
@@ -346,7 +360,7 @@ float Consensus::consensusIter(){
       ///TROCAR A VARIAVEL
       double daux=d1_copy[0];
       d1_copy[0]= d1_copy[1];
-      d1_copy[1]= daux;   
+      d1_copy[1]= daux;  
 
       i2calib->consensusFlag=0;
 
@@ -366,6 +380,9 @@ float Consensus::consensusIter(){
       Serial.println(d_vector);
 
       i2calib->send((byte) 5, (byte) i2calib->getAddr(0), d_vector);
+
+      Serial.print("i = ");
+      Serial.println(i);
 
       i++;
 
