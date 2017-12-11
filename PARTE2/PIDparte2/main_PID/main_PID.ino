@@ -31,14 +31,67 @@ int howLongToWait = 100;
 int lastTimeItHappened = 0;
 int howLongItsBeen = 0;
 
+// string reading
+char rx_byte = 0;
+String rx_str = "";
+char temp_str[20] = "";
+char temp_fl[20] = "";
+
 //classes
 CommI2C* i2c = new CommI2C();
-Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 35);
+Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 50);
 PID pid(-0.62, 1.96, 0, 255, 70, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
 
 //just an empty string
 char empty[] = "";
 
+
+// reads the serial buffer and changes the variables accordingly
+void analyseString(String serial_string) {
+    
+    char *rx_str_aux = serial_string.c_str();
+            
+    sscanf(rx_str_aux, "%[^ =] = %[^\n]", temp_str, temp_fl);
+
+      // new reference value
+    if ( strcmp(temp_str,"lux_ref") == 0){
+      pid.setReference(atof(temp_fl));
+      // the desk it occupied
+    } else if (strcmp(temp_str, "on") == 0) {
+      pid.setReference(70);
+      // desk is unoccupied
+    } else if (strcmp(temp_str, "off") == 0) {
+      pid.setReference(35);
+      // anti-windup system is off
+    } else if (strcmp(temp_str,"antiwindup_off") == 0) {
+      pid.setAntiWindupMode(0);
+      // anti-windup system is on
+    } else if (strcmp(temp_str,"antiwindup_on") == 0) {
+      pid.setAntiWindupMode(1);
+      // feedforward is on
+    } else if (strcmp(temp_str,"ffwd_on") == 0) {
+      pid.setFFWDMode(1);
+      // feedforward is off
+    } else if (strcmp(temp_str,"ffwd_off") == 0) {
+      pid.setFFWDMode(0);
+      // deadzone is off
+    } else if (strcmp(temp_str,"dead_off") == 0){
+      pid.setDeadMode(0);
+      // deadzone is on
+    } else if (strcmp(temp_str,"dead_on") == 0) {
+      pid.setDeadMode(1);
+    } else if (strcmp(temp_str,"filter_on") == 0) {
+      filter_flag=1;
+      n_samples=30;
+    } else if (strcmp(temp_str,"filter_off") == 0) {
+      filter_flag=0;
+      n_samples=1;
+    }
+    
+      
+    memset(temp_fl, 0, 20);
+    memset(temp_str, 0, 20);  
+}
 
 void receiveHandler(int howMany) {
   int label;
@@ -89,6 +142,10 @@ void setup() {
     i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
       c1.start_calibration();
       pwmconsensus = c1.consensusIter();
+      Serial.print("Pwm=");
+      Serial.println(pwmconsensus);
+      Serial.print("luxconsensus=");
+      Serial.println(c1.getRefConsensus());
       pid.cleanvars();
       Serial.print("pwm =");
     Serial.println(pwmconsensus);
@@ -101,15 +158,33 @@ void setup() {
 }
 
 void loop() {
+
+  // put your main code here, to run repeatedly:
+  if (Serial.available() > 0) {    // is a character available?
+    rx_byte = Serial.read();       // get the character
+    
+    if (rx_byte != '\n') {
+      // a character of the string was received
+      rx_str += rx_byte;
+    }
+    // end of string
+    else {
+      // checks what serial buffer said
+      analyseString(rx_str);
+      rx_str = ""; // clear the string for reuse
+    }
+  }
+
   
   //recalibration
   if(i2c->recalibration == 1) {
     c1.cleanCalibVars();  //clean all variables used in calibration
     c1.start_calibration(); //starts a new calibration
-    pwmconsensus = c1.consensusIter();
-    Serial.print("pwm =");
+
+    pwmconsensus = c1.consensusIter();   
+    Serial.print("Pwm=");
     Serial.println(pwmconsensus);
-    Serial.print("lux =");
+    Serial.print("luxconsensus=");
     Serial.println(c1.getRefConsensus());
     pid.cleanvars();
     pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
@@ -128,8 +203,7 @@ void loop() {
 
     // converts the voltage to Lux
     lux = pid.vtolux(avg_value);
-    //lux=lux*1.425; <--- para novo ldr?
-
+    
     outputValue = pid.calculate(lux);
 
     // write the pwm to the LED

@@ -64,8 +64,7 @@ void Consensus::start_calibration() {
   int adc_o = analogRead(ldrPin);
   o1 = adcToLux(adc_o);
  /* Serial.print("fim da calibração O1 = ");
-  Serial.print(o1);*/
-  
+  Serial.print(o1);*/  
 }
 
 void Consensus::check_TurnEnd (int nacks, int &nreads) {
@@ -90,8 +89,9 @@ void Consensus::readADCvalue(int address) {
      char empty[] = "";
      int adc = analogRead(ldrPin);
      Klist.add(adcToLux(adc)/(100*pwm/255)); //to calculate K, set pwm to % and calculate
-    // Serial.println("other k = ");
-     //Serial.print(adcToLux(adc)/(100*pwm/255));
+
+     /*Serial.println("other k = ");
+     Serial.print(adcToLux(adc)/(100*pwm/255));*/
      //send an ACK to the HIGH node
      i2calib->send((byte) 2, (byte) address, empty); //cuidado com a string
   
@@ -114,14 +114,16 @@ void Consensus::ledON() {
     char empty[] = "";
     analogWrite(ledPin, pwm);
     //Serial.print("estou no led Oon");
+
     howLongItsBeen = millis();
     while(true){  //waits for the led to stabilize beofre doing anything
       if(millis() - howLongItsBeen >= howLongToWait){
         i2calib->sendToAll((byte) 1, empty);    //sends the order to neighbours read their ADC with my led on
         int adc = analogRead(ldrPin);
         Klist.add(adcToLux(adc)/(100*pwm/255)); //read my adc with (only) my led on
-        //Serial.print("K = ");
-        //Serial.println(adcToLux(adc)/(100*pwm/255));
+
+        /*Serial.print("K = ");
+        Serial.println(adcToLux(adc)/(100*pwm/255));*/
         break;  //se recebermos um reset temos de fazer analog low
       }
 
@@ -362,9 +364,11 @@ float Consensus::consensusIter(){
     }
   }
   /*Serial.print("lux = ");
-  Serial.println((k11*d1[1]+d1[2]*k12+o1));
+println(d1[1]);*/
+
+  Serial.println((k11*d1[0]+d1[1]*k12+o1));
   Serial.print("pwm% = ");
-  Serial.println(d1[1]);*/
+  Serial.println(d1[0]);
 
   newref=k11*d1[0]+d1[1]*k12+o1;
   
@@ -375,7 +379,5 @@ float Consensus::consensusIter(){
 float Consensus::getRefConsensus(){
     return newref;    
 }
-
-
 
 
