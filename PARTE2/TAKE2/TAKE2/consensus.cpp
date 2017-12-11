@@ -168,16 +168,52 @@ float Consensus::consensusIter(){
   }
   else{
     k11 = Klist.get(1);
-    k12=  Klist.get(0); 
+    k12 = Klist.get(0); 
   }
 
  int i=0;
   while(i<50){
-
+    if(i2calib->recalibration == 1)
+       return -1; //someone pressed reset
+    
     if(i2calib->consensusFlag !=0){
+
+      i2calib->consensusFlag=0;
      /* d2_copy[0]=i2calib->dList.get(0);
       d2_copy[1]=i2calib->dList.get(1);*/
+      if((i != 0 && myAddress == 1) || myAddress != 1) {
+        char aux_string[20];
+        i2calib->string_consensus.toCharArray(aux_string, i2calib->string_consensus.length());
+        char *token = strtok(aux_string, " ");
 
+        Serial.print("token = ");
+        Serial.println(token);
+
+        char str[7];
+        char str2[7];
+        if(token != NULL) 
+          strcpy(str, token);
+
+        Serial.print("str = ");
+        Serial.println(str);
+
+        token = strtok(NULL, " ");
+        if(token != NULL)
+          strcpy(str2, token);
+        d2_copy[0] = atof(str);
+        d2_copy[1] = atof(str2);
+        
+
+        Serial.print("d2_copy[0] = ");
+        Serial.println(d2_copy[0]);
+
+        Serial.print("str2 = ");
+        Serial.println(str2);
+        Serial.print("d2_copy[1] = ");
+        Serial.println(d2_copy[1]);
+      }
+
+        
       double d11_best = -1;
       double d12_best = -1;
       min_best_1[i] = 100000; //big number
@@ -324,11 +360,9 @@ float Consensus::consensusIter(){
       double *d1_copy = d1; //mandar a variavel para o vizinho
 
       ///TROCAR A VARIAVEL
-      double daux=d1_copy[0];
+    /* double daux=d1_copy[0];
       d1_copy[0]= d1_copy[1];
-      d1_copy[1]= daux;   
-
-      i2calib->consensusFlag=0;
+      d1_copy[1]= daux;  */
 
       Serial.print("d1 value=");
       Serial.println(d1[0]);
@@ -338,36 +372,35 @@ float Consensus::consensusIter(){
       char d_vector[20];
       char d_aux[7];
       char space[] = " ";
-      dtostrf(d1[0], 7, 2,d_vector);
-      dtostrf(d1[1], 7, 2,d_aux);
+      dtostrf(d1_copy[1], 7, 2,d_vector);
+      dtostrf(d1_copy[0], 7, 2,d_aux);
       strcat(d_vector, space);
       strcat(d_vector, d_aux);
       Serial.print("String junta = ");
       Serial.println(d_vector);
 
-      char *token = strtok(d_vector, " ");
-      char str[7];
-      char str2[7];
-      if(token != NULL) 
-        strcpy(str, token);
-      token = strtok(NULL, " ");
-      if(token != NULL)
-        strcpy(str2, token);
-      Serial.print("str = ");
-      Serial.println(str);
-      Serial.print("str2 = ");
-      Serial.println(str2);
-     /* i2calib->send((byte) 5, (byte) i2calib->getAddr(0), d_vector);
-      i2calib->send((byte) 5, (byte) i2calib->getAddr(0), d_vector);*/
+      i2calib->send((byte) 5, (byte) i2calib->getAddr(0), d_vector);
+
+      Serial.print("i = ");
+      Serial.println(i);
 
       i++;
 
     }
   }
+  Serial.print("lux = ");
+  Serial.println((k11*d1[1]+d1[2]*k12));
 
+  newref=k11*d1[1]+d1[2]*k12+o1;
+  
   return d1[1];
-
 }
+
+
+float Consensus::getRefConsensus(){
+    return newref;    
+}
+
 
 
 

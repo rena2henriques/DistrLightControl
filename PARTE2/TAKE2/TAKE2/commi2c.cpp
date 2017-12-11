@@ -22,9 +22,9 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
    Serial.print("data = ");
    Serial.println(data);
 
-   float value = data.toFloat();
+   /*float value = data.toFloat();
    Serial.print("value = ");
-   Serial.println(value);
+   Serial.println(value);*/
 
    
    switch(label) {
@@ -42,6 +42,9 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
           break;
       case 5:
           consensusFlag = 1;
+          string_consensus = data;
+          Serial.print("string consensus");
+          Serial.println(string_consensus);
           break;
    }
  

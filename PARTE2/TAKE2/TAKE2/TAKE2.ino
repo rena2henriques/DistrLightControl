@@ -17,7 +17,7 @@ int lastTimeItHappened = 0;
 int howLongItsBeen = 0;
 
 CommI2C* i2c = new CommI2C();
-Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 70);
+Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 50);
 
 //just an empty string
 char empty[] = "";
@@ -41,6 +41,8 @@ void receiveHandler(int howMany) {
    i2c->msgDecoder(label, src_addr, data);
   
 }
+
+int pwm = 0;
 
 
 // used only for the case of our problem (2 arduinos)
@@ -71,7 +73,9 @@ void setup() {
    //temp
    if(i2c->getAddrListSize() > 0) {
       c1.start_calibration();
-      c1.consensusIter();
+
+      Serial.println("Sai do calibration");
+      pwm = c1.consensusIter();
    }
 }
 
@@ -79,6 +83,9 @@ void loop() {
   if(i2c->recalibration == 1) {
     c1.cleanCalibVars();  //clean all variables used in calibration
     c1.start_calibration(); //starts a new calibration
+    pwm = c1.consensusIter();
+    
+       
   }
   
   

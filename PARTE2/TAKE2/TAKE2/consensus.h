@@ -24,7 +24,9 @@ private:
   float c1 = 1;
   float q1 = 0; 
   float L1;
-  
+
+  //lux reference obtained in consensus
+  float newref=0;
 
   //line of K matrix
   LinkedList<float> Klist = LinkedList<float>();
@@ -52,6 +54,8 @@ public:
   float getExternalIlluminance();
 
   float consensusIter();
+
+  float getRefConsensus();
 
   //variables
   int howLongToWait = 200;

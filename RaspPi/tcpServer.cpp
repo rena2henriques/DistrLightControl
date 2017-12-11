@@ -70,12 +70,12 @@
       } else if (request_[0] == '\n') {
 
         // do nothing
-        boost::asio::async_write(socket_, boost::asio::buffer("Ping received."),
+        boost::asio::async_write(socket_, boost::asio::buffer("Ping received.\n"),
               boost::bind(&session::handle_write, this, boost::asio::placeholders::error));
 
       } else {
         // not a recognizable command 
-        boost::asio::async_write(socket_, boost::asio::buffer("Request not found."),
+        boost::asio::async_write(socket_, boost::asio::buffer("Request not found.\n"),
               boost::bind(&session::handle_write, this, boost::asio::placeholders::error));
       }
 
@@ -121,17 +121,27 @@
   void Tcp_server::start_read_input() {
 
     // Read a line of input entered by the user.
-    boost::asio::async_read_until(input_, input_buffer_, '\n', 
+    async_read_until(input_, input_buffer_, '\n', 
         boost::bind(&Tcp_server::handle_read_input, this, _1, _2));
   }
 
   void Tcp_server::handle_read_input(const boost::system::error_code& error,
       std::size_t length) {
-    if (!error)
-    {
-       std::cout << &input_buffer_ << std::endl;
+    if (!error) {
 
-       arduino->sendMessage("Teste serial");
+      std::istream response_stream(&input_buffer_);
+      std::string result;
+      response_stream >> result;
+
+      //std::cout << result << std::endl;
+
+      if ( result == "exit") {
+        std::cout << "Entered exit" << std::endl;
+        io_service_.stop();
+        return;
+      }
+
+      //arduino->sendMessage("Teste serial");
     }
     start_read_input();
   }

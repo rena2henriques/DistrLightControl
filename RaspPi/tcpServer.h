@@ -42,6 +42,7 @@ private:
 
 	void handle_write(const boost::system::error_code& error);
 
+
 	tcp::socket socket_;
   	enum { max_length = 1024 };
   	char request_[max_length];
@@ -67,6 +68,8 @@ private:
 
 	void handle_accept(session* new_session,
       const boost::system::error_code& error);
+
+	std::string buffer_to_string(const boost::asio::streambuf &buffer);
 
 	boost::asio::io_service& io_service_;
 	tcp::acceptor acceptor_;
