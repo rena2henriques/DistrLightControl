@@ -26,18 +26,12 @@ private:
 	float e_prev, lux_prev;
 	float error;
 	int u;
+  int uConsensus;
 
 	int actuatorMax;
 	int actuatorMin;
 	// for transforming LUX to pwm
-  
-  const float slope = 3.2059;//
-  const float y_origin = 2.1629;
-	//const float slope = 2.4356;//3.2059;
-  //const float y_origin = -6.9365;//2.1629;
-  //const float y_origin=-7.98;
-  //const float slope=2.459;
-
+ 
 
 	// Voltage to lux
 	float a_lux = 0.0; // declive da reta aproximada do LDR
@@ -53,7 +47,6 @@ private:
 	//FFWD Variables
   	int FFWDFlag; // checks if ffwd is being used
   	int first_iteration; // first iteration of a certain ref
-  	int uFFWD; // ffwd gain
 
 	// deadzone variables
 	int deadFlag; // 0 if deadzone off, 1 if on
@@ -68,7 +61,7 @@ public:
 
 	// constructor
 	PID();
-	PID(float a_ldr, float b_ldr, int actMin, int actMax, int ocupationMax, int ocupationMin, int ref, float antiWk, 
+	PID(float a_ldr, float b_ldr, int actMin, int actMax, int ocupationMax, int ocupationMin, float antiWk, 
 														int antiFlag, int deadflag, float deadMin, float deadMax, int FFWD_flag, float kp, float ki, float kd, float samplingTime);
 	void setAntiWindupParam(float k);
 	void setActuatorLimits(int min, int max);
@@ -77,7 +70,7 @@ public:
   	int getFFWDFlag();
   	void setDeadMode(int deadmode);
 
-	int getPwmValue(float lux);
+	void setPwmConsensus(float dconsensus);
 	float vtolux(int sensorValue);
 
 	void setSamplingTime(float samplingTime);
@@ -91,7 +84,11 @@ public:
 	void setPIDparameters(float kp, float ki, float kd);
 
 	int calculate(float lux);
+ 
+  void cleanvars();
+
 };
+
 
 
 #endif

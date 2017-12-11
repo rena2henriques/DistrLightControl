@@ -13,14 +13,15 @@ void CommI2C::setMyAddress (int address) {
 //decodes the message received from i2c
 void CommI2C::msgDecoder(int label, int src_addr, String data){
    //temp
-   Serial.print("label = ");
+
+   /*Serial.print("label = ");
    Serial.println(label);
 
    Serial.print("src = ");
    Serial.println(src_addr);
 
    Serial.print("data = ");
-   Serial.println(data);
+   Serial.println(data);*/
 
    /*float value = data.toFloat();
    Serial.print("value = ");
@@ -43,8 +44,9 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
       case 5:
           consensusFlag = 1;
           string_consensus = data;
-          Serial.print("string consensus");
-          Serial.println(string_consensus);
+
+          /*Serial.print("string consensus");
+          Serial.println(string_consensus);*/
           break;
    }
  
