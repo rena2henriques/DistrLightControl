@@ -168,7 +168,7 @@ float Consensus::consensusIter(){
   }
   else{
     k11 = Klist.get(1);
-    k12=  Klist.get(0); 
+    k12 = Klist.get(0); 
   }
 
  int i=0;
@@ -181,7 +181,9 @@ float Consensus::consensusIter(){
       d2_copy[1]=i2calib->dList.get(1);*/
       if((i != 0 && myAddress == 1) || myAddress != 1) {
         char aux_string[20];
-        i2calib->string_consensus.toCharArray(aux_string, sizeof(i2calib->string_consensus));
+        i2calib->string_consensus.toCharArray(aux_string, 20);
+        Serial.print("to char array = ");
+        Serial.println(aux_string);
         char *token = strtok(aux_string, " ");
         char str[7];
         char str2[7];
@@ -192,8 +194,7 @@ float Consensus::consensusIter(){
           strcpy(str2, token);
         d2_copy[0] = atof(str);
         d2_copy[1] = atof(str2);
-        Serial.print("str2 = ");
-        Serial.println(str2);
+       
       }
 
         
@@ -357,8 +358,8 @@ float Consensus::consensusIter(){
       char d_vector[20];
       char d_aux[7];
       char space[] = " ";
-      dtostrf(d1[0], 7, 2,d_vector);
-      dtostrf(d1[1], 7, 2,d_aux);
+      dtostrf(d1_copy[0], 7, 2,d_vector);
+      dtostrf(d1_copy[1], 7, 2,d_aux);
       strcat(d_vector, space);
       strcat(d_vector, d_aux);
       Serial.print("String junta = ");
