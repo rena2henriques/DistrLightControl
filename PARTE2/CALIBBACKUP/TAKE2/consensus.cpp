@@ -1,7 +1,7 @@
-#include "calibration.h"  
+#include "consensus.h"  
 
 
-Calibration::Calibration(CommI2C *I2C, int ldrPin_, int ledPin_, float a_lux_, float b_lux_){ //constructor
+Consensus::Consensus(CommI2C *I2C, int ldrPin_, int ledPin_, float a_lux_, float b_lux_){ //constructor
   
   i2calib = I2C;
   ldrPin = ldrPin_;
@@ -10,12 +10,15 @@ Calibration::Calibration(CommI2C *I2C, int ldrPin_, int ledPin_, float a_lux_, f
   b_lux = b_lux_;
 }
 
-void Calibration::setMyAddress(int address_) {
+void Consensus::setMyAddress(int address_) {
    myAddress = address_;
 }
 
+void Consensus::getExternalIlluminance() {
+   return O1;   
+}
 
-void Calibration::start_calibration() {
+void Consensus::start_calibration() {
   int nreads=0;
   int nacks=0;
   
@@ -57,13 +60,18 @@ void Calibration::start_calibration() {
 
   int adc_o = analogRead(ldrPin);
   O1 = adcToLux(adc_o);
+<<<<<<< HEAD:PARTE2/TAKE2/TAKE2/calibration.cpp
   Serial.print("O value=");
   Serial.println(O1);
   Serial.println("cheguei ao fim da calibração");
+=======
+  Serial.print("fim da calibração O1 = ");
+  Serial.print(O1);
+>>>>>>> 196a08b98e215e9c81fea2f3376362d88bc988ea:PARTE2/CALIBBACKUP/TAKE2/consensus.cpp
   
 }
 
-void Calibration::check_TurnEnd (int nacks, int &nreads) {
+void Consensus::check_TurnEnd (int nacks, int &nreads) {
   int nextAddress;
   char empty[] = "";
   if(nacks == i2calib->getAddrListSize()) {//if all neighbours sent me an ack
@@ -83,7 +91,7 @@ void Calibration::check_TurnEnd (int nacks, int &nreads) {
   }
 }
 
-void Calibration::readADCvalue(int address) {
+void Consensus::readADCvalue(int address) {
      char empty[] = "";
      int adc = analogRead(ldrPin);
      Klist.add(adcToLux(adc)/(100*pwm/255)); //to calculate K, set pwm to % and calculate
@@ -95,7 +103,7 @@ void Calibration::readADCvalue(int address) {
   
 }
 
-float Calibration::adcToLux(int ADCvalue){
+float Consensus::adcToLux(int ADCvalue){
 
     // bits to voltage
     float lux = ADCvalue*5.0/1024.0;
@@ -107,7 +115,7 @@ float Calibration::adcToLux(int ADCvalue){
     return lux;
 }
 
-void Calibration::ledON() {
+void Consensus::ledON() {
  
     char empty[] = "";
     analogWrite(ledPin, pwm);
@@ -126,9 +134,14 @@ void Calibration::ledON() {
    
 }
 
+<<<<<<< HEAD:PARTE2/TAKE2/TAKE2/calibration.cpp
 
 void Calibration::cleanCalibVars(){
     //clears flags to recalibration
+=======
+void Consensus::cleanCalibVars(){
+    //clears flags to reconsensus
+>>>>>>> 196a08b98e215e9c81fea2f3376362d88bc988ea:PARTE2/CALIBBACKUP/TAKE2/consensus.cpp
     i2calib->readADC = 0;
     i2calib->checkTurnEnd = 0;
     i2calib->ledON = 0;
