@@ -100,5 +100,3 @@ void CommI2C::sendToAll(byte label, char data[7]) {
   }
 }
 
-
-

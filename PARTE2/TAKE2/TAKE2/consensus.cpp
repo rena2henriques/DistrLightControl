@@ -176,9 +176,11 @@ float Consensus::consensusIter(){
        return -1; //someone pressed reset
     
     if(i2calib->consensusFlag !=0){
-      i2calib->consensusFlag=0; //reset flag
-      if((i != 0 && myAddress == 1) || myAddress != 1) {  //if it's iteration 1 in arduino 1 there's nothing in the i2c to read
-        char aux_string[20];  //the string received from other nodes has format: "d1 d2", needed to break it down
+
+
+      i2calib->consensusFlag=0;
+      if((i != 0 && myAddress == 1) || myAddress != 1) {
+        char aux_string[20];
         i2calib->string_consensus.toCharArray(aux_string, i2calib->string_consensus.length());
         char *token = strtok(aux_string, " ");
         char str[7];
@@ -343,8 +345,6 @@ float Consensus::consensusIter(){
       d1_copy[0]= d1_copy[1];
       d1_copy[1]= daux;  */
 
- 
-      //mandar variavel ao outro arduino,
       char d_vector[20];
       char d_aux[7];
       char space[] = " ";
@@ -365,9 +365,17 @@ float Consensus::consensusIter(){
   Serial.println((k11*d1[1]+d1[2]*k12));
   Serial.print("pwm% = ");
   Serial.println(d1[1]);
-  return d1[1];
 
+  newref=k11*d1[1]+d1[2]*k12+o1;
+  
+  return d1[1];
 }
+
+
+float Consensus::getRefConsensus(){
+    return newref;    
+}
+
 
 
 
