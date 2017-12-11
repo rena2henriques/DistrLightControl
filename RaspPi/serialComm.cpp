@@ -72,7 +72,7 @@ std::string SerialComm::setCommand(char message[]) { // <---------- TODO
     strncpy(flag, token, 1); // watch out
   }
 
-  //printf("%s %s\n", desk, flag); // test
+  printf("%s %s\n", desk, flag); // test
 
   //sendSerialMsg(desk, flag); <--------------- TODO
 
