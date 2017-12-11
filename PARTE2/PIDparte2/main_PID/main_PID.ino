@@ -83,13 +83,17 @@ void setup() {
    Wire.onReceive(receiveHandler);
 
    int netSize = i2c->findNodes();    //finds all nodes in the network
-   i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
-
+   
    //temp
    if(i2c->getAddrListSize() > 0) {
+    i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
       c1.start_calibration();
       pwmconsensus = c1.consensusIter();
       pid.cleanvars();
+      Serial.print("pwm =");
+    Serial.println(pwmconsensus);
+    Serial.print("lux =");
+    Serial.println(c1.getRefConsensus());
       pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
       pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
 
@@ -102,7 +106,11 @@ void loop() {
   if(i2c->recalibration == 1) {
     c1.cleanCalibVars();  //clean all variables used in calibration
     c1.start_calibration(); //starts a new calibration
-    pwmconsensus = c1.consensusIter();   
+    pwmconsensus = c1.consensusIter();
+    Serial.print("pwm =");
+    Serial.println(pwmconsensus);
+    Serial.print("lux =");
+    Serial.println(c1.getRefConsensus());
     pid.cleanvars();
     pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
     pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
@@ -125,7 +133,7 @@ void loop() {
     outputValue = pid.calculate(lux);
 
     // write the pwm to the LED
-    analogWrite(analogOutPin, outputValue);
+    analogWrite(ledPin, outputValue);
 
     Serial.print(pid.getReference());
     Serial.print(' ');
