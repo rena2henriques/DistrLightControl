@@ -106,10 +106,11 @@
     : io_service_(io_service),
       acceptor_(io_service, tcp::endpoint(tcp::v4(), port)),
       input_(io_service, ::dup(STDIN_FILENO)),
-      input_buffer_(1024), arduino(arduino_) {
+      input_buffer_(1024), arduino(arduino_) 
+    {
     start_accept();
     start_read_input();
-  }
+   }
 
   void Tcp_server::start_accept() {
 
@@ -137,6 +138,7 @@
 
       if ( result == "exit") {
         std::cout << "Entered exit" << std::endl;
+        arduino->sendMessage("exit"); // tells the arduino the comm is ending
         io_service_.stop();
         return;
       }
