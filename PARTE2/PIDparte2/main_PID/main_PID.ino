@@ -7,6 +7,7 @@ const int ledPin = 9;
 const int analogInPin = A0; // Analog input pin that the LDR is attached to
 
 
+
 // -----PID variables
 int sensorValue = 0; // value read from the pot
 int outputValue = 0.0; // value output to the PWM (analog out)
@@ -34,8 +35,11 @@ int howLongItsBeen = 0;
 // string reading
 char rx_byte = 0;
 String rx_str = "";
-char temp_str[20] = "";
-char temp_fl[20] = "";
+/*char temp_str[20] = "";
+char temp_fl[20] = "";*/
+char rpi_requestType[3];
+char rpi_requestParam[3];
+char rpi_nodeIndex[3];
 
 //classes
 CommI2C* i2c = new CommI2C();
@@ -50,47 +54,18 @@ char empty[] = "";
 void analyseString(String serial_string) {
     
     char *rx_str_aux = serial_string.c_str();
-            
-    sscanf(rx_str_aux, "%[^ =] = %[^\n]", temp_str, temp_fl);
+    Serial.println("im here");
+    Serial.println(rx_str_aux);  
+    if(sscanf(rx_str_aux, "%[^ ] %[^ ] %[^\n]", rpi_requestType, rpi_requestParam, rpi_nodeIndex) != 3);
 
-      // new reference value
-    if ( strcmp(temp_str,"lux_ref") == 0){
-      pid.setReference(atof(temp_fl));
-      // the desk it occupied
-    } else if (strcmp(temp_str, "on") == 0) {
-      pid.setReference(70);
-      // desk is unoccupied
-    } else if (strcmp(temp_str, "off") == 0) {
-      pid.setReference(35);
-      // anti-windup system is off
-    } else if (strcmp(temp_str,"antiwindup_off") == 0) {
-      pid.setAntiWindupMode(0);
-      // anti-windup system is on
-    } else if (strcmp(temp_str,"antiwindup_on") == 0) {
-      pid.setAntiWindupMode(1);
-      // feedforward is on
-    } else if (strcmp(temp_str,"ffwd_on") == 0) {
-      pid.setFFWDMode(1);
-      // feedforward is off
-    } else if (strcmp(temp_str,"ffwd_off") == 0) {
-      pid.setFFWDMode(0);
-      // deadzone is off
-    } else if (strcmp(temp_str,"dead_off") == 0){
-      pid.setDeadMode(0);
-      // deadzone is on
-    } else if (strcmp(temp_str,"dead_on") == 0) {
-      pid.setDeadMode(1);
-    } else if (strcmp(temp_str,"filter_on") == 0) {
-      filter_flag=1;
-      n_samples=30;
-    } else if (strcmp(temp_str,"filter_off") == 0) {
-      filter_flag=0;
-      n_samples=1;
-    }
-    
-      
-    memset(temp_fl, 0, 20);
-    memset(temp_str, 0, 20);  
+    Serial.println("Wrong serial input");
+
+    Serial.print("type = ");
+    Serial.println(rpi_requestType);
+    Serial.print("param = ");
+    Serial.println(rpi_requestParam);
+    Serial.print("index = ");
+    Serial.println(rpi_nodeIndex);
 }
 
 void receiveHandler(int howMany) {
@@ -162,17 +137,18 @@ void loop() {
   // put your main code here, to run repeatedly:
   if (Serial.available() > 0) {    // is a character available?
     rx_byte = Serial.read();       // get the character
-    
     if (rx_byte != '\n') {
+
       // a character of the string was received
       rx_str += rx_byte;
+      
     }
     // end of string
     else {
       // checks what serial buffer said
-      analyseString(rx_str);
       rx_str = ""; // clear the string for reuse
     }
+   
   }
 
   
