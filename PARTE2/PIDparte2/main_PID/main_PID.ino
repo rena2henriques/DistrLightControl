@@ -37,13 +37,14 @@ char rx_byte = 0;
 String rx_str = "";
 /*char temp_str[20] = "";
 char temp_fl[20] = "";*/
-char rpi_requestType[3];
-char rpi_requestParam[3];
-char rpi_nodeIndex[3];
+char rpi_requestType;
+char rpi_requestParam;
+char rpi_nodeIndex;
+int label_rpi;
 
 //classes
 CommI2C* i2c = new CommI2C();
-Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 100);
+Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 60);
 PID pid(-0.62, 1.96, 0, 255, 70, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
 
 //just an empty string
@@ -60,14 +61,36 @@ float lux_antepenult=0.0;
 
 // reads the serial buffer and changes the variables accordingly
 void analyseString(String serial_string) {
-    
+    byte label_rpi;
     char *rx_str_aux = serial_string.c_str();
-    Serial.println("im here");
-    Serial.println(rx_str_aux);  
-    if(sscanf(rx_str_aux, "%[^ ] %[^ ] %[^\n]", rpi_requestType, rpi_requestParam, rpi_nodeIndex) != 3);
+    rpi_requestType = rx_str_aux[0];
+    if(rpi_requestType == 'r'){ //checks if the user requested a reset
+         i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
+         i2c->recalibration = 1;
+         return;
+    }
+    rpi_requestParam = rx_str_aux[2];
+    rpi_nodeIndex = rx_str_aux[4];
 
-    Serial.println("Wrong serial input");
+    if(rpi_requestType == 'g'){
+      label_rpi = 5;
+      Serial.println("label = 5");
+    }
+    else if(rpi_requestType == 's') {
+      Serial.println("label = 6"); 
+      label_rpi = 5;
+    }
+    else {
+      Serial.println("Wrong input");} //pode se mandar isto para o rpi?
+                                    //assumir que a flag b,c,d são feitas no rpi
 
+    /*if(rpi_nodeIndex != myAddress)
+      //send to rpi_nodeIndex, label x, data=rpi_requestParam
+      else (im the one request)
+        //pôr um flag a 1 que é a mesma que punha se fosse outro arduino qlq*/
+    
+    
+    
     Serial.print("type = ");
     Serial.println(rpi_requestType);
     Serial.print("param = ");
@@ -119,10 +142,11 @@ void setup() {
    Wire.onReceive(receiveHandler);
 
    int netSize = i2c->findNodes();    //finds all nodes in the network
-   i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
+   
 
    //temp
    if(i2c->getAddrListSize() > 0) {
+      i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
       c1.start_calibration();
       pwmconsensus = c1.consensusIter();
       Serial.print("Pwm=");
@@ -138,7 +162,7 @@ void setup() {
 
 void loop() {
 
-  // put your main code here, to run repeatedly:
+  //if my addr == 1 ???
   if (Serial.available() > 0) {    // is a character available?
     rx_byte = Serial.read();       // get the character
     if (rx_byte != '\n') {
@@ -150,7 +174,9 @@ void loop() {
     // end of string
     else {
       // checks what serial buffer said
+      analyseString(rx_str);
       rx_str = ""; // clear the string for reuse
+      
     }
    
   }
@@ -168,6 +194,8 @@ void loop() {
     pid.cleanvars();
     pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
     pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
+    pid.setFirstIterationON(); //to send the consensus signal control
+
   }
 
   //pid
@@ -197,8 +225,8 @@ void loop() {
     lux = pid.vtolux(avg_value);
        
     //comfort error - only when measured lux is below the reference lux
-    if( pid.getReference-lux >0){
-      cError=cError+(pid.getReference-lux);
+    if( pid.getReference()-lux >0){
+      cError=cError+(pid.getReference()-lux);
     }
 
     //error flickering - only after the 3rd iteration

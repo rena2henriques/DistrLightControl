@@ -63,8 +63,8 @@ void Consensus::start_calibration() {
 
   int adc_o = analogRead(ldrPin);
   o1 = adcToLux(adc_o);
- /* Serial.print("fim da calibração O1 = ");
-  Serial.print(o1);*/  
+ Serial.print("fim da calibração O1 = ");
+  Serial.print(o1);
 }
 
 void Consensus::check_TurnEnd (int nacks, int &nreads) {
@@ -141,6 +141,12 @@ void Consensus::cleanCalibVars(){
 
     //turns the led off
     analogWrite(ledPin, LOW);
+    howLongItsBeen = millis();
+    while(true) {
+      if(millis() - howLongItsBeen >= howLongToWait){
+        break; 
+      }
+    }
 
     //limpar a lista e find nodes
     if(Klist.size() != 0)

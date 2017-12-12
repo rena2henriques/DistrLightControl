@@ -170,6 +170,10 @@ void PID::setDeadMode(int deadmode) {
   deadFlag = deadmode;
 }
 
+void PID::setFirstIterationON(){
+  first_iteration=1;
+}
+
 void PID::setPIDparameters(float kp, float ki, float kd) {
 	// control parameters
 	Kp = kp;
