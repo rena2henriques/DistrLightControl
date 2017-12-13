@@ -43,7 +43,7 @@ char rpi_nodeIndex[7];
 
 //classes
 CommI2C* i2c = new CommI2C();
-Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 50);
+Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 35);
 PID pid(-0.62, 1.96, 0, 255, 70, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
 
 //just an empty string
@@ -57,6 +57,56 @@ int Ncount=0;
 float lux_penult=0.0;
 float lux_antepenult=0.0;
 
+//other variables
+int occupancyState=0;
+
+
+//  get - analyses the string sent by arduino 1 and send to the raspb the value he requested 
+void rpiAnalyser(rpi_requestParam){
+
+  char label=rpi_requestParam[0];
+  char[10] data;
+  float requestedValue=0;
+   switch(rpi_requestParam[0]) {
+      case 'o':
+          requestedValue=(float)occupancyState; //someone told me to read my ADC          
+          break;
+      case 'L':
+          requestedVale=c1.getLowerRef();
+          break;
+      case 'r':
+          requestedValue=c1.getRefConsensus(); //someone told me to read my ADC          
+          break;
+      case 'O':
+          requestedVale=c1.getExternalIlluminance();
+          break;     
+      case 'e':
+          requestedValue=energy; //someone told me to read my ADC          
+          break;
+      case 'c':
+          requestedVale=cError;
+          break;      
+      case 'v':
+          requestedVale=vFlicker;
+          break;    
+   }
+
+  dtostrf(requestedValue, 10, 2,data);
+
+  Serial.print("label:");
+  Serial.println(label);  
+  Serial.print("myaddress:");
+  Serial.println(myaddress);
+  Serial.print("data:");
+  Serial.println(data);
+  
+  Wire.beginTransmission(rpiAddress);
+  Wire.write(label);
+  Wire.write(myaddress);
+  Wire.write(data);
+  Wire.endTransmission();
+ 
+}
 
 // reads the serial buffer and changes the variables accordingly
 void analyseString(String serial_string) {
@@ -149,21 +199,22 @@ void setup() {
 
 void loop() {
 
-  //if my addr == 1 ???
-  if (Serial.available() > 0) {    // is a character available?
-    rx_byte = Serial.read();       // get the character
-    if (rx_byte != '\n') {
-
-      // a character of the string was received
-      rx_str += rx_byte;
-      
-    }
-    // end of string
-    else {
-      // checks what serial buffer said
-      analyseString(rx_str);
-      rx_str = ""; // clear the string for reuse
-      
+  if(myaddress==1){
+    if (Serial.available() > 0) {    // is a character available?
+      rx_byte = Serial.read();       // get the character
+      if (rx_byte != '\n') {
+  
+        // a character of the string was received
+        rx_str += rx_byte;
+        
+      }
+      // end of string
+      else {
+        // checks what serial buffer said
+        analyseString(rx_str);
+        rx_str = ""; // clear the string for reuse
+        
+      }
     }
   }
   
