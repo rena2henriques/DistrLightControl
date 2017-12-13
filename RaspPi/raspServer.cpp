@@ -28,7 +28,7 @@ void tcp_serial_thread(int port){
     // creating io services for tcp and arduino
     boost::asio::io_service io_service;
 
-    shared_ptr <SerialComm> arduino (new SerialComm(io_service, "/dev/ttyACM0", db));
+    shared_ptr <SerialComm> arduino (new SerialComm(io_service, "/dev/ttyACM0", db, i2c_slave));
 
     Tcp_server s(io_service, port, arduino);
 
@@ -59,6 +59,8 @@ int main(int argc, char* argv[])
       std::cerr << "Usage: async_tcp_echo_server <port>\n";
       return 1;
   }
+
+  // std::thread t1{read_keyboard}; ----> for exiting the program
 
   // starts the server and serial comm thread
   thread threadTcp(tcp_serial_thread, atoi(argv[1]) );

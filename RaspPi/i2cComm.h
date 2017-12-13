@@ -1,13 +1,17 @@
 #ifndef I2C_COMM
 #define I2C_COMM
 
+#include <iostream>
+#include <string>
 #include <stdio.h>
+#include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
 #include <pigpio.h>
 #include <memory.h>
+#include <mutex>
 #include "database.h"
 
 class I2Comm {
@@ -25,6 +29,8 @@ private:
 	// creats the object where we handle the data coming from arduino
 	shared_ptr <Database> db;
 
+	std::mutex mtx;
+
 public:
 
 	I2Comm(shared_ptr <Database> db_);
@@ -37,6 +43,7 @@ public:
 	// processes the data coming from the arduinos
 	void readData(char message[]);
 
+	std::string receiveGet(char request) {
 };
 
 #endif

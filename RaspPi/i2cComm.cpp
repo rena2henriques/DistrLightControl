@@ -70,4 +70,27 @@ void I2Comm::readData(char message[]) {
 }
 
 
+std::string I2Comm::receiveGet(char request) {
+
+	std::lock_guard<std::mutex> lock(mtx);
+
+	while(1){
+		status = bscXfer(&xfer);
+		if ( xfer.rxCnt != 0 ){
+			printf("Received %d bytes\n", xfer.rxCnt);
+			printf("%.*s\n", xfer.rxCnt, xfer.rxBuf);
+
+			if (request == 'o') {
+				break;
+			}  
+		}
+	}
+
+	std::string response(xfer.rxBuf);
+	response.append('\n');
+
+	return response;
+}
+
+
 
