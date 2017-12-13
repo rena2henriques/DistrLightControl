@@ -41,10 +41,14 @@ char rpi_requestType[7];
 char rpi_requestParam[7];
 char rpi_nodeIndex[7];
 
+//references
+int lowRef=35;
+int highRef=70;
+
 //classes
 CommI2C* i2c = new CommI2C();
-Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 35);
-PID pid(-0.62, 1.96, 0, 255, 70, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
+Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, lowRef);
+PID pid(-0.62, 1.96, 0, 255, highRef, lowRef, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
 
 //just an empty string
 char empty[] = "";
@@ -132,13 +136,16 @@ void analyseString(String serial_string) {
         }else {
           Serial.println("Wrong input");
         } //pode se mandar isto para o rpi? assumir que a flag b,c,d são feitas no rpi
-     }else{ //if rpi request my info, no i2c usage
+     }
+     else{ //if rpi request my info, no i2c usage
+      String request(rpi_requestParam);
       if(rpi_requestType[0] == 'g'){
-        String request(rpi_requestParam);
         rpiAnalyser(request); 
       }
       else if(rpi_requestType[0] == 's'){
         //set new reference
+        i2c->rpiFlagS=1;
+        i2c->rpiRequest=request;
         }
      }  
    
@@ -231,12 +238,29 @@ void loop() {
     rpiAnalyser(i2c->rpiRequest);
     //i2c->rpiRequest = "";
   }
-  
+
+  if(i2c->rpiFlagS==1) {
+
+    sendToAll((byte)8,empty); //tell all arduinos to restart consensus    
+    if(i2c->rpiRequest[0]=='1')
+      c1.setLowerReference(highRef);
+    else
+      c1.setLowerReference(lowRef);
+      
+    i2c->reconsensus=1;
+    i2c->rpiFlagS==0;
+    
+  }
   //recalibration
   if(i2c->recalibration == 1) {
 
     c1.cleanCalibVars();  //clean all variables used in calibration
     c1.start_calibration(); //starts a new calibration
+    i2c->reconsensus=1;
+  }
+
+  //reconsensus
+  if(i2c->reconsensus ==1){
     pwmconsensus = c1.consensusIter();   
     Serial.print("Pwm=");
     Serial.println(pwmconsensus);
@@ -245,8 +269,8 @@ void loop() {
     pid.cleanvars();
     pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
     pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
-    pid.setFirstIterationON(); //to send the consensus signal control
-
+    i2c->reconsensus =0;   
+ 
   }
 
   //pid
