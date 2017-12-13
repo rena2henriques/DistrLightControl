@@ -62,32 +62,32 @@ int occupancyState=0;
 
 
 //  get - analyses the string sent by arduino 1 and send to the raspb the value he requested 
-void rpiAnalyser(rpi_requestParam){
+void rpiAnalyser(String rpi_requestParam){
 
   char label=rpi_requestParam[0];
-  char[10] data;
+  char data[10];
   float requestedValue=0;
    switch(rpi_requestParam[0]) {
       case 'o':
           requestedValue=(float)occupancyState; //someone told me to read my ADC          
           break;
       case 'L':
-          requestedVale=c1.getLowerRef();
+          requestedValue=c1.getLowerRef();
           break;
       case 'r':
           requestedValue=c1.getRefConsensus(); //someone told me to read my ADC          
           break;
       case 'O':
-          requestedVale=c1.getExternalIlluminance();
+          requestedValue=c1.getExternalIlluminance();
           break;     
       case 'e':
           requestedValue=energy; //someone told me to read my ADC          
           break;
       case 'c':
-          requestedVale=cError;
+          requestedValue=cError;
           break;      
       case 'v':
-          requestedVale=vFlicker;
+          requestedValue=vFlicker;
           break;    
    }
 
@@ -100,11 +100,11 @@ void rpiAnalyser(rpi_requestParam){
   Serial.print("data:");
   Serial.println(data);
   
-  Wire.beginTransmission(rpiAddress);
+ /* Wire.beginTransmission(rpiAddress);
   Wire.write(label);
   Wire.write(myaddress);
   Wire.write(data);
-  Wire.endTransmission();
+  Wire.endTransmission();*/
  
 }
 

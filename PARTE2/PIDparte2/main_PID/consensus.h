@@ -59,7 +59,7 @@ public:
 
   void setReference(float newRef);
 
-  float geLowerRef();
+  float getLowerRef();
 
   //variables
   int howLongToWait = 200;
