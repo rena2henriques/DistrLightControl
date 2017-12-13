@@ -4,8 +4,8 @@
 // g++ -g -O -Wall -pedantic -std=c++11 mainSerial.cpp serialComm.cpp -lpthread -lboost_system -o serialArduino
 
 // Constructor
-SerialComm::SerialComm(io_service& io_serv,std::string port_name)
-	: io(io_serv), sp(io), input_(io, ::dup(STDIN_FILENO)), input_buffer_(1024){
+SerialComm::SerialComm(io_service& io_serv,std::string port_name , shared_ptr <Database> db_ )
+	: io(io_serv), sp(io), input_(io, ::dup(STDIN_FILENO)), input_buffer_(1024), db(db_){
 
 	try{
     // opens port
@@ -47,6 +47,8 @@ void SerialComm::sendMessageHandler(const boost::system::error_code& ec){
 std::string SerialComm::getCommand(char message[]) { // <---------- TODO
 
   std::cout << "Get command " << message << std::endl;
+
+  db->printBuffers(1);
 
   return "Work in progress\n";
 }

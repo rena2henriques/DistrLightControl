@@ -13,6 +13,7 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/bind.hpp>
 #include <string.h>
+#include "database.h"
 using namespace boost::system;
 using namespace boost::asio;
 
@@ -22,7 +23,7 @@ class SerialComm {
 
 public:
 
-	SerialComm(io_service& io_, std::string port_name);
+	SerialComm(io_service& io_, std::string port_name, shared_ptr <Database> db_);
 
 	~SerialComm();
 
@@ -49,6 +50,9 @@ private:
 
   	boost::asio::posix::stream_descriptor input_;
 	boost::asio::streambuf input_buffer_;
+
+	// creats the object where we handle the data coming from arduino
+	shared_ptr <Database> db;
 };
 
 #endif

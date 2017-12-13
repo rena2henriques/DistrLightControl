@@ -1,6 +1,6 @@
 #include "i2cComm.h"
 
-I2Comm::I2Comm(){
+I2Comm::I2Comm(shared_ptr <Database> db_) : db(db_){
 
 	// Initialises the library
 	if (gpioInitialise() < 0) {
@@ -38,16 +38,24 @@ I2Comm::~I2Comm(){
 
 void I2Comm::sniffer() {
 
+	//int j = 0;
+
 	while(end != 1){
+		usleep(1000);
+
 		status = bscXfer(&xfer);
-		if ( xfer.rxCnt == 0 ){
+		if ( xfer.rxCnt != 0 ){
 			printf("Received %d bytes\n", xfer.rxCnt);
-			printf("%s\n", xfer.rxBuf);
+			printf("%.*s\n", xfer.rxCnt, xfer.rxBuf);
 
 	        /*for(j=0;j<xfer.rxCnt;j++)
-			    printf("%c",xfer.rxBuf[j]);*/
-		    printf("\n");
+			    printf("%c",xfer.rxBuf[j]);
+		    printf("\n");*/
+
+		   	db->insertBuffer(1, 5.5, 0.1);
 		}
+
+		//memset(xfer.rxBuf, 0, xfer.rxCnt);
 	}
 }
 
@@ -55,7 +63,7 @@ void I2Comm::sniffer() {
 void I2Comm::readData(char message[]) {
 
 	if (message[0] == 'o'){ // pensar no protocolo de comunicação
-
+		printf("nothing happens\n");
 	}
 
 	return;

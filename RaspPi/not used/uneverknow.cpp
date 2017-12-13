@@ -9,16 +9,9 @@
 #include "tcpServer.h"
 #include "serialComm.h"
 #include "i2cComm.h"
-#include "database.h"
 
 using namespace std;
 using namespace boost::asio;
-
-// creats the object where we handle the data coming from arduino
-shared_ptr <Database> db (new Database(6000));
-
-// creates I2C object
-shared_ptr <I2Comm> i2c_slave (new I2Comm(db));
 
 
 void tcp_serial_thread(int port){
@@ -28,7 +21,7 @@ void tcp_serial_thread(int port){
     // creating io services for tcp and arduino
     boost::asio::io_service io_service;
 
-    shared_ptr <SerialComm> arduino (new SerialComm(io_service, "/dev/ttyACM0", db));
+    shared_ptr <SerialComm> arduino (new SerialComm(io_service, "/dev/ttyACM0"));
 
     Tcp_server s(io_service, port, arduino);
 
@@ -46,7 +39,9 @@ void tcp_serial_thread(int port){
 void i2c_thread() {
 
   // creates object
-  i2c_slave->sniffer();
+  I2Comm i2c_slave;
+
+  i2c_slave.sniffer();
 
   return;
 }
