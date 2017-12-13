@@ -38,8 +38,8 @@ String rx_str = "";
 /*char temp_str[20] = "";
 char temp_fl[20] = "";*/
 char rpi_requestType[7];
-char rpi_requestParam[7];
-char rpi_nodeIndex[7];
+char rpi_arg2[7];
+char rpi_arg3[7];
 
 //references
 int lowRef=35;
@@ -124,21 +124,33 @@ void analyseString(String serial_string) {
     byte label_rpi;
     byte dest;
     char *rx_str_aux = serial_string.c_str();
-    sscanf(rx_str_aux, "%[^ ] %[^ ] %[^\n]", rpi_requestType, rpi_requestParam, rpi_nodeIndex); //stores the 3 paramets in chars[]
-    dest = atoi(rpi_nodeIndex);  //array to int to byte
-    if(dest != myaddress){ //send via i2c to node request
-        if(rpi_requestType[0] == 'g'){
+    sscanf(rx_str_aux, "%[^ ] %[^ ] %[^\n]", rpi_requestType, rpi_arg2, rpi_arg3); //stores the 3 paramets in chars[]
+
+    if(rpi_requestType[0] == 'g'){
+       dest = atoi(rpi_arg3);
+       if(dest != myaddress) { //rpi requested another node's info
           label_rpi = 6;
-          i2c->send(label_rpi, dest, rpi_requestParam);
-        }else if (rpi_requestType[0] == 's') {
+          i2c->send(label_rpi, dest, rpi_arg2);
+       } else { //rpi request my info
+          String request(rpi_arg2);
+          rpiAnalyser(request); 
+       }
+    }else if (rpi_requestType[0] == 's') {
+       dest = atoi(rpi_arg2); 
+       if(dest != myaddress) { //rpi requested another node's info
           label_rpi = 7;
-          i2c->send(label_rpi, dest, rpi_requestParam);
-        }else {
-          Serial.println("Wrong input");
-        } //pode se mandar isto para o rpi? assumir que a flag b,c,d são feitas no rpi
-     }
-     else{ //if rpi request my info, no i2c usage
-      String request(rpi_requestParam);
+          i2c->send(label_rpi, dest, rpi_arg3);
+       } else { //rpi reuqested my info
+          String request(rpi_arg3);
+          i2c->rpiFlagS=1;
+          i2c->rpiRequest=request;
+       }
+    }else {
+        Serial.println("Wrong input");
+    } //pode se mandar isto para o rpi? assumir que a flag b,c,d são feitas no rpi
+     
+/*     else{ //if rpi request my info, no i2c usage
+     
       if(rpi_requestType[0] == 'g'){
         rpiAnalyser(request); 
       }
@@ -148,7 +160,7 @@ void analyseString(String serial_string) {
         i2c->rpiFlagS=1;
         i2c->rpiRequest=request;
         }
-     }  
+     }  */
    
 }
 
@@ -245,6 +257,7 @@ void loop() {
     i2c->sendToAll((byte)8,empty); //tell all arduinos to restart consensus    
     if(i2c->rpiRequest[0]=='1'){
       Serial.print("HIGH");
+
       c1.setLowerReference(highRef);
     }
     else
