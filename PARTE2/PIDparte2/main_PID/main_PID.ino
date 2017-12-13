@@ -139,7 +139,7 @@ void analyseString(String serial_string) {
        dest = atoi(rpi_arg2); 
        if(dest != myaddress) { //rpi requested another node's info
           label_rpi = 7;
-          i2c->send(label_rpi, dest, rpi_arg2);
+          i2c->send(label_rpi, dest, rpi_arg3);
        } else { //rpi reuqested my info
           String request(rpi_arg3);
           i2c->rpiFlagS=1;
