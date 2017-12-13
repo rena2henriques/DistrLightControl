@@ -33,11 +33,14 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
       case 6:
           rpiFlagG = 1;
           rpiRequest = data;
+          Serial.print("rpi data = ");
+          Serial.println(rpiRequest);
           break;
 
       case 7:
           rpiFlagS = 1;
           rpiRequest = data;
+          break;
 
    }
  

@@ -1,6 +1,6 @@
 #include "commi2c.h"
 #include "consensus.h"
-# include "pid.h"
+#include "pid.h"
 
 
 const int ledPin = 9;
@@ -51,11 +51,13 @@ char empty[] = "";
 
 //evaluation metric variables
 float energy =0.0;
+float power = 0.0;
 float cError=0.0;
 float vFlicker=0.0;
 int Ncount=0;
 float lux_penult=0.0;
 float lux_antepenult=0.0;
+float subtraction;
 
 //other variables
 int occupancyState=0;
@@ -65,9 +67,9 @@ int occupancyState=0;
 void rpiAnalyser(String rpi_requestParam){
 
   char label=rpi_requestParam[0];
-  char data[10];
-  float requestedValue=0;
-   switch(rpi_requestParam[0]) {
+  char data[15];
+  float requestedValue=5.0;
+   switch(label) {
       case 'o':
           requestedValue=(float)occupancyState; //someone told me to read my ADC          
           break;
@@ -88,11 +90,16 @@ void rpiAnalyser(String rpi_requestParam){
           break;      
       case 'v':
           requestedValue=vFlicker;
-          break;    
+          break;
+      case 'p':
+          requestedValue=power;
+          break;   
    }
+  Serial.print("Request value: ");
+  Serial.println(requestedValue);
 
-  dtostrf(requestedValue, 10, 2,data);
-
+  dtostrf(requestedValue, 2, 2,data);
+  
   Serial.print("label:");
   Serial.println(label);  
   Serial.print("myaddress:");
@@ -220,9 +227,9 @@ void loop() {
   }
   
   if(i2c->rpiFlagG == 1) {   //message received from rpi
-    rpiAnalyser(i2c->rpiRequest); 
     i2c->rpiFlagG = 0;
-    i2c->rpiRequest = "";
+    rpiAnalyser(i2c->rpiRequest);
+    //i2c->rpiRequest = "";
   }
   
   //recalibration
@@ -256,9 +263,12 @@ void loop() {
       lux_penult=lux;
     
     //computing energy comsumed - after first iteration
+    power = 100.0*outputValue/255.0;
+    subtraction = currentTime - previousTime; //can't do previouTime-currentTime, dunno why
+    subtraction = subtraction*(-1);
     if(Ncount>1)
-    energy=energy+(outputValue/255)*(previousTime-currentTime);
-
+      energy=energy+(outputValue/255.0)*(subtraction);
+  
     // LOW PASS filter
     for(i = 0; i < n_samples; i++)
         sensorValue = sensorValue + analogRead(analogInPin);
@@ -278,7 +288,7 @@ void loop() {
     vFlicker=vFlicker+(abs(lux-2*lux_penult+lux_antepenult))/(currentTime-previousTime)/(currentTime-previousTime);
     
     outputValue = pid.calculate(lux);
-
+  
     // write the pwm to the LED
     analogWrite(ledPin, outputValue);
 
