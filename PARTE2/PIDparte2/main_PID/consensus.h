@@ -57,6 +57,10 @@ public:
 
   float getRefConsensus();
 
+  void setReference(float newRef);
+
+  float getLowerRef();
+
   //variables
   int howLongToWait = 200;
   int lastTimeItHappened = 0;

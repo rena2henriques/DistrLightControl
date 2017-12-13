@@ -1,6 +1,6 @@
 #include "commi2c.h"
 #include "consensus.h"
-# include "pid.h"
+#include "pid.h"
 
 
 const int ledPin = 9;
@@ -43,7 +43,7 @@ char rpi_nodeIndex[7];
 
 //classes
 CommI2C* i2c = new CommI2C();
-Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 50);
+Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 35);
 PID pid(-0.62, 1.96, 0, 255, 70, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
 
 //just an empty string
@@ -51,12 +51,69 @@ char empty[] = "";
 
 //evaluation metric variables
 float energy =0.0;
+float power = 0.0;
 float cError=0.0;
 float vFlicker=0.0;
 int Ncount=0;
 float lux_penult=0.0;
 float lux_antepenult=0.0;
+float subtraction;
 
+//other variables
+int occupancyState=0;
+
+
+//  get - analyses the string sent by arduino 1 and send to the raspb the value he requested 
+void rpiAnalyser(String rpi_requestParam){
+
+  char label=rpi_requestParam[0];
+  char data[15];
+  float requestedValue=5.0;
+   switch(label) {
+      case 'o':
+          requestedValue=(float)occupancyState; //someone told me to read my ADC          
+          break;
+      case 'L':
+          requestedValue=c1.getLowerRef();
+          break;
+      case 'r':
+          requestedValue=c1.getRefConsensus(); //someone told me to read my ADC          
+          break;
+      case 'O':
+          requestedValue=c1.getExternalIlluminance();
+          break;     
+      case 'e':
+          requestedValue=energy; //someone told me to read my ADC          
+          break;
+      case 'c':
+          requestedValue=cError;
+          break;      
+      case 'v':
+          requestedValue=vFlicker;
+          break;
+      case 'p':
+          requestedValue=power;
+          break;   
+   }
+  Serial.print("Request value: ");
+  Serial.println(requestedValue);
+
+  dtostrf(requestedValue, 2, 2,data);
+  
+  Serial.print("label:");
+  Serial.println(label);  
+  Serial.print("myaddress:");
+  Serial.println(myaddress);
+  Serial.print("data:");
+  Serial.println(data);
+  
+ /* Wire.beginTransmission(rpiAddress);
+  Wire.write(label);
+  Wire.write(myaddress);
+  Wire.write(data);
+  Wire.endTransmission();*/
+ 
+}
 
 // reads the serial buffer and changes the variables accordingly
 void analyseString(String serial_string) {
@@ -69,12 +126,19 @@ void analyseString(String serial_string) {
         if(rpi_requestType[0] == 'g'){
           label_rpi = 6;
           i2c->send(label_rpi, dest, rpi_requestParam);
-        } else {
+        }else if (rpi_requestType[0] == 's') {
+          label_rpi = 7;
+          i2c->send(label_rpi, dest, rpi_requestParam);
+        }else {
           Serial.println("Wrong input");
         } //pode se mandar isto para o rpi? assumir que a flag b,c,d são feitas no rpi
      }else{ //if rpi request my info, no i2c usage
-        i2c->rpiFlagG = 1;
-        i2c->rpiRequest = rpi_requestParam;
+      if(rpi_requestType[0] == 'g'){
+        rpiAnalyser(rpi_requestParam); 
+      }
+      else if(rpi_requestType[0] == 's'){
+        //set new reference
+        }
      }  
    
 }
@@ -142,29 +206,31 @@ void setup() {
 
 void loop() {
 
-  //if my addr == 1 ???
-  if (Serial.available() > 0) {    // is a character available?
-    rx_byte = Serial.read();       // get the character
-    if (rx_byte != '\n') {
-
-      // a character of the string was received
-      rx_str += rx_byte;
-      
-    }
-    // end of string
-    else {
-      // checks what serial buffer said
-      analyseString(rx_str);
-      rx_str = ""; // clear the string for reuse
-      
+  if(myaddress==1){
+    if (Serial.available() > 0) {    // is a character available?
+      rx_byte = Serial.read();       // get the character
+      if (rx_byte != '\n') {
+  
+        // a character of the string was received
+        rx_str += rx_byte;
+        
+      }
+      // end of string
+      else {
+        // checks what serial buffer said
+        analyseString(rx_str);
+        rx_str = ""; // clear the string for reuse
+        
+      }
     }
   }
+  
   if(i2c->rpiFlagG == 1) {   //message received from rpi
-    Serial.println("im here");
-    Serial.println(i2c->rpiRequest);
     i2c->rpiFlagG = 0;
-    i2c->rpiRequest = "";
+    rpiAnalyser(i2c->rpiRequest);
+    //i2c->rpiRequest = "";
   }
+  
   //recalibration
   if(i2c->recalibration == 1) {
 
@@ -196,9 +262,12 @@ void loop() {
       lux_penult=lux;
     
     //computing energy comsumed - after first iteration
+    power = 100.0*outputValue/255.0;
+    subtraction = currentTime - previousTime; //can't do previouTime-currentTime, dunno why
+    subtraction = subtraction*(-1);
     if(Ncount>1)
-    energy=energy+(outputValue/255)*(previousTime-currentTime);
-
+      energy=energy+(outputValue/255.0)*(subtraction);
+  
     // LOW PASS filter
     for(i = 0; i < n_samples; i++)
         sensorValue = sensorValue + analogRead(analogInPin);
@@ -218,7 +287,7 @@ void loop() {
     vFlicker=vFlicker+(abs(lux-2*lux_penult+lux_antepenult))/(currentTime-previousTime)/(currentTime-previousTime);
     
     outputValue = pid.calculate(lux);
-
+  
     // write the pwm to the LED
     analogWrite(ledPin, outputValue);
 
