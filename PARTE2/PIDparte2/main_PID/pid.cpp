@@ -135,7 +135,7 @@ void PID::setReference(float ref) {
 }
 
 int PID::getReference() {
-	return reference;
+	return (reference+0.5); //arredondamento
 }
 
 void PID::setOcupationLux(int min, int max) {

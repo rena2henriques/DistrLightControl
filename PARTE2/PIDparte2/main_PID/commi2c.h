@@ -24,7 +24,9 @@ public:
     int ledON = 0;
     int recalibration = 0;
     int consensusFlag = 0; 
+    int rpiFlagG = 0;
     String string_consensus;
+    String rpiRequest;
 
   
   //functions

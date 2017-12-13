@@ -37,14 +37,13 @@ char rx_byte = 0;
 String rx_str = "";
 /*char temp_str[20] = "";
 char temp_fl[20] = "";*/
-char rpi_requestType;
-char rpi_requestParam;
-char rpi_nodeIndex;
-int label_rpi;
+char rpi_requestType[7];
+char rpi_requestParam[7];
+char rpi_nodeIndex[7];
 
 //classes
 CommI2C* i2c = new CommI2C();
-Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 60);
+Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 50);
 PID pid(-0.62, 1.96, 0, 255, 70, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
 
 //just an empty string
@@ -62,41 +61,22 @@ float lux_antepenult=0.0;
 // reads the serial buffer and changes the variables accordingly
 void analyseString(String serial_string) {
     byte label_rpi;
+    byte dest;
     char *rx_str_aux = serial_string.c_str();
-    rpi_requestType = rx_str_aux[0];
-    if(rpi_requestType == 'r'){ //checks if the user requested a reset
-         i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
-         i2c->recalibration = 1;
-         return;
-    }
-    rpi_requestParam = rx_str_aux[2];
-    rpi_nodeIndex = rx_str_aux[4];
-
-    if(rpi_requestType == 'g'){
-      label_rpi = 5;
-      Serial.println("label = 5");
-    }
-    else if(rpi_requestType == 's') {
-      Serial.println("label = 6"); 
-      label_rpi = 5;
-    }
-    else {
-      Serial.println("Wrong input");} //pode se mandar isto para o rpi?
-                                    //assumir que a flag b,c,d são feitas no rpi
-
-    /*if(rpi_nodeIndex != myAddress)
-      //send to rpi_nodeIndex, label x, data=rpi_requestParam
-      else (im the one request)
-        //pôr um flag a 1 que é a mesma que punha se fosse outro arduino qlq*/
-    
-    
-    
-    Serial.print("type = ");
-    Serial.println(rpi_requestType);
-    Serial.print("param = ");
-    Serial.println(rpi_requestParam);
-    Serial.print("index = ");
-    Serial.println(rpi_nodeIndex);
+    sscanf(rx_str_aux, "%[^ ] %[^ ] %[^\n]", rpi_requestType, rpi_requestParam, rpi_nodeIndex); //stores the 3 paramets in chars[]
+    dest = atoi(rpi_nodeIndex);  //array to int to byte
+    if(dest != myaddress){ //send via i2c to node request
+        if(rpi_requestType[0] == 'g'){
+          label_rpi = 6;
+          i2c->send(label_rpi, dest, rpi_requestParam);
+        } else {
+          Serial.println("Wrong input");
+        } //pode se mandar isto para o rpi? assumir que a flag b,c,d são feitas no rpi
+     }else{ //if rpi request my info, no i2c usage
+        i2c->rpiFlagG = 1;
+        i2c->rpiRequest = rpi_requestParam;
+     }  
+   
 }
 
 void receiveHandler(int howMany) {
@@ -113,7 +93,7 @@ void receiveHandler(int howMany) {
      c = Wire.read();
      data += c;       
    }
-
+  
    i2c->msgDecoder(label, src_addr, data);
   
 }
@@ -178,12 +158,16 @@ void loop() {
       rx_str = ""; // clear the string for reuse
       
     }
-   
   }
-
-  
+  if(i2c->rpiFlagG == 1) {   //message received from rpi
+    Serial.println("im here");
+    Serial.println(i2c->rpiRequest);
+    i2c->rpiFlagG = 0;
+    i2c->rpiRequest = "";
+  }
   //recalibration
   if(i2c->recalibration == 1) {
+
     c1.cleanCalibVars();  //clean all variables used in calibration
     c1.start_calibration(); //starts a new calibration
     pwmconsensus = c1.consensusIter();   
@@ -213,7 +197,7 @@ void loop() {
     
     //computing energy comsumed - after first iteration
     if(Ncount>1)
-    energy=energy+outputValue/255*(previousTime-currentTime);
+    energy=energy+(outputValue/255)*(previousTime-currentTime);
 
     // LOW PASS filter
     for(i = 0; i < n_samples; i++)
@@ -231,7 +215,7 @@ void loop() {
 
     //error flickering - only after the 3rd iteration
     if(Ncount>2)
-    vFlicker=vFlicker+abs(lux-2*lux_penult+lux_antepenult)/(currentTime-previousTime)/(currentTime-previousTime);
+    vFlicker=vFlicker+(abs(lux-2*lux_penult+lux_antepenult))/(currentTime-previousTime)/(currentTime-previousTime);
     
     outputValue = pid.calculate(lux);
 
