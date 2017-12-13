@@ -73,8 +73,12 @@ void analyseString(String serial_string) {
           Serial.println("Wrong input");
         } //pode se mandar isto para o rpi? assumir que a flag b,c,d são feitas no rpi
      }else{ //if rpi request my info, no i2c usage
-        i2c->rpiFlagG = 1;
-        i2c->rpiRequest = rpi_requestParam;
+      if(rpi_requestType[0] == 'g'){
+        rpiAnalyser(rpi_requestParam); 
+      }
+      else if(rpi_requestType[0] == 's'){
+        //set new reference
+        }
      }  
    
 }
@@ -159,12 +163,13 @@ void loop() {
       
     }
   }
+  
   if(i2c->rpiFlagG == 1) {   //message received from rpi
-    Serial.println("im here");
-    Serial.println(i2c->rpiRequest);
+    rpiAnalyser(i2c->rpiRequest); 
     i2c->rpiFlagG = 0;
     i2c->rpiRequest = "";
   }
+  
   //recalibration
   if(i2c->recalibration == 1) {
 
