@@ -144,6 +144,7 @@ void analyseString(String serial_string) {
       }
       else if(rpi_requestType[0] == 's'){
         //set new reference
+        Serial.print("Mudar-me a mim");
         i2c->rpiFlagS=1;
         i2c->rpiRequest=request;
         }
@@ -241,14 +242,16 @@ void loop() {
 
   if(i2c->rpiFlagS==1) {
 
-    sendToAll((byte)8,empty); //tell all arduinos to restart consensus    
-    if(i2c->rpiRequest[0]=='1')
+    i2c->sendToAll((byte)8,empty); //tell all arduinos to restart consensus    
+    if(i2c->rpiRequest[0]=='1'){
+      Serial.print("HIGH");
       c1.setLowerReference(highRef);
+    }
     else
       c1.setLowerReference(lowRef);
       
     i2c->reconsensus=1;
-    i2c->rpiFlagS==0;
+    i2c->rpiFlagS=0;
     
   }
   //recalibration
