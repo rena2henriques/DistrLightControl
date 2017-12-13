@@ -8,6 +8,7 @@
 #include <thread>
 #include "tcpServer.h"
 #include "serialComm.h"
+#include "i2cComm.h"
 
 using namespace std;
 using namespace boost::asio;
@@ -35,6 +36,17 @@ void tcp_serial_thread(int port){
 }
 
 
+void i2c_thread() {
+
+  // creates object
+  I2Comm i2c_slave;
+
+  i2c_slave.sniffer();
+
+  return;
+}
+
+
 int main(int argc, char* argv[])
 {
   if (argc != 2) {
@@ -46,7 +58,10 @@ int main(int argc, char* argv[])
   // starts the server and serial comm thread
   thread threadTcp(tcp_serial_thread, atoi(argv[1]) );
 
+  thread threadI2C(i2c_thread);
+
   threadTcp.join();
+  threadI2C.join();
 
   cout<<"Goodbye!"<<endl;
   return 0;

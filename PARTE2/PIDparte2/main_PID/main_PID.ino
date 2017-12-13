@@ -7,6 +7,7 @@ const int ledPin = 9;
 const int analogInPin = A0; // Analog input pin that the LDR is attached to
 
 
+
 // -----PID variables
 int sensorValue = 0; // value read from the pot
 int outputValue = 0.0; // value output to the PWM (analog out)
@@ -34,12 +35,15 @@ int howLongItsBeen = 0;
 // string reading
 char rx_byte = 0;
 String rx_str = "";
-char temp_str[20] = "";
-char temp_fl[20] = "";
+/*char temp_str[20] = "";
+char temp_fl[20] = "";*/
+char rpi_requestType[7];
+char rpi_requestParam[7];
+char rpi_nodeIndex[7];
 
 //classes
 CommI2C* i2c = new CommI2C();
-Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 100);
+Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, 50);
 PID pid(-0.62, 1.96, 0, 255, 70, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
 
 //just an empty string
@@ -56,49 +60,23 @@ float lux_antepenult=0.0;
 
 // reads the serial buffer and changes the variables accordingly
 void analyseString(String serial_string) {
-    
+    byte label_rpi;
+    byte dest;
     char *rx_str_aux = serial_string.c_str();
-            
-    sscanf(rx_str_aux, "%[^ =] = %[^\n]", temp_str, temp_fl);
-
-      // new reference value
-    if ( strcmp(temp_str,"lux_ref") == 0){
-      pid.setReference(atof(temp_fl));
-      // the desk it occupied
-    } else if (strcmp(temp_str, "on") == 0) {
-      pid.setReference(70);
-      // desk is unoccupied
-    } else if (strcmp(temp_str, "off") == 0) {
-      pid.setReference(35);
-      // anti-windup system is off
-    } else if (strcmp(temp_str,"antiwindup_off") == 0) {
-      pid.setAntiWindupMode(0);
-      // anti-windup system is on
-    } else if (strcmp(temp_str,"antiwindup_on") == 0) {
-      pid.setAntiWindupMode(1);
-      // feedforward is on
-    } else if (strcmp(temp_str,"ffwd_on") == 0) {
-      pid.setFFWDMode(1);
-      // feedforward is off
-    } else if (strcmp(temp_str,"ffwd_off") == 0) {
-      pid.setFFWDMode(0);
-      // deadzone is off
-    } else if (strcmp(temp_str,"dead_off") == 0){
-      pid.setDeadMode(0);
-      // deadzone is on
-    } else if (strcmp(temp_str,"dead_on") == 0) {
-      pid.setDeadMode(1);
-    } else if (strcmp(temp_str,"filter_on") == 0) {
-      filter_flag=1;
-      n_samples=30;
-    } else if (strcmp(temp_str,"filter_off") == 0) {
-      filter_flag=0;
-      n_samples=1;
-    }
-    
-      
-    memset(temp_fl, 0, 20);
-    memset(temp_str, 0, 20);  
+    sscanf(rx_str_aux, "%[^ ] %[^ ] %[^\n]", rpi_requestType, rpi_requestParam, rpi_nodeIndex); //stores the 3 paramets in chars[]
+    dest = atoi(rpi_nodeIndex);  //array to int to byte
+    if(dest != myaddress){ //send via i2c to node request
+        if(rpi_requestType[0] == 'g'){
+          label_rpi = 6;
+          i2c->send(label_rpi, dest, rpi_requestParam);
+        } else {
+          Serial.println("Wrong input");
+        } //pode se mandar isto para o rpi? assumir que a flag b,c,d são feitas no rpi
+     }else{ //if rpi request my info, no i2c usage
+        i2c->rpiFlagG = 1;
+        i2c->rpiRequest = rpi_requestParam;
+     }  
+   
 }
 
 void receiveHandler(int howMany) {
@@ -115,7 +93,7 @@ void receiveHandler(int howMany) {
      c = Wire.read();
      data += c;       
    }
-
+  
    i2c->msgDecoder(label, src_addr, data);
   
 }
@@ -144,10 +122,11 @@ void setup() {
    Wire.onReceive(receiveHandler);
 
    int netSize = i2c->findNodes();    //finds all nodes in the network
-   i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
+   
 
    //temp
    if(i2c->getAddrListSize() > 0) {
+      i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
       c1.start_calibration();
       pwmconsensus = c1.consensusIter();
       Serial.print("Pwm=");
@@ -163,25 +142,32 @@ void setup() {
 
 void loop() {
 
-  // put your main code here, to run repeatedly:
+  //if my addr == 1 ???
   if (Serial.available() > 0) {    // is a character available?
     rx_byte = Serial.read();       // get the character
-    
     if (rx_byte != '\n') {
+
       // a character of the string was received
       rx_str += rx_byte;
+      
     }
     // end of string
     else {
       // checks what serial buffer said
       analyseString(rx_str);
       rx_str = ""; // clear the string for reuse
+      
     }
   }
-
-  
+  if(i2c->rpiFlagG == 1) {   //message received from rpi
+    Serial.println("im here");
+    Serial.println(i2c->rpiRequest);
+    i2c->rpiFlagG = 0;
+    i2c->rpiRequest = "";
+  }
   //recalibration
   if(i2c->recalibration == 1) {
+
     c1.cleanCalibVars();  //clean all variables used in calibration
     c1.start_calibration(); //starts a new calibration
     pwmconsensus = c1.consensusIter();   
@@ -192,6 +178,8 @@ void loop() {
     pid.cleanvars();
     pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
     pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
+    pid.setFirstIterationON(); //to send the consensus signal control
+
   }
 
   //pid
@@ -209,7 +197,7 @@ void loop() {
     
     //computing energy comsumed - after first iteration
     if(Ncount>1)
-    energy=energy+outputValue/255*(previousTime-currentTime);
+    energy=energy+(outputValue/255)*(previousTime-currentTime);
 
     // LOW PASS filter
     for(i = 0; i < n_samples; i++)
@@ -221,13 +209,13 @@ void loop() {
     lux = pid.vtolux(avg_value);
        
     //comfort error - only when measured lux is below the reference lux
-    if( pid.getReference-lux >0){
-      cError=cError+(pid.getReference-lux);
+    if( pid.getReference()-lux >0){
+      cError=cError+(pid.getReference()-lux);
     }
 
     //error flickering - only after the 3rd iteration
     if(Ncount>2)
-    vFlicker=vFlicker+abs(lux-2*lux_penult+lux_antepenult)/(currentTime-previousTime)/(currentTime-previousTime);
+    vFlicker=vFlicker+(abs(lux-2*lux_penult+lux_antepenult))/(currentTime-previousTime)/(currentTime-previousTime);
     
     outputValue = pid.calculate(lux);
 

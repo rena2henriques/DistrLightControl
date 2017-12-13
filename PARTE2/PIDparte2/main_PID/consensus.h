@@ -16,7 +16,7 @@ private:
   float a_lux;
   float b_lux;
   
-  int pwm = 200;
+  int pwm = 100;
 
   int o1 = 0; //background illumin
 

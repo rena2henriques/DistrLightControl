@@ -83,6 +83,8 @@ public:
 
 	void setPIDparameters(float kp, float ki, float kd);
 
+  void setFirstIterationON();
+
 	int calculate(float lux);
  
   void cleanvars();

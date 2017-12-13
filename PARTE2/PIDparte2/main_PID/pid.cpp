@@ -135,7 +135,7 @@ void PID::setReference(float ref) {
 }
 
 int PID::getReference() {
-	return reference;
+	return (reference+0.5); //arredondamento
 }
 
 void PID::setOcupationLux(int min, int max) {
@@ -168,6 +168,10 @@ void PID::setFFWDMode(int FFWDmode){
 
 void PID::setDeadMode(int deadmode) {
   deadFlag = deadmode;
+}
+
+void PID::setFirstIterationON(){
+  first_iteration=1;
 }
 
 void PID::setPIDparameters(float kp, float ki, float kd) {

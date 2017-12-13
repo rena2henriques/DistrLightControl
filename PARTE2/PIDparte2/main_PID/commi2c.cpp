@@ -12,6 +12,7 @@ void CommI2C::setMyAddress (int address) {
 
 //decodes the message received from i2c
 void CommI2C::msgDecoder(int label, int src_addr, String data){
+<<<<<<< HEAD
    //temp
    /*Serial.print("label = ");
    Serial.println(label);
@@ -25,11 +26,10 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
    /*float value = data.toFloat();
    Serial.print("value = ");
    Serial.println(value);*/
-
    
    switch(label) {
       case 1:
-          readADC = src_addr; //someone told me to read my ADC
+          readADC = src_addr; //someone told me to read my ADC          
           break;
       case 2:
           checkTurnEnd = 1;  //received an ack, flag that check if all nodes read my lux
@@ -43,10 +43,11 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
       case 5:
           consensusFlag = 1;
           string_consensus = data;
-          /*Serial.print("string consensus");
-          Serial.println(string_consensus);*/
           break;
       case 6:
+          rpiFlagG = 1;
+          rpiRequest = data;
+          break;
           
    }
  
