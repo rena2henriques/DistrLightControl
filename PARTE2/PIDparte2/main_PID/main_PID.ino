@@ -145,7 +145,10 @@ void analyseString(String serial_string) {
           i2c->rpiFlagS=1;
           i2c->rpiRequest=request;
        }
-    }else {
+    }else if (rpi_requestType[0] == 'r') {
+       i2c->sendToAll((byte) 4, empty);
+       i2c->recalibration = 1;
+    }else{
         Serial.println("Wrong input");
     } //pode se mandar isto para o rpi? assumir que a flag b,c,d são feitas no rpi
      
