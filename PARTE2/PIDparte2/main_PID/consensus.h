@@ -57,7 +57,7 @@ public:
 
   float getRefConsensus();
 
-  void setReference(float newRef);
+  void setLowerReference(float newRef);
 
   float getLowerRef();
 

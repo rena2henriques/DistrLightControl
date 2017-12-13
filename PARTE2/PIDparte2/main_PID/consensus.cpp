@@ -380,7 +380,7 @@ float Consensus::getRefConsensus(){
     return newref;    
 }
 
-void Consensus::setReference(float newRef){
+void Consensus::setLowerReference(float newRef){
   L1=newRef;
 }
 
