@@ -25,6 +25,7 @@ public:
     int recalibration = 0;
     int consensusFlag = 0; 
     int rpiFlagG = 0;
+    int rpiFlagS = 0;
     String string_consensus;
     String rpiRequest;
 

@@ -69,7 +69,10 @@ void analyseString(String serial_string) {
         if(rpi_requestType[0] == 'g'){
           label_rpi = 6;
           i2c->send(label_rpi, dest, rpi_requestParam);
-        } else {
+        }else if (rpi_requestType[0] == 's') {
+          label_rpi = 7;
+          i2c->send(label_rpi, dest, rpi_requestParam);
+        }else {
           Serial.println("Wrong input");
         } //pode se mandar isto para o rpi? assumir que a flag b,c,d são feitas no rpi
      }else{ //if rpi request my info, no i2c usage
