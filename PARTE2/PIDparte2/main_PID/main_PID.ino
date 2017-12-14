@@ -65,8 +65,48 @@ float subtraction;
 
 //other variables
 int occupancyState=0;
+char rpi_vector[30];
+char d_aux[7];
+char space[] = " ";
 
+void sendToRpiStream(int outputValue, float lux) {
 
+      //string management to rpi
+      rpi_vector[0] = 'g'; 
+      strcat(rpi_vector, space);
+      rpi_vector[2] = myaddress + '0'; //convert to char
+      rpi_vector[3] = '\0';       //here rpi_vector = "g 1"
+      strcat(rpi_vector, space);
+      dtostrf(lux, 2, 2,d_aux);   
+      strcat(rpi_vector, d_aux); // = "g 1 lux"
+      strcat(rpi_vector, space);
+      dtostrf(outputValue, 2, 2,d_aux);
+      strcat(rpi_vector, d_aux);  // = "g 1 lux pwm"
+   
+      //rpi
+      Wire.beginTransmission(0x48); 
+      Wire.write(rpi_vector);
+      Wire.endTransmission();
+  
+}
+
+void sendToRpiValue(float value, char label) {
+      rpi_vector[0] = label;  //add label
+      strcat(rpi_vector, space);
+      rpi_vector[2] = myaddress + '0'; //convert and add my address
+      rpi_vector[3] = '\0';       
+      strcat(rpi_vector, space);
+      dtostrf(value, 2, 2,d_aux);   
+      strcat(rpi_vector, d_aux); // = "g 1 lux"
+      Serial.print("string to rpi: ");
+      Serial.println(rpi_vector);
+
+      //rpi
+      Wire.beginTransmission(0x48); 
+      Wire.write(rpi_vector);
+      Wire.endTransmission();
+  
+}
 //  get - analyses the string sent by arduino 1 and send to the raspb the value he requested 
 void rpiAnalyser(String rpi_requestParam){
 
@@ -75,95 +115,67 @@ void rpiAnalyser(String rpi_requestParam){
   float requestedValue=5.0;
    switch(label) {
       case 'o':
-          requestedValue=(float)occupancyState; //someone told me to read my ADC          
+          requestedValue=(float)occupancyState; //rpi requested occupancy state          
           break;
       case 'L':
-          requestedValue=c1.getLowerRef();
+          requestedValue=c1.getLowerRef(); //rpi requested lower reference
           break;
       case 'r':
-          requestedValue=c1.getRefConsensus(); //someone told me to read my ADC          
+          requestedValue=c1.getRefConsensus(); //rpi requested occupancy state PID's reference      
           break;
       case 'O':
-          requestedValue=c1.getExternalIlluminance();
+          requestedValue=c1.getExternalIlluminance(); //rpi requested O backgorund illuminance
           break;     
       case 'e':
-          requestedValue=energy; //someone told me to read my ADC          
+          requestedValue=energy; //energy         
           break;
       case 'c':
-          requestedValue=cError;
+          requestedValue=cError; //comfort error
           break;      
       case 'v':
-          requestedValue=vFlicker;
+          requestedValue=vFlicker; //flicker
           break;
       case 'p':
-          requestedValue=power;
+          requestedValue=power; //power
           break;   
    }
-  Serial.print("Request value: ");
-  Serial.println(requestedValue);
-
-  dtostrf(requestedValue, 2, 2,data);
-  
-  Serial.print("label:");
-  Serial.println(label);  
-  Serial.print("myaddress:");
-  Serial.println(myaddress);
-  Serial.print("data:");
-  Serial.println(data);
-  
- /* Wire.beginTransmission(rpiAddress);
-  Wire.write(label);
-  Wire.write(myaddress);
-  Wire.write(data);
-  Wire.endTransmission();*/
+  sendToRpiValue(requestedValue, label);
  
 }
 
-// reads the serial buffer and changes the variables accordingly
+// reads the serial buffer
 void analyseString(String serial_string) {
     byte label_rpi;
     byte dest;
     char *rx_str_aux = serial_string.c_str();
     sscanf(rx_str_aux, "%[^ ] %[^ ] %[^\n]", rpi_requestType, rpi_arg2, rpi_arg3); //stores the 3 paramets in chars[]
 
-    if(rpi_requestType[0] == 'g'){
+    if(rpi_requestType[0] == 'g'){  //request of type get
        dest = atoi(rpi_arg3);
        if(dest != myaddress) { //rpi requested another node's info
           label_rpi = 6;
-          i2c->send(label_rpi, dest, rpi_arg2);
+          i2c->send(label_rpi, dest, rpi_arg2); //send arduino i the request
        } else { //rpi request my info
           String request(rpi_arg2);
-          rpiAnalyser(request); 
+          rpiAnalyser(request); //analyse request
        }
-    }else if (rpi_requestType[0] == 's') {
+    }else if (rpi_requestType[0] == 's') {  //request of type set
        dest = atoi(rpi_arg2); 
        if(dest != myaddress) { //rpi requested another node's info
           label_rpi = 7;
-          i2c->send(label_rpi, dest, rpi_arg3);
+          i2c->send(label_rpi, dest, rpi_arg3); //send arudino i the request
        } else { //rpi reuqested my info
-          String request(rpi_arg3);
-          i2c->rpiFlagS=1;
+          String request(rpi_arg3); 
+          i2c->rpiFlagS=1;          //set set flag
           i2c->rpiRequest=request;
        }
-    }else if (rpi_requestType[0] == 'r') {
-       i2c->sendToAll((byte) 4, empty);
-       delay(200);
-       i2c->recalibration = 1;
+    }else if (rpi_requestType[0] == 'r') {  //rpi requested reset
+       i2c->sendToAll((byte) 4, empty); //send reset order to all nodes
+       delay(200);  //wait for them to get in position
+       i2c->recalibration = 1;  //reset flag to recalibrate
     }else{
         Serial.println("Wrong input");
     } //pode se mandar isto para o rpi? assumir que a flag b,c,d são feitas no rpi
-     
-/*     else{ //if rpi request my info, no i2c usage
-     
-      if(rpi_requestType[0] == 'g'){
-        rpiAnalyser(request); 
-      }
-      else if(rpi_requestType[0] == 's'){
-        //set new reference
-        i2c->rpiFlagS=1;
-        i2c->rpiRequest=request;
-        }
-     }  */
    
 }
 
@@ -173,16 +185,16 @@ void receiveHandler(int howMany) {
   char c;
   String data;
   
-  if(Wire.available())  {  
+  if(Wire.available())  {     //returns bytes available
       label = Wire.read();    //first byte is a label   
       src_addr = Wire.read(); //second byte is the address of the sender
    }
    while (Wire.available()) { //remaining byte are data values
      c = Wire.read();
-     data += c;       
+     data += c;             //stores received chars in a string
    }
   
-   i2c->msgDecoder(label, src_addr, data);
+   i2c->msgDecoder(label, src_addr, data);  //decode the message received
   
 }
 
@@ -203,6 +215,7 @@ void setup() {
    Serial.begin(115200);
    // gets i2c address from digital pin
    idCheck(idPin);
+   //tell objects my address
    i2c->setMyAddress(myaddress);
    c1.setMyAddress(myaddress);
     
@@ -210,12 +223,11 @@ void setup() {
    Wire.onReceive(receiveHandler);
 
    int netSize = i2c->findNodes();    //finds all nodes in the network
-   
 
-   //temp
+   
    if(i2c->getAddrListSize() > 0) {
       i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
-      c1.start_calibration();
+      c1.start_calibration();           
       pwmconsensus = c1.consensusIter();
       Serial.print("Pwm=");
       Serial.println(pwmconsensus);
@@ -249,14 +261,14 @@ void loop() {
     }
   }
   
-  if(i2c->rpiFlagG == 1) {   //message received from rpi
-    i2c->rpiFlagG = 0;
-    rpiAnalyser(i2c->rpiRequest);
+  if(i2c->rpiFlagG == 1) {   //message of type get received from rpi
+    i2c->rpiFlagG = 0;      //reset flag
+    rpiAnalyser(i2c->rpiRequest); //decode message received
     //i2c->rpiRequest = "";
   }
 
+  //set occupancy state according to order received from rpi
   if(i2c->rpiFlagS==1) {
-
     i2c->sendToAll((byte)8,empty); //tell all arduinos to restart consensus    
     if(i2c->rpiRequest[0]=='1'){
       Serial.println("HIGH");
@@ -338,13 +350,9 @@ void loop() {
     Serial.print(' ');
     Serial.println(lux);
 
-    /*Serial.print(' ');
-    Serial.print( ( (float) outputValue/255)*100);    
-    Serial.print(' ');
-    Serial.print(pid.getFFWDFlag());
-    Serial.print(' ');
-    Serial.println(currentTime);*/
-
+    //send at every iteration updated lux and pwm to rpi
+    sendToRpiStream(outputValue, lux);
+     
     // reset the read values
     sensorValue = 0;
 
