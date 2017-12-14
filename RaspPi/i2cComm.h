@@ -43,7 +43,7 @@ public:
 	// processes the data coming from the arduinos
 	void readData(char message[]);
 
-	std::string receiveGet(char request) {
+	std::string receiveGet(char request);
 };
 
 #endif

@@ -80,14 +80,16 @@ std::string I2Comm::receiveGet(char request) {
 			printf("Received %d bytes\n", xfer.rxCnt);
 			printf("%.*s\n", xfer.rxCnt, xfer.rxBuf);
 
-			if (request == 'o') {
+			if (request == 'l') {
 				break;
 			}  
 		}
 	}
 
-	std::string response(xfer.rxBuf);
-	response.append('\n');
+	std::string response(xfer.rxBuf, xfer.rxCnt);
+	response += '\n';
+
+	cout << "reponse is " << response;
 
 	return response;
 }

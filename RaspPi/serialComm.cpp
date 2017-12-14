@@ -52,11 +52,9 @@ std::string SerialComm::getCommand(char message[]) { // <---------- TODO
 
   db->printBuffers(1);
 
-  i2c_slave->receiveGet('o', response);
+  std::string response = i2c_slave->receiveGet('l');
 
-  std::string s(response);
-
-  return s;
+  return response;
 }
 
 
