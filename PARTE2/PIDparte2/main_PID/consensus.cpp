@@ -29,7 +29,6 @@ void Consensus::start_calibration() {
      ledON();
     
   while(nreads != i2calib->getAddrListSize() +1){ //if i read all nodes including myself (+1)
-      
       if(i2calib->recalibration != 0) {  //someone hit reset
           nacks = 0;
           nreads = 0;
@@ -133,6 +132,11 @@ void Consensus::cleanCalibVars(){
 
     //turns the led off
     analogWrite(ledPin, LOW);
+    Serial.print("been");
+    Serial.println(howLongItsBeen);
+    Serial.print("wait");
+    Serial.println(howLongToWait);
+    
     howLongItsBeen = millis();
     while(true) {
       if(millis() - howLongItsBeen >= howLongToWait){
