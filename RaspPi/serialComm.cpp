@@ -50,15 +50,17 @@ std::string SerialComm::getCommand(char message[]) { // <---------- TODO
 
   sendMessage("hi");
 
-  db->printBuffers(1);
-
   std::string response = i2c_slave->receiveGet('l');
 
   return response;
 }
 
 
-std::string SerialComm::setCommand(char message[]) { // <---------- TODO
+std::string SerialComm::setCommand(char message[]) {
+
+  std::string s(message);  
+
+  // useless------------------------------------------
 
   char desk[4] = "";
   char flag[2] = ""; // 0 non-ocuppied, 1 occupied
@@ -80,16 +82,18 @@ std::string SerialComm::setCommand(char message[]) { // <---------- TODO
 
   printf("%s %s\n", desk, flag); // test
 
-  //sendSerialMsg(desk, flag); <--------------- TODO
+  // --------------------------------------------
 
-  return "Work in progress\n";
+  // sends request to arduino
+  sendMessage(s);
+
+  return "ack\n";
 }
 
-std::string SerialComm::restartCommand() { // <---------- TODO
+std::string SerialComm::restartCommand() {
 
   //sends a restart flag to the main arduino 
-
-  //sendSerialMsg("r");
+  sendMessage("r");
 
   return "ack\n";
 }

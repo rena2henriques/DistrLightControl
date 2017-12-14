@@ -38,32 +38,88 @@ I2Comm::~I2Comm(){
 
 void I2Comm::sniffer() {
 
-	//int j = 0;
-
 	while(end != 1){
-		usleep(1000);
+		usleep(5000);
 
 		status = bscXfer(&xfer);
 		if ( xfer.rxCnt != 0 ){
 			printf("Received %d bytes\n", xfer.rxCnt);
 			printf("%.*s\n", xfer.rxCnt, xfer.rxBuf);
 
-	        /*for(j=0;j<xfer.rxCnt;j++)
-			    printf("%c",xfer.rxBuf[j]);
-		    printf("\n");*/
+			//std::string message(xfer.rxBuf, xfer.rxCnt);
 
-		   	db->insertBuffer(1, 5.5, 0.1);
+			switch (xfer.rxBuf[0]) {
+				case 'g':
+					break;
+				case 'o':
+					//inserts in the variable
+
+					// sets the flag to HIGH
+					oFlag = 1;
+					break;
+				case 'L':
+					//inserts in the variable
+					
+					// sets the flag to HIGH
+					LFlag = 1;
+					break;
+				case 'O':
+					//inserts in the variable
+					
+					// sets the flag to HIGH
+					OFlag = 1;
+					break;
+				case 'r':
+					//inserts in the variable
+					
+					// sets the flag to HIGH
+					rFlag = 1;
+					break;
+				case 'p':
+					
+					// fazer para o caso de ser só um i
+
+					// fazer caso de ser o total
+					pFlag = 1;
+					break;
+				case 'e':
+					// fazer para o caso de ser só um i
+
+					// fazer caso de ser o total
+					eFlag = 1;
+					break;
+				case 'c':
+					// fazer para o caso de ser só um i
+
+					// fazer caso de ser o total
+					cFlag = 1;
+					break;
+				case 'v':
+					vFlag = 1;
+					break;
+				default:
+					//do nothins
+			}
+
+		   	
+		   	//readData(message);
 		}
-
-		//memset(xfer.rxBuf, 0, xfer.rxCnt);
 	}
 }
 
 // processes the data received
-void I2Comm::readData(char message[]) {
+void I2Comm::readData(std::string message) {
 
-	if (message[0] == 'o'){ // pensar no protocolo de comunicação
-		printf("nothing happens\n");
+	using namespace boost::algorithm;
+
+	std::vector<std::string> tokens;
+
+    split(tokens, message, is_any_of(" ")); // here it is
+
+	if (tokens[0] == "g"){ // pensar no protocolo de comunicação
+		printf("Inserted in buffer\n");
+
+		db->insertBuffer(std::stoi(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
 	}
 
 	return;
@@ -72,27 +128,52 @@ void I2Comm::readData(char message[]) {
 
 std::string I2Comm::receiveGet(char request) {
 
-	std::lock_guard<std::mutex> lock(mtx);
+	//std::lock_guard<std::mutex> lock(mtx);
 
 	while(1){
-		status = bscXfer(&xfer);
-		if ( xfer.rxCnt != 0 ){
-			printf("Received %d bytes\n", xfer.rxCnt);
-			printf("%.*s\n", xfer.rxCnt, xfer.rxBuf);
 
-			if (request == 'l') {
-				break;
-			}  
+		if( goFlag == 1 ){
+			
+		} else if (gLFlag == 1) {
+
+
+		} else if (gOFlag == 1) {
+
+
+		} else if (grFlag == 1) {
+
+
+		} else if (gpFlag == 1) {
+
+
+		} else if (gpTFlag == 1) {
+
+
+		} else if (geFlag == 1) {
+
+
+		} else if (geTFlag == 1) {
+
+
+		} else if (gcFlag == 1) {
+
+
+		} else if (gcTFlag == 1) {
+
+
+		} else if (gvFlag == 1) {
+
+
+		} else if (gvTFlag == 1) {
+
+
 		}
+		
 	}
 
-	std::string response(xfer.rxBuf, xfer.rxCnt);
-	response += '\n';
-
-	cout << "reponse is " << response;
 
 	return response;
 }
 
 
-
+// dar reset às flags
