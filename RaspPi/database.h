@@ -39,6 +39,23 @@ public:
 	void clearBuffers();
 
 	void printBuffers(int address);
+
+	// temp variables to save the info
+	int occupancy = 0;
+	float ilumLowB = 0;
+	float extilum = 0;
+	float refilum = 0;
+	float instPow = 0;
+	float instPowT = 0;
+	float accumEn = 0;
+	float accumEnT = 0;
+	float accumConf = 0;
+	float accumConfT = 0;
+	float accumVar = 0;
+	float accumVarT = 0;
+
+	// last sender
+	int last_sender = -1;
 };
 
 #endif

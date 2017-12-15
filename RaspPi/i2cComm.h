@@ -13,6 +13,9 @@
 #include <memory.h>
 #include <mutex>
 #include "database.h"
+#include <boost/algorithm/string/split.hpp>
+//#include <boost/algorithm/string/classification.hpp>
+#include <vector>
 
 class I2Comm {
 private:
@@ -31,6 +34,28 @@ private:
 
 	std::mutex mtx;
 
+	// Flags for i2c loop - not pretty
+	int oFlag = 0; // 3º
+	int LFlag = 0; // 4º
+	int OFlag = 0; // 5º
+	int rFlag = 0; // 6º
+	int pFlag = 0; // 7º
+	int pTFlag = 0; // 8º
+	int eFlag = 0; // 9º
+	int eTFlag = 0; // 10º
+	int cFlag = 0; // 11º
+	int cTFlag = 0; // 12º
+	int vFlag = 0; // 13º
+	int vTFlag = 0; // 14º
+
+	// aux variables
+	char order = 'n';
+	int address = -1;
+	float occup = 0;
+	float value = 0.0;
+	float lux = 0.0;
+	float pwm = 0.0;
+
 public:
 
 	I2Comm(shared_ptr <Database> db_);
@@ -41,9 +66,9 @@ public:
 	void sniffer();
 
 	// processes the data coming from the arduinos
-	void readData(char message[]);
+	void readData(char message[], int size);
 
-	std::string receiveGet(char request);
+	std::string receiveGet();
 };
 
 #endif
