@@ -62,12 +62,12 @@ int CommI2C::findNodes() {
   if(addrList.size() != 0)
     addrList.clear();  //cleans the list in case of reset
   // the devices have 7-bit I2C addresses 
-  for(address = 1; address<127;address++){
+  for(address = 1; address<10;address++){
 
       // We use the Write.endTransmisstion return value to see if
       // a device did acknowledge to the address.
       Wire.beginTransmission(address);
-      Wire.write((byte)255);
+      Wire.write('z');
       error = Wire.endTransmission();
 
       // The data was send successfully

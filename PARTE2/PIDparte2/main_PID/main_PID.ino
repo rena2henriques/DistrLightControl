@@ -68,9 +68,10 @@ int occupancyState=0;
 char rpi_vector[30];
 char d_aux[30];
 char space[] = " ";
+int rpiCount = 0;
 
 void sendToRpiStream(int outputValue, float lux) {
-
+      byte stat;
       //string management to rpi
       rpi_vector[0] = 'g'; 
       strcat(rpi_vector, space);
@@ -84,9 +85,10 @@ void sendToRpiStream(int outputValue, float lux) {
       strcat(rpi_vector, d_aux);  // = "g 1 lux pwm"
    
       //rpi
-      Wire.beginTransmission(0x48); 
+     Wire.beginTransmission(0x48); 
       Wire.write(rpi_vector);
-      Wire.endTransmission();
+     stat= Wire.endTransmission();
+
   
 }
 
@@ -222,7 +224,7 @@ void setup() {
     
    Wire.begin(myaddress);
    Wire.onReceive(receiveHandler);
-
+ 
    int netSize = i2c->findNodes();    //finds all nodes in the network
 
    
@@ -239,10 +241,11 @@ void setup() {
       pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
 
    }
+
 }
 
 void loop() {
-
+  
   if(myaddress==1){
     if (Serial.available() > 0) {    // is a character available?
       rx_byte = Serial.read();       // get the character
@@ -306,8 +309,8 @@ void loop() {
 
   //pid
   currentTime = millis();
-  if(currentTime - previousTime > sampleInterval) {
-
+  if(currentTime - previousTime > sampleInterval) {      
+    
     Ncount++;
 
     //keeping lux from the 2 previous iterations 
@@ -353,8 +356,13 @@ void loop() {
     Serial.println(lux);
 
     //send at every iteration updated lux and pwm to rpi
-    sendToRpiStream(outputValue, lux);
-     
+    if(rpiCount == 10) {
+      sendToRpiStream(outputValue, lux);
+      rpiCount = 0;
+      rpi_vector[0]='\0';
+      d_aux[0]='\0';
+    }
+    rpiCount++;
     // reset the read values
     sensorValue = 0;
 
