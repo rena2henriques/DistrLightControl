@@ -50,46 +50,23 @@ std::string SerialComm::getCommand(char message[]) {
 
   std::string s(message);
 
-  cout << "Sending: " << s;
-
   // sends message to arduino master
   sendMessage(s);
 
-  //std::string response = i2c_slave->receiveGet();
-  db->printBuffers(1);
-  db->printBuffers(2);
+  std::string response = i2c_slave->receiveGet();
+  /*db->printBuffers(1);
+  db->printBuffers(2);*/
 
-  return "response";
+  // the messages need to have \n in the end for the client to work
+  response += '\n';
+
+  return response;
 }
 
 
 std::string SerialComm::setCommand(char message[]) {
 
   std::string s(message);  
-
-  // useless------------------------------------------
-
-  char desk[4] = "";
-  char flag[2] = ""; // 0 non-ocuppied, 1 occupied
-
-  /* get the first token, should be 's' in this case*/
-  char * token = strtok(message, " ");
-
-  // second parameter   
-  token = strtok(NULL, " ");
-  if (token != NULL) {
-    strncpy(desk, token, 3); // watch out
-  }
-  
-  // third parameter - state   
-  token = strtok(NULL, " ");
-  if (token != NULL){
-    strncpy(flag, token, 1); // watch out
-  }
-
-  printf("%s %s\n", desk, flag); // test
-
-  // --------------------------------------------
 
   cout << "Sending: " << s;
 
@@ -107,7 +84,7 @@ std::string SerialComm::restartCommand() {
   return "ack\n";
 }
 
-std::string SerialComm::streamCommand() { // <---------- TODO
+std::string SerialComm::streamCommand() {
 
   return "Work in progress\n";
 }

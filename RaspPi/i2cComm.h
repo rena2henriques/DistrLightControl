@@ -51,7 +51,7 @@ private:
 	// aux variables
 	char order = 'n';
 	int address = -1;
-	int occup = 0;
+	float occup = 0;
 	float value = 0.0;
 	float lux = 0.0;
 	float pwm = 0.0;

@@ -70,8 +70,13 @@
       } else if (request_[0] == '\n') {
 
         // do nothing
-        boost::asio::async_write(socket_, boost::asio::buffer("Ping received.\n"),
-              boost::bind(&session::handle_write, this, boost::asio::placeholders::error));
+        /*boost::asio::async_write(socket_, boost::asio::buffer("Ping received.\n"),
+              boost::bind(&session::handle_write, this, boost::asio::placeholders::error));*/
+
+        socket_.async_read_some(boost::asio::buffer(request_, max_length),
+          boost::bind(&session::handle_read, this,
+            boost::asio::placeholders::error,
+              boost::asio::placeholders::bytes_transferred));
 
       } else {
         // not a recognizable command 
