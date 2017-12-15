@@ -4,6 +4,9 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <sstream>
 #include <boost/circular_buffer.hpp>
 using namespace std;
@@ -39,6 +42,8 @@ public:
 	void clearBuffers();
 
 	void printBuffers(int address);
+
+	std::string getCurrentValues(char message[]);
 
 	// temp variables to save the info
 	int occupancy = 0;

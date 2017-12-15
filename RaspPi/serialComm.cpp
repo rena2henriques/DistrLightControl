@@ -53,7 +53,13 @@ std::string SerialComm::getCommand(char message[]) {
   // sends message to arduino master
   sendMessage(s);
 
-  std::string response = i2c_slave->receiveGet();
+  if (message[2] == 'l') {
+    
+  } else if (message[2] == 'd') {
+
+  } else {
+    std::string response = i2c_slave->receiveGet();
+  }
   /*db->printBuffers(1);
   db->printBuffers(2);*/
 

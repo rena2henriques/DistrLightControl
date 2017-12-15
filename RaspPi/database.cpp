@@ -49,3 +49,35 @@ void Database::printBuffers(int address){
 	}
 
 }
+
+
+std::string Database::getCurrentValues(char message[]) {
+
+	char request = 'z';
+	int address = -1;
+	int occup;
+	char aux_response[20];
+
+	if( sscanf(message, "%c %d %d", &request, &address, &occup) != 3)
+		return "Message Invalid\n"; // message hasnt been sent correctly
+
+	if (request == 'l'){
+		if (buffs[address].ilum.size() > 0 ) {
+
+			snprintf(aux_response, 20, "l %d %.2f", address, buffs[address].ilum[0]);
+
+		}
+
+	} else if (request == 'd') {
+
+		if (buffs[address].dutyCycle.size() > 0 ) {
+			snprintf(aux_response, 20, "l %d %.2f", address, buffs[address].dutyCycle[0]);
+		}
+	}
+
+	std::string response(aux_response);
+
+	response += '\n';
+
+	return response;
+}
