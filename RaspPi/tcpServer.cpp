@@ -109,7 +109,7 @@
       input_buffer_(1024), arduino(arduino_) 
     {
     start_accept();
-    start_read_input();
+    //start_read_input();
    }
 
   void Tcp_server::start_accept() {

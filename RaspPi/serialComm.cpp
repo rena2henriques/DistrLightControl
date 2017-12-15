@@ -11,7 +11,7 @@ SerialComm::SerialComm(io_service& io_serv,std::string port_name , shared_ptr <D
     // opens port
 		sp.open(port_name);
     // sets baudrate
-	  sp.set_option(serial_port_base::baud_rate(115200 ));
+	  sp.set_option(serial_port_base::baud_rate(115200));
 
 		//start_read_input();
 		
@@ -45,17 +45,21 @@ void SerialComm::sendMessageHandler(const boost::system::error_code& ec){
 }
 
 std::string SerialComm::getCommand(char message[]) {
-  
+
   std::cout << "Get command " << message << std::endl;
 
   std::string s(message);
 
+  cout << "Sending: " << s;
+
   // sends message to arduino master
   sendMessage(s);
 
-  std::string response = i2c_slave->receiveGet();
+  //std::string response = i2c_slave->receiveGet();
+  db->printBuffers(1);
+  db->printBuffers(2);
 
-  return response;
+  return "response";
 }
 
 
@@ -86,6 +90,8 @@ std::string SerialComm::setCommand(char message[]) {
   printf("%s %s\n", desk, flag); // test
 
   // --------------------------------------------
+
+  cout << "Sending: " << s;
 
   // sends request to arduino
   sendMessage(s);

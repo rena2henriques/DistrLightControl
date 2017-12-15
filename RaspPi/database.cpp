@@ -44,7 +44,8 @@ void Database::clearBuffers(){
 void Database::printBuffers(int address){
 
 	//for(int i = 0; i < buffs[address].ilum.size(); i++) {
-	cout << "lux: " << buffs[address].ilum[address] << ", dc: " <<  buffs[address].dutyCycle[0] << endl;
-	//}
+	if (buffs[address].ilum.size() > 0 && buffs[address].dutyCycle.size() > 0) {
+		cout << "lux: " << buffs[address].ilum[0] << ", dc: " <<  buffs[address].dutyCycle[0] << " of address " << address << endl;
+	}
 
 }

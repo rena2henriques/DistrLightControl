@@ -26,6 +26,7 @@ I2Comm::I2Comm(shared_ptr <Database> db_) : db(db_){
 				   (0x00<<1) | /* enable SPI mode */
 				   0x01 ;      /* enable BSC peripheral */
 				   
+	printf("I2C has been initialised\n");
 }
 
 
@@ -33,10 +34,12 @@ I2Comm::~I2Comm(){
 
 	// Terminates the library
 	gpioTerminate();
-	
+	db->~Database();
 }
 
 void I2Comm::sniffer() {
+
+	printf("I'm sniffing\n");
 
 	while(end != 1){
 		usleep(5000);
@@ -58,6 +61,8 @@ void I2Comm::readData(char msgBuf[], int size) {
 	// fazer um strcpy para só ter a parte importante da message
 	char message[30];
 	strncpy(message, msgBuf, size);
+
+	printf("I'm reading some data\n");
 
 	switch (message[0]) {
 				case 'g':
