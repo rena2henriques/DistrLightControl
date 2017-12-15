@@ -46,37 +46,93 @@ void I2Comm::sniffer() {
 			printf("Received %d bytes\n", xfer.rxCnt);
 			printf("%.*s\n", xfer.rxCnt, xfer.rxBuf);
 
-			//std::string message(xfer.rxBuf, xfer.rxCnt);
+			// processes data
+			readData(xfer.rxBuf, (int) xfer.rxCnt);
+		}
+	}
+}
 
-			switch (xfer.rxBuf[0]) {
+// processes the data received
+void I2Comm::readData(char msgBuf[], int size) {
+
+	// fazer um strcpy para só ter a parte importante da message
+	char message[30];
+	strncpy(message, msgBuf, size);
+
+	switch (message[0]) {
 				case 'g':
+					// convert to int
+					if( sscanf(message, "%c %d %f %f", &order, &address, &lux, &pwm) != 4)
+						break; // message hasnt been sent correctly
+
+					db->insertBuffer(address, lux, pwm);
+
 					break;
 				case 'o':
+					// convert to int
+					if( sscanf(message, "%c %d %d", &order, &address, &occup) != 3)
+						break; // message hasnt been sent correctly
+
+					mtx.lock();
 					//inserts in the variable
+					if (occup == 1){
+						db->occupancy = 1;
+					} else if (occup == 0) {
+						db->occupancy = 0;
+					}
+
+					db->last_sender = address;
+					mtx.unlock();
 
 					// sets the flag to HIGH
 					oFlag = 1;
 					break;
 				case 'L':
+					// convert to float
+					if( sscanf(message, "%c %d %f", &order, &address, &value) != 3)
+						break; // message hasnt been sent correctly
+
+					mtx.lock();
 					//inserts in the variable
-					
+					db->ilumLowB = value;
+
+					db->last_sender = address;
+					mtx.unlock();
+
 					// sets the flag to HIGH
 					LFlag = 1;
 					break;
 				case 'O':
+					// convert to float
+					if (sscanf(message, "%c %d %f", &order, &address, &value) != 3)
+						break; // message hasnt been sent correctly
+
+					mtx.lock();
 					//inserts in the variable
-					
+					db->extilum = value;
+
+					db->last_sender = address;
+					mtx.unlock();
+
 					// sets the flag to HIGH
 					OFlag = 1;
 					break;
 				case 'r':
+					// convert to float
+					if (sscanf(message, "%c %d %f", &order, &address, &value) != 3)
+						break; // message hasnt been sent correctly
+
+					mtx.lock();
 					//inserts in the variable
-					
+					db->refilum = value;
+
+					db->last_sender = address;
+					mtx.unlock();
+
 					// sets the flag to HIGH
 					rFlag = 1;
 					break;
-				case 'p':
-					
+				case 'p':		
 					// fazer para o caso de ser só um i
 
 					// fazer caso de ser o total
@@ -95,85 +151,98 @@ void I2Comm::sniffer() {
 					cFlag = 1;
 					break;
 				case 'v':
+					// fazer para o caso de ser só um i
+
+					// fazer caso de ser o total
+
 					vFlag = 1;
 					break;
-				default:
-					//do nothins
 			}
 
-		   	
-		   	//readData(message);
-		}
-	}
-}
 
-// processes the data received
-void I2Comm::readData(std::string message) {
-
-	using namespace boost::algorithm;
-
-	std::vector<std::string> tokens;
-
-    split(tokens, message, is_any_of(" ")); // here it is
-
-	if (tokens[0] == "g"){ // pensar no protocolo de comunicação
-		printf("Inserted in buffer\n");
-
-		db->insertBuffer(std::stoi(tokens[1]), std::stof(tokens[2]), std::stof(tokens[3]));
-	}
 
 	return;
 }
 
 
-std::string I2Comm::receiveGet(char request) {
+std::string I2Comm::receiveGet() {
 
-	//std::lock_guard<std::mutex> lock(mtx);
+	char aux_response[20];
+
+	// perceber se vale a pena verificar qual o request que eu estou à procura
 
 	while(1){
 
-		if( goFlag == 1 ){
-			
-		} else if (gLFlag == 1) {
+		if( oFlag == 1 ){
+			// converts
+			snprintf(aux_response, 20, "o %d %d", db->last_sender, db->occupancy);
+
+			oFlag = 0;
+			break;			
+		} else if (LFlag == 1) {
+			// converts
+			snprintf(aux_response, 20, "L %d %f", db->last_sender, db->ilumLowB);
+
+			LFlag = 0;
+			break;
+		} else if (OFlag == 1) {
+			// converts
+			snprintf(aux_response, 20, "O %d %f", db->last_sender, db->extilum);
+
+			OFlag = 0;
+			break;
+		} else if (rFlag == 1) {
+			// converts
+			snprintf(aux_response, 20, "r %d %f", db->last_sender, db->refilum);
+
+			rFlag = 0;
+			break;
+
+		} else if (pFlag == 1) {
+
+			pFlag = 0;
+			break;
+
+		} else if (pTFlag == 1) {
 
 
-		} else if (gOFlag == 1) {
+			pTFlag = 0;
+			break;
 
+		} else if (eFlag == 1) {
 
-		} else if (grFlag == 1) {
+			eFlag = 0;
+			break;
 
+		} else if (eTFlag == 1) {
 
-		} else if (gpFlag == 1) {
+			eTFlag = 0;
+			break;
 
+		} else if (cFlag == 1) {
 
-		} else if (gpTFlag == 1) {
+			cFlag = 0;
+			break;
 
+		} else if (cTFlag == 1) {
 
-		} else if (geFlag == 1) {
+			cTFlag = 0;
+			break;
 
+		} else if (vFlag == 1) {
 
-		} else if (geTFlag == 1) {
+			vFlag = 0;
+			break;
 
+		} else if (vTFlag == 1) {
 
-		} else if (gcFlag == 1) {
-
-
-		} else if (gcTFlag == 1) {
-
-
-		} else if (gvFlag == 1) {
-
-
-		} else if (gvTFlag == 1) {
-
-
+			vTFlag = 0;
+			break;
 		}
 		
 	}
 
+	std::string response(aux_response);
 
 	return response;
 }
-
-
-// dar reset às flags

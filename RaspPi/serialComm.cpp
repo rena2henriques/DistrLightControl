@@ -44,13 +44,16 @@ void SerialComm::sendMessageHandler(const boost::system::error_code& ec){
 
 }
 
-std::string SerialComm::getCommand(char message[]) { // <---------- TODO
-
+std::string SerialComm::getCommand(char message[]) {
+  
   std::cout << "Get command " << message << std::endl;
 
-  sendMessage("hi");
+  std::string s(message);
 
-  std::string response = i2c_slave->receiveGet('l');
+  // sends message to arduino master
+  sendMessage(s);
+
+  std::string response = i2c_slave->receiveGet();
 
   return response;
 }

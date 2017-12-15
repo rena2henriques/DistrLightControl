@@ -14,7 +14,7 @@
 #include <mutex>
 #include "database.h"
 #include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
+//#include <boost/algorithm/string/classification.hpp>
 #include <vector>
 
 class I2Comm {
@@ -41,12 +41,20 @@ private:
 	int rFlag = 0; // 6º
 	int pFlag = 0; // 7º
 	int pTFlag = 0; // 8º
-	int elag = 0; // 9º
+	int eFlag = 0; // 9º
 	int eTFlag = 0; // 10º
-	int clag = 0; // 11º
+	int cFlag = 0; // 11º
 	int cTFlag = 0; // 12º
 	int vFlag = 0; // 13º
 	int vTFlag = 0; // 14º
+
+	// aux variables
+	char order = 'n';
+	int address = -1;
+	int occup = 0;
+	float value = 0.0;
+	float lux = 0.0;
+	float pwm = 0.0;
 
 public:
 
@@ -58,9 +66,9 @@ public:
 	void sniffer();
 
 	// processes the data coming from the arduinos
-	void readData(std::string message);
+	void readData(char message[], int size);
 
-	std::string receiveGet(char request);
+	std::string receiveGet();
 };
 
 #endif
