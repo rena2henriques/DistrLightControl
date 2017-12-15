@@ -70,19 +70,22 @@ char d_aux[30];
 char space[] = " ";
 int rpiCount = 0;
 
+String inputString = "";         // a String to hold incoming data
+boolean stringComplete = false;  // whether the string is complete
+
 void sendToRpiStream(int outputValue, float lux) {
       byte stat;
       //string management to rpi
       rpi_vector[0] = 'g'; 
       strcat(rpi_vector, space);
       rpi_vector[2] = myaddress + '0'; //convert to char
-      rpi_vector[3] = '\0';       //here rpi_vector = "g 1"
+      rpi_vector[3] = '\0';       //here rpi_vector = "g add"
       strcat(rpi_vector, space);
       dtostrf(lux, 2, 2,d_aux);   
-      strcat(rpi_vector, d_aux); // = "g 1 lux"
+      strcat(rpi_vector, d_aux); // = "g add lux"
       strcat(rpi_vector, space);
       dtostrf(outputValue, 2, 2,d_aux);
-      strcat(rpi_vector, d_aux);  // = "g 1 lux pwm"
+      strcat(rpi_vector, d_aux);  // = "g add lux pwm"
    
       //rpi
      Wire.beginTransmission(0x48); 
@@ -99,7 +102,7 @@ void sendToRpiValue(float value, char label) {
       rpi_vector[3] = '\0';       
       strcat(rpi_vector, space);
       dtostrf(value, 4, 2,d_aux);   
-      strcat(rpi_vector, d_aux); // = "g 1 lux"
+      strcat(rpi_vector, d_aux); //string here is = "g 1abel lux"
       Serial.print("string to rpi: ");
       Serial.println(rpi_vector);
 
@@ -142,7 +145,7 @@ void rpiAnalyser(String rpi_requestParam){
           break;   
    }
   
-   sendToRpiValue(requestedValue, label);
+   sendToRpiValue(requestedValue, label); //send to raspberry
  
 }
 
@@ -196,7 +199,7 @@ void receiveHandler(int howMany) {
      c = Wire.read();
      data += c;             //stores received chars in a string
    }
-  
+   
    i2c->msgDecoder(label, src_addr, data);  //decode the message received
   
 }
@@ -246,22 +249,12 @@ void setup() {
 
 void loop() {
   
-  if(myaddress==1){
-    if (Serial.available() > 0) {    // is a character available?
-      rx_byte = Serial.read();       // get the character
-      if (rx_byte != '\n') {
-  
-        // a character of the string was received
-        rx_str += rx_byte;
-        
-      }
-      // end of string
-      else {
-        // checks what serial buffer said
-        analyseString(rx_str);
-        rx_str = ""; // clear the string for reuse
-        
-      }
+  if(myaddress==1){   //if im address1, get ready to receive serial messages from RPI 
+    if (stringComplete) {
+      analyseString(inputString);
+    //  Serial.println(inputString);
+      inputString = "";
+      stringComplete = false;
     }
   }
   
@@ -274,40 +267,41 @@ void loop() {
   //set occupancy state according to order received from rpi
   if(i2c->rpiFlagS==1) {
     i2c->sendToAll((byte)8,empty); //tell all arduinos to restart consensus    
-    if(i2c->rpiRequest[0]=='1'){
-      Serial.println("HIGH");
-      c1.setLowerReference(highRef);
+    if(i2c->rpiRequest[0]=='1'){  
+      occupancyState = 1;         //set occupancy state
+      c1.setLowerReference(highRef);  //update LowerRef for consensus
     }
-    else
-      c1.setLowerReference(lowRef);
-      
-    i2c->reconsensus=1;
-    i2c->rpiFlagS=0;
+    else {
+      c1.setLowerReference(lowRef); //update Lowerref for consensus
+      occupancyState = 0;   //updadte occupancy state
+    }
+    i2c->reconsensus=1;   //set flag that will start a new consensus
+    i2c->rpiFlagS=0;      //reset flag 
     
   }
   //recalibration
   if(i2c->recalibration == 1) {
-    i2c->reconsensus=1;
+    i2c->reconsensus=1;   //whenever we do recalibration, we have to re-do consensus
     c1.cleanCalibVars();  //clean all variables used in calibration
     c1.start_calibration(); //starts a new calibration
   }
 
   //reconsensus
   if(i2c->reconsensus ==1){
-    i2c->reconsensus =0;
-    pwmconsensus = c1.consensusIter();   
+    i2c->reconsensus =0;  //reset flag
+    pwmconsensus = c1.consensusIter();   //do consensus 
     Serial.print("Pwm=");
     Serial.println(pwmconsensus);
     Serial.print("luxconsensus=");
     Serial.println(c1.getRefConsensus());
-    pid.cleanvars();
+    pid.cleanvars();  //clean varibables
     pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
     pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
        
  
   }
 
-  //pid
+  //pid, wait for sampling time
   currentTime = millis();
   if(currentTime - previousTime > sampleInterval) {      
     
@@ -351,16 +345,16 @@ void loop() {
     // write the pwm to the LED
     analogWrite(ledPin, outputValue);
 
-    Serial.print(pid.getReference());
+   /* Serial.print(pid.getReference());
     Serial.print(' ');
-    Serial.println(lux);
+    Serial.println(lux);*/
 
-    //send at every iteration updated lux and pwm to rpi
-    if(rpiCount == 10) {
-      sendToRpiStream(outputValue, lux);
-      rpiCount = 0;
-      rpi_vector[0]='\0';
-      d_aux[0]='\0';
+    //send at every 20 samples updated lux and pwm to rpi, ISTO PROVAVELMENTE É TEMPO DEMAIS, VER SE COMO O RPI SE PORTA
+    if(rpiCount == 20) {
+      sendToRpiStream(outputValue, lux); //falta por pwm%
+      rpiCount = 0; //reset
+      rpi_vector[0]='\0'; //reset
+      d_aux[0]='\0';  //reset 
     }
     rpiCount++;
     // reset the read values
@@ -368,5 +362,20 @@ void loop() {
 
     // reset the timer
     previousTime = currentTime;
+  }
+}
+
+//standard rotine to read serial
+void serialEvent() {
+  while (Serial.available()) {
+    // get the new byte:
+    char inChar = (char)Serial.read();
+    // add it to the inputString:
+    inputString += inChar;
+    // if the incoming character is a newline, set a flag so the main loop can
+    // do something about it:
+    if (inChar == '\n') {
+      stringComplete = true;
+    }
   }
 }
