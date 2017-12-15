@@ -70,6 +70,9 @@ char d_aux[30];
 char space[] = " ";
 int rpiCount = 0;
 
+String inputString = "";         // a String to hold incoming data
+boolean stringComplete = false;  // whether the string is complete
+
 void sendToRpiStream(int outputValue, float lux) {
       byte stat;
       //string management to rpi
@@ -196,7 +199,7 @@ void receiveHandler(int howMany) {
      c = Wire.read();
      data += c;             //stores received chars in a string
    }
-  
+   
    i2c->msgDecoder(label, src_addr, data);  //decode the message received
   
 }
@@ -247,21 +250,11 @@ void setup() {
 void loop() {
   
   if(myaddress==1){
-    if (Serial.available() > 0) {    // is a character available?
-      rx_byte = Serial.read();       // get the character
-      if (rx_byte != '\n') {
-  
-        // a character of the string was received
-        rx_str += rx_byte;
-        
-      }
-      // end of string
-      else {
-        // checks what serial buffer said
-        analyseString(rx_str);
-        rx_str = ""; // clear the string for reuse
-        
-      }
+    if (stringComplete) {
+      analyseString(inputString);
+    //  Serial.println(inputString);
+      inputString = "";
+      stringComplete = false;
     }
   }
   
@@ -275,12 +268,13 @@ void loop() {
   if(i2c->rpiFlagS==1) {
     i2c->sendToAll((byte)8,empty); //tell all arduinos to restart consensus    
     if(i2c->rpiRequest[0]=='1'){
-      Serial.println("HIGH");
+      occupancyState = 1;
       c1.setLowerReference(highRef);
     }
-    else
+    else {
       c1.setLowerReference(lowRef);
-      
+      occupancyState = 0;
+    }
     i2c->reconsensus=1;
     i2c->rpiFlagS=0;
     
@@ -351,13 +345,13 @@ void loop() {
     // write the pwm to the LED
     analogWrite(ledPin, outputValue);
 
-    Serial.print(pid.getReference());
+   /* Serial.print(pid.getReference());
     Serial.print(' ');
-    Serial.println(lux);
+    Serial.println(lux);*/
 
     //send at every iteration updated lux and pwm to rpi
-    if(rpiCount == 10) {
-      sendToRpiStream(outputValue, lux);
+    if(rpiCount == 20) {
+   // sendToRpiStream(100*outputValue/255.0, lux);
       rpiCount = 0;
       rpi_vector[0]='\0';
       d_aux[0]='\0';
@@ -368,5 +362,20 @@ void loop() {
 
     // reset the timer
     previousTime = currentTime;
+  }
+}
+
+
+void serialEvent() {
+  while (Serial.available()) {
+    // get the new byte:
+    char inChar = (char)Serial.read();
+    // add it to the inputString:
+    inputString += inChar;
+    // if the incoming character is a newline, set a flag so the main loop can
+    // do something about it:
+    if (inChar == '\n') {
+      stringComplete = true;
+    }
   }
 }
