@@ -132,10 +132,6 @@ void Consensus::cleanCalibVars(){
 
     //turns the led off
     analogWrite(ledPin, LOW);
-    Serial.print("been");
-    Serial.println(howLongItsBeen);
-    Serial.print("wait");
-    Serial.println(howLongToWait);
     
     howLongItsBeen = millis();
     while(true) {

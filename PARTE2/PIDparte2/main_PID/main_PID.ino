@@ -66,7 +66,7 @@ float subtraction;
 //other variables
 int occupancyState=0;
 char rpi_vector[30];
-char d_aux[7];
+char d_aux[30];
 char space[] = " ";
 
 void sendToRpiStream(int outputValue, float lux) {
@@ -96,7 +96,7 @@ void sendToRpiValue(float value, char label) {
       rpi_vector[2] = myaddress + '0'; //convert and add my address
       rpi_vector[3] = '\0';       
       strcat(rpi_vector, space);
-      dtostrf(value, 2, 2,d_aux);   
+      dtostrf(value, 4, 2,d_aux);   
       strcat(rpi_vector, d_aux); // = "g 1 lux"
       Serial.print("string to rpi: ");
       Serial.println(rpi_vector);
@@ -112,7 +112,7 @@ void rpiAnalyser(String rpi_requestParam){
 
   char label=rpi_requestParam[0];
   char data[15];
-  float requestedValue=5.0;
+  float requestedValue=0.0;
    switch(label) {
       case 'o':
           requestedValue=(float)occupancyState; //rpi requested occupancy state          
@@ -139,7 +139,8 @@ void rpiAnalyser(String rpi_requestParam){
           requestedValue=power; //power
           break;   
    }
-  sendToRpiValue(requestedValue, label);
+  
+   sendToRpiValue(requestedValue, label);
  
 }
 
@@ -317,11 +318,12 @@ void loop() {
       lux_penult=lux;
     
     //computing energy comsumed - after first iteration
-    power = 100.0*outputValue/255.0;
+    power = outputValue/255.0;
     subtraction = currentTime - previousTime; //can't do previouTime-currentTime, dunno why
     subtraction = subtraction*(-1);
     if(Ncount>1)
-      energy=energy+(outputValue/255.0)*(subtraction);
+      energy=energy+power*subtraction;
+
   
     // LOW PASS filter
     for(i = 0; i < n_samples; i++)
