@@ -43,6 +43,10 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
           break;
       case 8: 
           reconsensus=1;
+          break;
+      case 9:
+          consensusState = -(consensusState - 1);
+          break;
 
    }
  

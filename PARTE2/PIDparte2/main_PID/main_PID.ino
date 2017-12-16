@@ -32,6 +32,8 @@ unsigned long howLongToWait = 100;
 unsigned long lastTimeItHappened = 0;
 unsigned long howLongItsBeen = 0;
 
+unsigned long elapsedTime = 0;
+
 // string reading
 char rx_byte = 0;
 String rx_str = "";
@@ -73,6 +75,18 @@ int rpiCount = 0;
 String inputString = "";         // a String to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 
+
+float getElapsedTime() {
+  return ((millis() - elapsedTime)/1000);
+}
+
+void resetMetrics() {
+  energy = 0;
+  vFlicker = 0;
+  cError = 0;
+  Ncount = 0;
+}
+
 void sendToRpiStream(int outputValue, float lux) {
       byte stat;
       //string management to rpi
@@ -86,7 +100,6 @@ void sendToRpiStream(int outputValue, float lux) {
       strcat(rpi_vector, space);
       dtostrf(outputValue, 2, 2,d_aux);
       strcat(rpi_vector, d_aux);  // = "g add lux pwm"
-   
       //rpi
      Wire.beginTransmission(0x48); 
       Wire.write(rpi_vector);
@@ -142,7 +155,9 @@ void rpiAnalyser(String rpi_requestParam){
           break;
       case 'p':
           requestedValue=power; //power
-          break;   
+          break;
+      case 't':
+          requestedValue=getElapsedTime();
    }
   
    sendToRpiValue(requestedValue, label); //send to raspberry
@@ -179,6 +194,10 @@ void analyseString(String serial_string) {
        i2c->sendToAll((byte) 4, empty); //send reset order to all nodes
        delay(200);  //wait for them to get in position
        i2c->recalibration = 1;  //reset flag to recalibrate
+    }else if (rpi_requestType[0] == 'k') { //turn consensus off
+       i2c->sendToAll((byte) 9, empty);
+       i2c->consensusState = -(i2c->consensusState - 1);
+    
     }else{
         Serial.println("Wrong input");
     } //pode se mandar isto para o rpi? assumir que a flag b,c,d são feitas no rpi
@@ -213,8 +232,10 @@ inline void idCheck(const int idPin) {
   // if pin idPin is HIGH = arduino nº1
   if(digitalRead(idPin) == HIGH)
     myaddress = 1; // I'm the arduino nº1
-  else 
+  else {
     myaddress = 2; // I'm not the arduino nº2
+    delay(500); //wait to not be simultaneous
+  }
 }
 
 void setup() {
@@ -239,7 +260,6 @@ void setup() {
       Serial.println(pwmconsensus);
       Serial.print("luxconsensus=");
       Serial.println(c1.getRefConsensus());
-      pid.cleanvars();
       pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
       pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
 
@@ -281,24 +301,33 @@ void loop() {
   }
   //recalibration
   if(i2c->recalibration == 1) {
+    elapsedTime = millis();
+    i2c->consensusState = 1; //after reset, we have consensus as default
     i2c->reconsensus=1;   //whenever we do recalibration, we have to re-do consensus
     c1.cleanCalibVars();  //clean all variables used in calibration
     c1.start_calibration(); //starts a new calibration
+    resetMetrics();
   }
-
+  
   //reconsensus
   if(i2c->reconsensus ==1){
     i2c->reconsensus =0;  //reset flag
-    pwmconsensus = c1.consensusIter();   //do consensus 
+    if(i2c->consensusState == 1) {
+      pwmconsensus = c1.consensusIter();   //do consensus
+      pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
+    }
+    else {
+      pwmconsensus = ((c1.getLowerRef() - c1.getExternalIlluminance()) / c1.getKii());  //calculate pwm through not coperative ffwd
+      pid.setReference(c1.getLowerRef()); //set lux ref equal to user request
+    }
+    pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
     Serial.print("Pwm=");
     Serial.println(pwmconsensus);
     Serial.print("luxconsensus=");
-    Serial.println(c1.getRefConsensus());
-    pid.cleanvars();  //clean varibables
-    pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
-    pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
-       
- 
+    Serial.println(pid.getReference());
+    //pid.cleanvars(); 
+    
+    
   }
 
   //pid, wait for sampling time
@@ -316,8 +345,7 @@ void loop() {
     
     //computing energy comsumed - after first iteration
     power = outputValue/255.0;
-    subtraction = currentTime - previousTime; //can't do previouTime-currentTime, dunno why
-    subtraction = subtraction*(-1);
+    subtraction = currentTime - previousTime; 
     if(Ncount>1)
       energy=energy+power*subtraction;
 
@@ -351,10 +379,10 @@ void loop() {
 
     //send at every 20 samples updated lux and pwm to rpi, ISTO PROVAVELMENTE É TEMPO DEMAIS, VER SE COMO O RPI SE PORTA
     if(rpiCount == 20) {
-      sendToRpiStream(outputValue, lux); //falta por pwm%
+      sendToRpiStream(100.0*(outputValue/255.0), lux); //pwm in duty cycle :) 
       rpiCount = 0; //reset
-      rpi_vector[0]='\0'; //reset
-      d_aux[0]='\0';  //reset 
+      rpi_vector[0]='\0'; //clear
+      d_aux[0]='\0';  //clear 
     }
     rpiCount++;
     // reset the read values
