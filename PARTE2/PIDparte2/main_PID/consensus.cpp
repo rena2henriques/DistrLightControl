@@ -24,6 +24,8 @@ float Consensus::getExternalIlluminance() {
 void Consensus::start_calibration() {
   int nreads=0;
   int nacks=0;
+
+  Serial.print("start calibration");
   
   if(myAddress == 1)
      ledON();
@@ -38,6 +40,7 @@ void Consensus::start_calibration() {
             ledON();
       }
       if(i2calib->readADC != 0) {
+         
          nreads++;                              //i've read one more lux
          readADCvalue(i2calib->readADC);        //readADC flag contains the address to the HIGH node
          i2calib->readADC = 0;           //resets flag
@@ -134,6 +137,12 @@ void Consensus::cleanCalibVars(){
     //turns the led off
     analogWrite(ledPin, LOW);
     howLongItsBeen = millis();
+    Serial.print("howLongItsBeen=");
+    Serial.println(howLongItsBeen);
+    
+    Serial.print("howLongToWait=");
+    Serial.println(howLongToWait);
+    
     while(true) {
       if(millis() - howLongItsBeen >= howLongToWait){
         break; 

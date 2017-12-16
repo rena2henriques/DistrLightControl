@@ -30,6 +30,11 @@ private:
 
   //line of K matrix
   LinkedList<float> Klist = LinkedList<float>();
+ 
+  //variables
+  unsigned long howLongToWait = 200;
+  unsigned long lastTimeItHappened = 0;
+  unsigned long howLongItsBeen = 0;
 
 public:
   //functions
@@ -60,11 +65,6 @@ public:
   void setLowerReference(float newRef);
 
   float getLowerRef();
-
-  //variables
-  int howLongToWait = 200;
-  int lastTimeItHappened = 0;
-  int howLongItsBeen = 0;
 
   
 };

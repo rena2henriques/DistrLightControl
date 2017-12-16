@@ -28,9 +28,9 @@ const int idPin = 7;
 int myaddress = -1;
 
 //temp?
-int howLongToWait = 100;
-int lastTimeItHappened = 0;
-int howLongItsBeen = 0;
+unsigned long howLongToWait = 100;
+unsigned long lastTimeItHappened = 0;
+unsigned long howLongItsBeen = 0;
 
 // string reading
 char rx_byte = 0;
@@ -147,6 +147,7 @@ void analyseString(String serial_string) {
        }
     }else if (rpi_requestType[0] == 'r') {
        i2c->sendToAll((byte) 4, empty);
+       delay(200);
        i2c->recalibration = 1;
     }else{
         Serial.println("Wrong input");
@@ -221,7 +222,7 @@ void setup() {
       Serial.println(pwmconsensus);
       Serial.print("luxconsensus=");
       Serial.println(c1.getRefConsensus());
-      pid.cleanvars();
+     // pid.cleanvars();
       pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
       pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
 
@@ -272,6 +273,8 @@ void loop() {
   }
   //recalibration
   if(i2c->recalibration == 1) {
+    Serial.print("size=");
+    Serial.println(i2c->getAddrListSize()); 
 
     c1.cleanCalibVars();  //clean all variables used in calibration
     c1.start_calibration(); //starts a new calibration
@@ -280,15 +283,16 @@ void loop() {
 
   //reconsensus
   if(i2c->reconsensus ==1){
+    i2c->reconsensus =0;   
     pwmconsensus = c1.consensusIter();   
     Serial.print("Pwm=");
     Serial.println(pwmconsensus);
     Serial.print("luxconsensus=");
     Serial.println(c1.getRefConsensus());
-    pid.cleanvars();
+   // pid.cleanvars();
     pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
     pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
-    i2c->reconsensus =0;   
+
  
   }
 
