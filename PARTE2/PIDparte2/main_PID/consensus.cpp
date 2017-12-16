@@ -395,5 +395,10 @@ void Consensus::setLowerReference(float newRef){
 
 float Consensus::getLowerRef(){
   return L1;
-  }
+}
+
+float Consensus::getKii() {
+  return (Klist.get(myAddress-1));
+}
+
 

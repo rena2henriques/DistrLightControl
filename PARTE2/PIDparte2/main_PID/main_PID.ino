@@ -75,8 +75,15 @@ String inputString = "";         // a String to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 
 
-unsigned long getElapsedTime() {
-  return ((millis() - elapsedTime) / 1000);
+float getElapsedTime() {
+  return ((millis() - elapsedTime)/1000);
+}
+
+void resetMetrics() {
+  energy = 0;
+  vFlicker = 0;
+  cError = 0;
+  Ncount = 0;
 }
 
 void sendToRpiStream(int outputValue, float lux) {
@@ -97,7 +104,6 @@ void sendToRpiStream(int outputValue, float lux) {
   Wire.beginTransmission(0x48);
   Wire.write(rpi_vector);
   stat = Wire.endTransmission();
-
 
 }
 
@@ -159,40 +165,42 @@ void rpiAnalyser(String rpi_requestParam) {
 
 // reads the serial buffer
 void analyseString(String serial_string) {
-  byte label_rpi;
-  byte dest;
-  char *rx_str_aux = serial_string.c_str();
-  sscanf(rx_str_aux, "%[^ ] %[^ ] %[^\n]", rpi_requestType, rpi_arg2, rpi_arg3); //stores the 3 paramets in chars[]
+    byte label_rpi;
+    byte dest;
+    char *rx_str_aux = serial_string.c_str();
+    sscanf(rx_str_aux, "%[^ ] %[^ ] %[^\n]", rpi_requestType, rpi_arg2, rpi_arg3); //stores the 3 paramets in chars[]
 
-  if (rpi_requestType[0] == 'g') { //request of type get
-    dest = atoi(rpi_arg3);
-    if (dest != myaddress) { //rpi requested another node's info
-      label_rpi = 6;
-      i2c->send(label_rpi, dest, rpi_arg2); //send arduino i the request
-    } else { //rpi request my info
-      String request(rpi_arg2);
-      rpiAnalyser(request); //analyse request
-    }
-  } else if (rpi_requestType[0] == 's') {  //request of type set
-    dest = atoi(rpi_arg2);
-    if (dest != myaddress) { //rpi requested another node's info
-      label_rpi = 7;
-      i2c->send(label_rpi, dest, rpi_arg3); //send arudino i the request
-    } else { //rpi reuqested my info
-      String request(rpi_arg3);
-      i2c->rpiFlagS = 1;        //set set flag
-      i2c->rpiRequest = request;
-    }
-  } else if (rpi_requestType[0] == 'r') {  //rpi requested reset
-    i2c->sendToAll((byte) 4, empty); //send reset order to all nodes
-    delay(200);  //wait for them to get in position
-    i2c->recalibration = 1;  //reset flag to recalibrate
-  } else {
-    Serial.println("Wrong input");
-  } //pode se mandar isto para o rpi? assumir que a flag b,c,d são feitas no rpi
-
-
-}
+    if(rpi_requestType[0] == 'g'){  //request of type get
+       dest = atoi(rpi_arg3);
+       if(dest != myaddress) { //rpi requested another node's info
+          label_rpi = 6;
+          i2c->send(label_rpi, dest, rpi_arg2); //send arduino i the request
+       } else { //rpi request my info
+          String request(rpi_arg2);
+          rpiAnalyser(request); //analyse request
+       }
+    }else if (rpi_requestType[0] == 's') {  //request of type set
+       dest = atoi(rpi_arg2); 
+       if(dest != myaddress) { //rpi requested another node's info
+          label_rpi = 7;
+          i2c->send(label_rpi, dest, rpi_arg3); //send arudino i the request
+       } else { //rpi reuqested my info
+          String request(rpi_arg3); 
+          i2c->rpiFlagS=1;          //set set flag
+          i2c->rpiRequest=request;
+       }
+    }else if (rpi_requestType[0] == 'r') {  //rpi requested reset
+       i2c->sendToAll((byte) 4, empty); //send reset order to all nodes
+       delay(200);  //wait for them to get in position
+       i2c->recalibration = 1;  //reset flag to recalibrate
+    }else if (rpi_requestType[0] == 'k') { //turn consensus off
+       i2c->sendToAll((byte) 9, empty);
+       i2c->consensusState = -(i2c->consensusState - 1);
+    
+    }else{
+        Serial.println("Wrong input");
+    } //pode se mandar isto para o rpi? assumir que a flag b,c,d são feitas no rpi
+   }
 
 void receiveHandler(int howMany) {
   int label;
@@ -222,37 +230,39 @@ inline void idCheck(const int idPin) {
   // if pin idPin is HIGH = arduino nº1
   if (digitalRead(idPin) == HIGH)
     myaddress = 1; // I'm the arduino nº1
-  else
+  else {
     myaddress = 2; // I'm not the arduino nº2
+    delay(500); //wait to not be simultaneous
+  }
 }
 
 void setup() {
-  Serial.begin(115200);
-  // gets i2c address from digital pin
-  idCheck(idPin);
-  //tell objects my address
-  i2c->setMyAddress(myaddress);
-  c1.setMyAddress(myaddress);
 
-  Wire.begin(myaddress);
-  Wire.onReceive(receiveHandler);
+   Serial.begin(115200);
+   // gets i2c address from digital pin
+   idCheck(idPin);
+   //tell objects my address
+   i2c->setMyAddress(myaddress);
+   c1.setMyAddress(myaddress);
+    
+   Wire.begin(myaddress);
+   Wire.onReceive(receiveHandler);
+ 
+   int netSize = i2c->findNodes();    //finds all nodes in the network
 
-  int netSize = i2c->findNodes();    //finds all nodes in the network
+   
+   if(i2c->getAddrListSize() > 0) {
+      i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
+      c1.start_calibration();           
+      pwmconsensus = c1.consensusIter();
+      Serial.print("Pwm=");
+      Serial.println(pwmconsensus);
+      Serial.print("luxconsensus=");
+      Serial.println(c1.getRefConsensus());
+      pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
+      pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
 
-
-  if (i2c->getAddrListSize() > 0) {
-    i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
-    c1.start_calibration();
-    pwmconsensus = c1.consensusIter();
-    Serial.print("Pwm=");
-    Serial.println(pwmconsensus);
-    Serial.print("luxconsensus=");
-    Serial.println(c1.getRefConsensus());
-    // pid.cleanvars();
-    pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
-    pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
-
-  }
+   }
 
 }
 
@@ -289,24 +299,34 @@ void loop() {
 
   }
   //recalibration
-  if (i2c->recalibration == 1) {
-    i2c->reconsensus = 1; //whenever we do recalibration, we have to re-do consensus
+  if(i2c->recalibration == 1) {
+    elapsedTime = millis();
+    i2c->consensusState = 1; //after reset, we have consensus as default
+    i2c->reconsensus=1;   //whenever we do recalibration, we have to re-do consensus
     c1.cleanCalibVars();  //clean all variables used in calibration
     c1.start_calibration(); //starts a new calibration
+    resetMetrics();
   }
-
+  
   //reconsensus
-  if (i2c->reconsensus == 1) {
-    i2c->reconsensus = 0; //reset flag
-    pwmconsensus = c1.consensusIter();   //do consensus
-    // pid.cleanvars();
+  if(i2c->reconsensus ==1){
+    i2c->reconsensus =0;  //reset flag
+    if(i2c->consensusState == 1) {
+      pwmconsensus = c1.consensusIter();   //do consensus
+      pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
+    }
+    else {
+      pwmconsensus = ((c1.getLowerRef() - c1.getExternalIlluminance()) / c1.getKii());  //calculate pwm through not coperative ffwd
+      pid.setReference(c1.getLowerRef()); //set lux ref equal to user request
+    }
     pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
-    pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
-
-    pid.cleanvars();  //clean varibables
-    pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
-    pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
-  }
+    Serial.print("Pwm=");
+    Serial.println(pwmconsensus);
+    Serial.print("luxconsensus=");
+    Serial.println(pid.getReference());
+    //pid.cleanvars(); 
+    
+      }
 
   //pid, wait for sampling time
   currentTime = millis();
@@ -321,13 +341,10 @@ void loop() {
     if (Ncount > 1)
       lux_penult = lux;
 
-    //computing energy comsumed - after first iteration
-    power = outputValue / 255.0;
-    subtraction = currentTime - previousTime; //can't do previouTime-currentTime, dunno why
-    subtraction = subtraction * (-1);
-    if (Ncount > 1)
-      energy = energy + power * subtraction;
-
+    power = outputValue/255.0;
+    subtraction = currentTime - previousTime; 
+    if(Ncount>1)
+      energy=energy+power*subtraction;
 
     // LOW PASS filter
     for (i = 0; i < n_samples; i++)
@@ -357,11 +374,11 @@ void loop() {
       Serial.println(lux);*/
 
     //send at every 20 samples updated lux and pwm to rpi, ISTO PROVAVELMENTE É TEMPO DEMAIS, VER SE COMO O RPI SE PORTA
-    if (rpiCount == 20) {
-      sendToRpiStream(outputValue, lux); //falta por pwm%
+    if(rpiCount == 20) {
+      sendToRpiStream(100.0*(outputValue/255.0), lux); //pwm in duty cycle :) 
       rpiCount = 0; //reset
-      rpi_vector[0] = '\0'; //reset
-      d_aux[0] = '\0'; //reset
+      rpi_vector[0]='\0'; //clear
+      d_aux[0]='\0';  //clear 
     }
     rpiCount++;
     // reset the read values
