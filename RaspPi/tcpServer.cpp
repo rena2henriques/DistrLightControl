@@ -30,54 +30,40 @@
   void session::handle_read(const boost::system::error_code& error, size_t bytes_transferred) {
     if (!error) {
 
-      std::cout << "received: " << request_ << std::endl;
-
       if (request_[0] == 'g') {
         // takes care of get requests
-        response_ = arduino->getCommand(request_);
-
-        boost::asio::async_write(socket_, boost::asio::buffer(response_, response_.length()),
-              boost::bind(&session::handle_write, this, boost::asio::placeholders::error));
+        response_ = arduino->getCommand(request_);       
         
       } else if (request_[0] == 'r'){
 
         response_ = arduino->restartCommand();
-
-        // sends the info to the client
-        boost::asio::async_write(socket_, boost::asio::buffer(response_, response_.length()),
-              boost::bind(&session::handle_write, this, boost::asio::placeholders::error));
 
       } else if (request_[0] == 's') {
 
         // gets the response requested
         response_ = arduino->setCommand(request_);
 
-        // send message to arduino
-        arduino->sendMessage(response_);
+      } else if (request_[0] == 'k') {
 
-        // sends the info to the client
-        boost::asio::async_write(socket_, boost::asio::buffer(response_, response_.length()),
-              boost::bind(&session::handle_write, this, boost::asio::placeholders::error));
+        // gets the response requested
+        response_ = arduino->consensusCommand();
 
       } else if (request_[0] == 'b' || request_[0] == 'c' || request_[0] == 'd') {
 
-        response_ = arduino->streamCommand();
-
-        // sends the info to the client
-        boost::asio::async_write(socket_, boost::asio::buffer(response_, response_.length()),
-              boost::bind(&session::handle_write, this, boost::asio::placeholders::error));
+        response_ = arduino->streamCommand(request_);
 
       } else if (request_[0] == '\n') {
 
-        // do nothing
-        boost::asio::async_write(socket_, boost::asio::buffer("Ping received.\n"),
-              boost::bind(&session::handle_write, this, boost::asio::placeholders::error));
+        response_ = "Ping received.\n";
 
       } else {
-        // not a recognizable command 
-        boost::asio::async_write(socket_, boost::asio::buffer("Request not found.\n"),
-              boost::bind(&session::handle_write, this, boost::asio::placeholders::error));
+
+        response_ = "Request not found.\n";
       }
+
+      // sends the info to the client
+      boost::asio::async_write(socket_, boost::asio::buffer(response_, response_.length()),
+              boost::bind(&session::handle_write, this, boost::asio::placeholders::error));
 
       memset(request_, 0, sizeof(request_));
     }

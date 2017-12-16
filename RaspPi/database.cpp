@@ -22,11 +22,18 @@ void Database::insertBuffer(int address, float lux, float dc) {
 	if(buffs[address].ilum.capacity() == 0 && buffs[address].dutyCycle.capacity() == 0) {
 		buffs[address].ilum.set_capacity(capacity);
 		buffs[address].dutyCycle.set_capacity(capacity);
+		numBuffers++;
 	}
 
+	struct Info aux;
+	aux.timestamp = time(nullptr); 
+
 	// insert the data in the circular buffers
-	buffs[address].ilum.push_front(lux);
-	buffs[address].dutyCycle.push_front(dc);
+	aux.data = lux;
+	buffs[address].ilum.push_front(aux);
+
+	aux.data = dc;
+	buffs[address].dutyCycle.push_front(aux);
 
 	return;
 }
@@ -41,43 +48,101 @@ void Database::clearBuffers(){
 
 }
 
-void Database::printBuffers(int address){
-
-	//for(int i = 0; i < buffs[address].ilum.size(); i++) {
-	if (buffs[address].ilum.size() > 0 && buffs[address].dutyCycle.size() > 0) {
-		cout << "lux: " << buffs[address].ilum[0] << ", dc: " <<  buffs[address].dutyCycle[0] << " of address " << address << endl;
-	}
-
+int Database::getNumBuffers(){
+	return numBuffers;
 }
-
 
 std::string Database::getCurrentValues(char message[]) {
 
 	char request = 'z';
+	char type = 'z';
 	int address = -1;
-	int occup;
 	char aux_response[20];
 
-	if( sscanf(message, "%c %d %d", &request, &address, &occup) != 3)
+	if( sscanf(message, "%c %c %d", &request, &type, &address) != 3)
 		return "Message Invalid\n"; // message hasnt been sent correctly
 
-	if (request == 'l'){
-		if (buffs[address].ilum.size() > 0 ) {
-
-			snprintf(aux_response, 20, "l %d %.2f", address, buffs[address].ilum[0]);
-
+	if (type == 'l'){
+		if (buffs[address].ilum.size() > 0 && buffs[address].ilum.capacity() != 0) {
+			snprintf(aux_response, 20, "l %d %.2f", address, buffs[address].ilum[0].data);
+		} else {
+			return "Message Invalid\n"; // message hasnt been sent correctly
 		}
 
-	} else if (request == 'd') {
-
-		if (buffs[address].dutyCycle.size() > 0 ) {
-			snprintf(aux_response, 20, "l %d %.2f", address, buffs[address].dutyCycle[0]);
+	} else if (type == 'd') {
+		if (buffs[address].dutyCycle.size() > 0 && buffs[address].dutyCycle.capacity() != 0) {
+			snprintf(aux_response, 20, "d %d %.2f", address, buffs[address].dutyCycle[0].data);
+		} else {
+			return "Message Invalid\n"; // message hasnt been sent correctly
 		}
+	} else {
+		return "Message Invalid\n"; // message hasnt been sent correctly
 	}
 
 	std::string response(aux_response);
 
+	return response;
+}
+
+// returns the values of a buffer in the last minute
+std::string Database::getLastMinuteValues(char message[]) {
+
+	char request = 'z';
+	int address = -1;
+	char type = 'z';
+	unsigned int i = 0;
+	std::string response("b ");
+
+	if( sscanf(message, "%c %c %d", &request, &type, &address) != 3)
+		return "Message Invalid\n"; // message hasnt been sent correctly
+
+	response += type;
+	response += ' ';
+	response.append(to_string(address));
+	response += ' ';
+
+	// gets the current time
+	time_t now = time(nullptr);
+
+	// if requested luminance
+	if (type == 'l') {
+
+		while (difftime(now, buffs[address].ilum[i].timestamp) < 60) {
+
+			// apends the value to the response
+			response.append(to_string(buffs[address].ilum[i].data));
+			
+			i++;
+
+			// in case we get to the end of the buffer
+			if (buffs[address].ilum.size() == i)
+				break;
+
+			response += ',';
+		}
+
+	// if requested dutyCycle
+	} else if (type == 'd') {
+
+		while (difftime(now, buffs[address].dutyCycle[i].timestamp) < 60) {
+
+			// apends the value to the response
+			response.append(to_string(buffs[address].dutyCycle[i].data));
+
+			i++;
+
+			// in case we get to the end of the buffer
+			if (buffs[address].dutyCycle.size() == i)
+				break;
+
+			response += ',';
+		}
+	}
+
+	// ends with a newline delimiter
 	response += '\n';
 
 	return response;
 }
+
+

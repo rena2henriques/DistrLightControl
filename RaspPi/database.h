@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <ctime>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -14,20 +15,26 @@ using namespace std;
 class Database {
 
 private:
-// to define the capacity of the buffers
-int capacity;
+	// to define the capacity of the buffers
+	int capacity;
 
-struct Buffer {
-	// for illuminance values
-	boost::circular_buffer<float> ilum;
-	// for duty cycle values
-	boost::circular_buffer<float> dutyCycle;
-};
+	struct Info {
+		float data;
+		time_t timestamp; 
+	};
 
-// Create a circular buffer for floats
-Buffer buffs[127];
+	struct Buffer {
+		// for illuminance values
+		boost::circular_buffer<struct Info> ilum;
+		// for duty cycle values
+		boost::circular_buffer<struct Info> dutyCycle;
+	};
 
-//boost::circular_buffer<float> timestamp; // not needed for now
+	// Create a circular buffer for floats
+	Buffer buffs[127];
+
+	// num of nodes
+	int numBuffers = 0;
 
 public:
 
@@ -41,9 +48,11 @@ public:
 
 	void clearBuffers();
 
-	void printBuffers(int address);
-
 	std::string getCurrentValues(char message[]);
+
+	std::string getLastMinuteValues(char message[]);
+
+	int getNumBuffers();
 
 	// temp variables to save the info
 	int occupancy = 0;
@@ -58,9 +67,11 @@ public:
 	float accumConfT = 0;
 	float accumVar = 0;
 	float accumVarT = 0;
+	float timeSeconds = 0;
 
 	// last sender
 	int last_sender = -1;
+
 };
 
 #endif
