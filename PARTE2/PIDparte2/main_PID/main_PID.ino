@@ -32,6 +32,8 @@ unsigned long howLongToWait = 100;
 unsigned long lastTimeItHappened = 0;
 unsigned long howLongItsBeen = 0;
 
+unsigned long elapsedTime = 0;
+
 // string reading
 char rx_byte = 0;
 String rx_str = "";
@@ -72,6 +74,11 @@ int rpiCount = 0;
 
 String inputString = "";         // a String to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
+
+
+unsigned long getElapsedTime() {
+  return ((millis() - elapsedTime)/1000);
+}
 
 void sendToRpiStream(int outputValue, float lux) {
       byte stat;
@@ -142,7 +149,9 @@ void rpiAnalyser(String rpi_requestParam){
           break;
       case 'p':
           requestedValue=power; //power
-          break;   
+          break;
+      case 't':
+          requestedValue=getElapsedTime();
    }
   
    sendToRpiValue(requestedValue, label); //send to raspberry
