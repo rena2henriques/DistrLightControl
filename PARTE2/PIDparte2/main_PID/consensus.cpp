@@ -149,7 +149,7 @@ void Consensus::cleanCalibVars(){
 
 float Consensus::consensusIter(){
 
-  double rho = 0.01;
+  double rho = 0.05;
   //node 1 initialization
   double d1[2] = {0, 0}; 
   double d1_av[2] = {0,0}; //manter esta variavel
@@ -171,7 +171,7 @@ float Consensus::consensusIter(){
   }
 
  int i=0;
-  while(i<50){
+  while(i<30){
     if(i2calib->recalibration == 1)
        return -1; //someone pressed reset
     

@@ -47,6 +47,9 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
       case 9:
           consensusState = -(consensusState - 1);
           break;
+      case 10:
+          rpiFlagT = 1;
+          break; 
 
    }
  
