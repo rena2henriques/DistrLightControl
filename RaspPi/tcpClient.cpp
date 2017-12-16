@@ -122,7 +122,6 @@ private:
 
   void start_read()
   {
-    std::cout << "start_read" << std::endl;
     // Set a deadline for the read operation.
     deadline_.expires_from_now(boost::posix_time::seconds(30));
 

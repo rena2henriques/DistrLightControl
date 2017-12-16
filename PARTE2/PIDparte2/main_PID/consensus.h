@@ -30,7 +30,7 @@ private:
 
   //line of K matrix
   LinkedList<float> Klist = LinkedList<float>();
- 
+  
   //variables
   unsigned long howLongToWait = 200;
   unsigned long lastTimeItHappened = 0;
@@ -66,7 +66,6 @@ public:
 
   float getLowerRef();
 
-  
 };
 
 #endif

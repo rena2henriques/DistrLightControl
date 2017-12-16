@@ -4,14 +4,14 @@
 // g++ -g -O -Wall -pedantic -std=c++11 mainSerial.cpp serialComm.cpp -lpthread -lboost_system -o serialArduino
 
 // Constructor
-SerialComm::SerialComm(io_service& io_serv,std::string port_name)
-	: io(io_serv), sp(io), input_(io, ::dup(STDIN_FILENO)), input_buffer_(1024){
+SerialComm::SerialComm(io_service& io_serv,std::string port_name , shared_ptr <Database> db_, shared_ptr <I2Comm> i2c_slave_)
+	: io(io_serv), sp(io), input_(io, ::dup(STDIN_FILENO)), input_buffer_(1024), db(db_), i2c_slave(i2c_slave_) {
 
 	try{
     // opens port
 		sp.open(port_name);
     // sets baudrate
-	  sp.set_option(serial_port_base::baud_rate(115200 ));
+	  sp.set_option(serial_port_base::baud_rate(115200));
 
 		//start_read_input();
 		
@@ -44,51 +44,53 @@ void SerialComm::sendMessageHandler(const boost::system::error_code& ec){
 
 }
 
-std::string SerialComm::getCommand(char message[]) { // <---------- TODO
+std::string SerialComm::getCommand(char message[]) {
 
   std::cout << "Get command " << message << std::endl;
 
-  return "Work in progress\n";
+  std::string s(message);
+
+  // sends message to arduino master
+  sendMessage(s);
+
+  if (message[2] == 'l') {
+    
+  } else if (message[2] == 'd') {
+
+  } else {
+    std::string response = i2c_slave->receiveGet();
+  }
+  /*db->printBuffers(1);
+  db->printBuffers(2);*/
+
+  // the messages need to have \n in the end for the client to work
+  response += '\n';
+
+  return response;
 }
 
 
-std::string SerialComm::setCommand(char message[]) { // <---------- TODO
+std::string SerialComm::setCommand(char message[]) {
 
-  char desk[4] = "";
-  char flag[2] = ""; // 0 non-ocuppied, 1 occupied
+  std::string s(message);  
 
-  /* get the first token, should be 's' in this case*/
-  char * token = strtok(message, " ");
+  cout << "Sending: " << s;
 
-  // second parameter   
-  token = strtok(NULL, " ");
-  if (token != NULL) {
-    strncpy(desk, token, 3); // watch out
-  }
-  
-  // third parameter - state   
-  token = strtok(NULL, " ");
-  if (token != NULL){
-    strncpy(flag, token, 1); // watch out
-  }
-
-  printf("%s %s\n", desk, flag); // test
-
-  //sendSerialMsg(desk, flag); <--------------- TODO
-
-  return "Work in progress\n";
-}
-
-std::string SerialComm::restartCommand() { // <---------- TODO
-
-  //sends a restart flag to the main arduino 
-
-  //sendSerialMsg("r");
+  // sends request to arduino
+  sendMessage(s);
 
   return "ack\n";
 }
 
-std::string SerialComm::streamCommand() { // <---------- TODO
+std::string SerialComm::restartCommand() {
+
+  //sends a restart flag to the main arduino 
+  sendMessage("r");
+
+  return "ack\n";
+}
+
+std::string SerialComm::streamCommand() {
 
   return "Work in progress\n";
 }

@@ -9,30 +9,23 @@
 #include "tcpServer.h"
 #include "serialComm.h"
 #include "i2cComm.h"
-#include "database.h"
 
 using namespace std;
 using namespace boost::asio;
-
-// creats the object where we handle the data coming from arduino
-shared_ptr <Database> db (new Database(6000));
-
-// creates I2C object
-shared_ptr <I2Comm> i2c_slave (new I2Comm(db));
-
-// creating io services for tcp and arduino
-io_service io;
-
-shared_ptr <SerialComm> arduino (new SerialComm(io, "/dev/ttyACM0", db, i2c_slave));
 
 
 void tcp_serial_thread(int port){
 
   try {
 
-    Tcp_server s(io, port, arduino);
+    // creating io services for tcp and arduino
+    boost::asio::io_service io_service;
 
-    io.run();
+    shared_ptr <SerialComm> arduino (new SerialComm(io_service, "/dev/ttyACM0"));
+
+    Tcp_server s(io_service, port, arduino);
+
+    io_service.run();
 
   } catch (std::exception& e) {
 
@@ -46,22 +39,13 @@ void tcp_serial_thread(int port){
 void i2c_thread() {
 
   // creates object
-  i2c_slave->sniffer();
+  I2Comm i2c_slave;
+
+  i2c_slave.sniffer();
 
   return;
 }
 
-void read_keyboard(){
-  while (1) {
-    string command;
-    getline(std::cin,command);
-    if(command=="quit"){
-      i2c_slave->~I2Comm();
-      arduino->~SerialComm();
-      exit(0);
-    }
-  }
-}
 
 int main(int argc, char* argv[])
 {
@@ -70,8 +54,6 @@ int main(int argc, char* argv[])
       std::cerr << "Usage: async_tcp_echo_server <port>\n";
       return 1;
   }
-
-  thread threadkeyboard(read_keyboard);// ----> for exiting the program
 
   // starts the server and serial comm thread
   thread threadTcp(tcp_serial_thread, atoi(argv[1]) );
