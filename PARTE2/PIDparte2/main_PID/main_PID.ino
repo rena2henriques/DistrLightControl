@@ -76,7 +76,7 @@ String inputString = "";         // a String to hold incoming data
 boolean stringComplete = false;  // whether the string is complete
 
 
-unsigned long getElapsedTime() {
+float getElapsedTime() {
   return ((millis() - elapsedTime)/1000);
 }
 
@@ -188,6 +188,10 @@ void analyseString(String serial_string) {
        i2c->sendToAll((byte) 4, empty); //send reset order to all nodes
        delay(200);  //wait for them to get in position
        i2c->recalibration = 1;  //reset flag to recalibrate
+    }else if (rpi_requestType[0] == 'c') {
+       i2c->sendToAll((byte) 9, empty);
+       i2c->consensusState = -(i2c->consensusState - 1);
+    
     }else{
         Serial.println("Wrong input");
     } //pode se mandar isto para o rpi? assumir que a flag b,c,d são feitas no rpi
@@ -248,7 +252,6 @@ void setup() {
       Serial.println(pwmconsensus);
       Serial.print("luxconsensus=");
       Serial.println(c1.getRefConsensus());
-      pid.cleanvars();
       pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
       pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
 
@@ -290,24 +293,30 @@ void loop() {
   }
   //recalibration
   if(i2c->recalibration == 1) {
+    elapsedTime = millis();
     i2c->reconsensus=1;   //whenever we do recalibration, we have to re-do consensus
     c1.cleanCalibVars();  //clean all variables used in calibration
     c1.start_calibration(); //starts a new calibration
   }
-
+  
   //reconsensus
   if(i2c->reconsensus ==1){
     i2c->reconsensus =0;  //reset flag
-    pwmconsensus = c1.consensusIter();   //do consensus 
+    if(i2c->consensusState == 1) {
+      pwmconsensus = c1.consensusIter();   //do consensus
+      pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
+    }
+    else {
+      pwmconsensus = ((c1.getLowerRef() - c1.getExternalIlluminance()) / c1.getKii());
+      pid.setReference(c1.getLowerRef());
+    }
     Serial.print("Pwm=");
     Serial.println(pwmconsensus);
     Serial.print("luxconsensus=");
     Serial.println(c1.getRefConsensus());
-    pid.cleanvars();  //clean varibables
+    //pid.cleanvars(); 
     pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
-    pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
-       
- 
+    
   }
 
   //pid, wait for sampling time
@@ -362,8 +371,8 @@ void loop() {
     if(rpiCount == 20) {
       sendToRpiStream(outputValue, lux); //falta por pwm%
       rpiCount = 0; //reset
-      rpi_vector[0]='\0'; //reset
-      d_aux[0]='\0';  //reset 
+      rpi_vector[0]='\0'; //clear
+      d_aux[0]='\0';  //clear 
     }
     rpiCount++;
     // reset the read values

@@ -67,6 +67,8 @@ public:
 
   float getLowerRef();
 
+  float getKii();
+
 
   
 };
