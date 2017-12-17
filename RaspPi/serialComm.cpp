@@ -95,7 +95,7 @@ std::string SerialComm::restartCommand() {
   return "ack\n";
 }
 
-std::string SerialComm::streamCommand(char message[]) {
+std::string SerialComm::lastMinCommand(char message[]) {
 
   std::string response;
 
@@ -113,4 +113,22 @@ std::string SerialComm::consensusCommand() {
   sendMessage("k");
 
   return "ack\n";
+}
+
+
+std::string SerialComm::streaming(int address, char type) {
+
+  std::string response;
+
+  // the case of having received new data from this arduino
+  if ( db->getLastReadState(address) == 0) {
+
+    response = db->getStreamValues(address, type);
+
+  // the case of not having received new data from this arduino
+  } else {
+    response = "no new data";
+  }
+
+  return response;
 }

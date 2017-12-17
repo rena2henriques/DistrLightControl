@@ -21,6 +21,8 @@
 #include <boost/bind.hpp>
 //#define BOOST_ASIO_ENABLE_HANDLER_TRACKING
 #include <boost/asio.hpp>
+#include <chrono>
+#include <boost/asio/steady_timer.hpp>
 //#include "command.h"
 #include "serialComm.h"
 using boost::asio::ip::tcp;
@@ -42,6 +44,14 @@ private:
 
 	void handle_write(const boost::system::error_code& error);
 
+	void deadline_handler(const boost::system::error_code & ec);
+
+
+	// aux variables <----------
+	// to stop the timer
+	int stop = 1;
+	int address = -1;
+	char type = 'z';
 
 	tcp::socket socket_;
   	enum { max_length = 1024 };
@@ -49,6 +59,7 @@ private:
   	std::string response_;
 
   	std::shared_ptr <SerialComm> arduino;
+  	boost::asio::steady_timer tim;
 };
 
 //----------------------------------------------------------------------------

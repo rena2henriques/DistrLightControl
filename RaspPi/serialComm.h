@@ -40,10 +40,12 @@ public:
 	std::string restartCommand();
 
 	// other commands
-	std::string streamCommand(char message[]);
+	std::string lastMinCommand(char message[]);
 
 	// turn on/off consensus
 	std::string consensusCommand();
+
+	std::string streaming(int address, char type);
 
 private:
 

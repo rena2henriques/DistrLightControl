@@ -70,7 +70,9 @@ void I2Comm::readData(char msgBuf[], int size) {
 					if( sscanf(message, "%c %d %f %f", &order, &address, &lux, &pwm) != 4)
 						break; // message hasnt been sent correctly
 
+					mtx.lock();
 					db->insertBuffer(address, lux, pwm);
+					mtx.unlock();
 
 					break;
 				case 'o':
@@ -78,8 +80,6 @@ void I2Comm::readData(char msgBuf[], int size) {
 					// convert to int
 					if( sscanf(message, "%c %d %f", &order, &address, &occup) != 3)
 						break; // message hasnt been sent correctly
-
-					//printf("sscanf of 'o' was successful\n");
 
 					mtx.lock();
 					//inserts in the variable

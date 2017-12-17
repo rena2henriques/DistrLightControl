@@ -6,6 +6,8 @@ Database::Database() {
 }
 
 Database::Database(int capacity_) : capacity(capacity_) {
+
+	last_restart = std::chrono::system_clock::now(); 
 }
 
 
@@ -26,7 +28,7 @@ void Database::insertBuffer(int address, float lux, float dc) {
 	}
 
 	struct Info aux;
-	aux.timestamp = time(nullptr); 
+	aux.timestamp = std::chrono::system_clock::now(); 
 
 	// insert the data in the circular buffers
 	aux.data = lux;
@@ -34,6 +36,9 @@ void Database::insertBuffer(int address, float lux, float dc) {
 
 	aux.data = dc;
 	buffs[address].dutyCycle.push_front(aux);
+
+	// to be used in the stream mode
+	buffs[address].lastRead = 0;
 
 	return;
 }
@@ -102,12 +107,12 @@ std::string Database::getLastMinuteValues(char message[]) {
 	response += ' ';
 
 	// gets the current time
-	time_t now = time(nullptr);
+	std::chrono::system_clock::time_point now = std::chrono::system_clock::now(); 
 
 	// if requested luminance
 	if (type == 'l') {
 
-		while (difftime(now, buffs[address].ilum[i].timestamp) < 60) {
+		while (std::chrono::duration_cast<std::chrono::seconds>(now - buffs[address].ilum[i].timestamp).count() < 60) {
 
 			// apends the value to the response
 			response.append(to_string(buffs[address].ilum[i].data));
@@ -124,7 +129,7 @@ std::string Database::getLastMinuteValues(char message[]) {
 	// if requested dutyCycle
 	} else if (type == 'd') {
 
-		while (difftime(now, buffs[address].dutyCycle[i].timestamp) < 60) {
+		while (std::chrono::duration_cast<std::chrono::seconds>(now - buffs[address].dutyCycle[i].timestamp).count() < 60) {
 
 			// apends the value to the response
 			response.append(to_string(buffs[address].dutyCycle[i].data));
@@ -140,6 +145,36 @@ std::string Database::getLastMinuteValues(char message[]) {
 	}
 
 	// ends with a newline delimiter
+	response += '\n';
+
+	return response;
+}
+
+// returns the state of the buffer, which means if the latest value has been streamed or not
+int Database::getLastReadState(int address){
+	return buffs[address].lastRead;
+}
+
+
+// returns the 
+std::string Database::getStreamValues(int address, char type){
+
+	// set up of the response string
+	std::string response("c ");
+	response += type;
+	response += ' ';
+	response.append(to_string(address));
+	response += ' ';
+	if (type == 'l') {
+		response.append(to_string(buffs[address].ilum[0].data));
+	} else if (type == 'd') {
+		response.append(to_string(buffs[address].dutyCycle[0].data));
+	}
+	// tempo
+	response.append(to_string(chrono::duration_cast<chrono::miliseconds>(buffs[address].ilum[0].timestamp - last_restart).count()));
+
+	buffs[address].lastRead = 1;
+
 	response += '\n';
 
 	return response;
