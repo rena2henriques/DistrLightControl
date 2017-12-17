@@ -47,6 +47,7 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
           break;
       case 10:
           rpiFlagT = 1;
+          rpiRequest = data;
           break; 
 
    }
