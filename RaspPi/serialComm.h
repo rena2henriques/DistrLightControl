@@ -40,7 +40,10 @@ public:
 	std::string restartCommand();
 
 	// other commands
-	std::string streamCommand();
+	std::string streamCommand(char message[]);
+
+	// turn on/off consensus
+	std::string consensusCommand();
 
 private:
 

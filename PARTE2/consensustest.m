@@ -5,11 +5,11 @@ K = [k11, k12 ; k21 , k22];
 L = [L1;L2]; o = [o1;o2];
 
 %The cost function
-c1 = 1; c2=1; q1 = 0; q2 = 0;
+c1 = 3; c2=1; q1 = 1.4; q2 = 0.4;
 c = [c1 c2]; Q = [q1 0; 0 q2];
 
 % SOLVE WITH CONSENSUS
-rho = 0.01;
+rho = 0.05;
 %node 1 initialization
 d1 = [0;0];
 d1_av = [0;0];

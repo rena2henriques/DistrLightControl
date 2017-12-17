@@ -24,6 +24,7 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
           ledON = 1;        //its my turn to turn the led on
           break;
       case 4:
+          findNodes();
           recalibration = 1; //in case of reset or a new node joined
           break;
       case 5:
@@ -47,6 +48,9 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
       case 9:
           consensusState = -(consensusState - 1);
           break;
+      case 10:
+          rpiFlagT = 1;
+          break; 
 
    }
  

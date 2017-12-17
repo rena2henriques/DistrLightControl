@@ -66,13 +66,8 @@ public:
 
   float getLowerRef();
 
-<<<<<<< HEAD
-=======
   float getKii();
 
-
-  
->>>>>>> 12f28b9fd4e349d11d0f28964d6148698413c86d
 };
 
 #endif

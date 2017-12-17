@@ -49,19 +49,24 @@ std::string SerialComm::getCommand(char message[]) {
   std::cout << "Get command " << message << std::endl;
 
   std::string s(message);
+  std::string response;
 
-  // sends message to arduino master
-  sendMessage(s);
-
+  // get current illuminance
   if (message[2] == 'l') {
-    
-  } else if (message[2] == 'd') {
+    response = db->getCurrentValues(message);
 
+  // get current duty cycle
+  } else if (message[2] == 'd') {
+    response = db->getCurrentValues(message);
+
+  // other type of get
   } else {
-    std::string response = i2c_slave->receiveGet();
+    // sends message to arduino master
+    sendMessage(s);
+
+    // waits response
+    response = i2c_slave->receiveGet();
   }
-  /*db->printBuffers(1);
-  db->printBuffers(2);*/
 
   // the messages need to have \n in the end for the client to work
   response += '\n';
@@ -74,7 +79,7 @@ std::string SerialComm::setCommand(char message[]) {
 
   std::string s(message);  
 
-  cout << "Sending: " << s;
+  cout << "Setting: " << s;
 
   // sends request to arduino
   sendMessage(s);
@@ -90,7 +95,22 @@ std::string SerialComm::restartCommand() {
   return "ack\n";
 }
 
-std::string SerialComm::streamCommand() {
+std::string SerialComm::streamCommand(char message[]) {
 
-  return "Work in progress\n";
+  std::string response;
+
+  if (message[0] == 'b') {
+    // gets the response of the values corresponding to one minute ago
+    response = db->getLastMinuteValues(message);
+  }
+
+  return response;
+}
+
+
+std::string SerialComm::consensusCommand() {
+  //sends a flag to the main arduino to turn off consensuss
+  sendMessage("k");
+
+  return "ack\n";
 }

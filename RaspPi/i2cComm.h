@@ -47,14 +47,17 @@ private:
 	int cTFlag = 0; // 12º
 	int vFlag = 0; // 13º
 	int vTFlag = 0; // 14º
+	int tFlag = 0; // 15º time since last restart
 
 	// aux variables
-	char order = 'n';
+	char order = 'z';
+	char total = 'z';
 	int address = -1;
 	float occup = 0;
 	float value = 0.0;
 	float lux = 0.0;
 	float pwm = 0.0;
+	int numReceives = 0;
 
 public:
 

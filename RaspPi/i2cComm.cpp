@@ -89,16 +89,12 @@ void I2Comm::readData(char msgBuf[], int size) {
 						db->occupancy = 0;
 					}
 
-					printf("occupancy = %d\n", db->occupancy);
-
 					db->last_sender = address;
+
+					// sets the flag to HIGH
 					oFlag = 1;
 					mtx.unlock();
-
-					printf("sender = %d\n", db->last_sender);
-					// sets the flag to HIGH
 					
-					printf("oFlag = %d\n", oFlag);
 					break;
 				case 'L':
 					// convert to float
@@ -108,12 +104,12 @@ void I2Comm::readData(char msgBuf[], int size) {
 					mtx.lock();
 					//inserts in the variable
 					db->ilumLowB = value;
-
 					db->last_sender = address;
 
 					// sets the flag to HIGH
 					LFlag = 1;
 					mtx.unlock();
+
 					break;
 				case 'O':
 					// convert to float
@@ -125,10 +121,12 @@ void I2Comm::readData(char msgBuf[], int size) {
 					db->extilum = value;
 
 					db->last_sender = address;
-					mtx.unlock();
 
 					// sets the flag to HIGH
 					OFlag = 1;
+
+					mtx.unlock();
+
 					break;
 				case 'r':
 					// convert to float
@@ -140,47 +138,196 @@ void I2Comm::readData(char msgBuf[], int size) {
 					db->refilum = value;
 
 					db->last_sender = address;
-					mtx.unlock();
 
 					// sets the flag to HIGH
 					rFlag = 1;
-					break;
-				case 'p':		
-					// fazer para o caso de ser só um i
+					mtx.unlock();
 
-					// fazer caso de ser o total
-					pFlag = 1;
+					break;
+				case 't':
+					// convert to float
+					if (sscanf(message, "%c %d %f", &order, &address, &value) != 3)
+						break; // message hasnt been sent correctly
+
+					mtx.lock();
+					//inserts in the variable
+					db->timeSeconds = value;
+
+					db->last_sender = address;
+
+					// sets the flag to HIGH
+					tFlag = 1;
+
+					mtx.unlock();
+
+					break;
+
+				case 'p':		
+					// fazer para o caso de ser só um i <----------------
+
+					if (message[2] != 'T') {
+						// convert to float
+						if (sscanf(message, "%c %d %f", &order, &address, &value) != 3)
+							break; // message hasnt been sent correctly
+
+						mtx.lock();
+						//inserts in the variable
+						db->instPow = value;
+
+						db->last_sender = address;
+
+						pFlag = 1;
+
+						mtx.unlock();
+						
+					// fazer caso de ser o total 
+					} else {
+						if (sscanf(message, "%c %c %f", &order, &total, &value) != 3)
+							break; // message hasnt been sent correctly
+
+						mtx.lock();
+						//inserts in the variable
+						db->instPowT += value;
+						mtx.unlock();
+						
+
+						// para detetar se as mensagens de todos os arduinos já foram recebidas
+						numReceives++;
+
+						if (db->getNumBuffers() == numReceives) {
+							mtx.lock();
+							pTFlag = 1;
+							mtx.unlock();
+							numReceives = 0;
+						}
+					}
+
 					break;
 				case 'e':
 					// fazer para o caso de ser só um i
+					if (message[2] != 'T') {
+						if (sscanf(message, "%c %d %f", &order, &address, &value) != 3)
+							break; // message hasnt been sent correctly
 
-					// fazer caso de ser o total
-					eFlag = 1;
+						mtx.lock();
+						//inserts in the variable
+						db->accumEn = value;
+
+						db->last_sender = address;
+
+						eFlag = 1;
+						mtx.unlock();
+						
+					// fazer caso de ser o total 
+					} else {
+						if (sscanf(message, "%c %c %f", &order, &total, &value) != 3)
+							break; // message hasnt been sent correctly
+
+						mtx.lock();
+						//inserts in the variable
+						db->accumEnT += value;
+
+						mtx.unlock();
+
+						// para detetar se as mensagens de todos os arduinos já foram recebidas
+						numReceives++;
+
+						if (db->getNumBuffers() == numReceives) {
+							mtx.lock();
+							eTFlag = 1;
+							mtx.unlock();
+							numReceives = 0;
+						}
+					}
+					
 					break;
 				case 'c':
-					// fazer para o caso de ser só um i
 
-					// fazer caso de ser o total
-					cFlag = 1;
+					// fazer para o caso de ser só um i 
+					if (message[2] != 'T') {
+						// convert to float
+						if (sscanf(message, "%c %d %f", &order, &address, &value) != 3)
+							break; // message hasnt been sent correctly
+
+						mtx.lock();
+						//inserts in the variable
+						db->accumConf = value;
+
+						db->last_sender = address;
+
+						cFlag = 1;
+						mtx.unlock();
+					// fazer caso de ser o total 
+					} else {
+						if (sscanf(message, "%c %c %f", &order, &total, &value) != 3)
+							break; // message hasnt been sent correctly
+
+						mtx.lock();
+						//inserts in the variable
+						db->accumConfT += value;
+
+						mtx.unlock();
+
+						// para detetar se as mensagens de todos os arduinos já foram recebidas
+						numReceives++;
+
+						if (db->getNumBuffers() == numReceives) {
+							mtx.lock();
+							cTFlag = 1;
+							mtx.unlock();
+							numReceives = 0;
+						}
+					}
+
 					break;
 				case 'v':
-					// fazer para o caso de ser só um i
 
-					// fazer caso de ser o total
+					// fazer para o caso de ser só um i 
+					if (message[2] != 'T') {
+						if (sscanf(message, "%c %d %f", &order, &address, &value) != 3)
+							break; // message hasnt been sent correctly
 
-					vFlag = 1;
+						mtx.lock();
+						//inserts in the variable
+						db->accumVar = value;
+
+						db->last_sender = address;
+						
+						vFlag = 1;
+						mtx.unlock();
+
+					// fazer caso de ser o total 
+					} else {
+						if (sscanf(message, "%c %c %f", &order, &total, &value) != 3)
+							break; // message hasnt been sent correctly
+
+						mtx.lock();
+						//inserts in the variable
+						db->accumVarT += value;
+
+						mtx.unlock();
+
+						// para detetar se as mensagens de todos os arduinos já foram recebidas
+						numReceives++;
+
+						if (db->getNumBuffers() == numReceives) {
+							mtx.lock();
+							vTFlag = 1;
+							mtx.unlock();
+							numReceives = 0;
+						}
+					}
+					
 					break;
 	}
 
 	return;
 }
 
-
+// deals with the flags that the other thread set to HIGH
 std::string I2Comm::receiveGet() {
 
-	char aux_response[20];
-
-	//printf("Entrei no receiveGet\n");
+	char aux_response[30];
 
 	// perceber se vale a pena verificar qual o request que eu estou à procura
 
@@ -188,82 +335,99 @@ std::string I2Comm::receiveGet() {
 
 		mtx.lock();
 		if( oFlag == 1  ){
-			//mtx.unlock();
 
 			// converts
-			snprintf(aux_response, 20, "o %d %d", db->last_sender, db->occupancy);
+			snprintf(aux_response, 30, "o %d %d", db->last_sender, db->occupancy);
 
-			//mtx.lock();
 			oFlag = 0;
-			//mtx.unlock();
 			break;			
 		} else if (LFlag == 1) {
 			// converts
-			snprintf(aux_response, 20, "L %d %.2f", db->last_sender, db->ilumLowB);
+			snprintf(aux_response, 30, "L %d %.2f", db->last_sender, db->ilumLowB);
 
-			//mtx.lock();
 			LFlag = 0;
-			//mtx.unlock();
 			break;
 		} else if (OFlag == 1) {
 			// converts
-			snprintf(aux_response, 20, "O %d %.2f", db->last_sender, db->extilum);
+			snprintf(aux_response, 30, "O %d %.2f", db->last_sender, db->extilum);
 
-			//mtx.lock();
 			OFlag = 0;
-			//mtx.unlock();
 			break;
 		} else if (rFlag == 1) {
 			// converts
-			snprintf(aux_response, 20, "r %d %.2f", db->last_sender, db->refilum);
+			snprintf(aux_response, 30, "r %d %.2f", db->last_sender, db->refilum);
 
-			//mtx.lock();
 			rFlag = 0;
-			//mtx.unlock();
 
 			break;
 
 		} else if (pFlag == 1) {
 
+			snprintf(aux_response, 30, "p %d %.2f", db->last_sender, db->instPow);
+
 			pFlag = 0;
 			break;
 
 		} else if (pTFlag == 1) {
+			// converts
+			snprintf(aux_response, 30, "p T %.2f", db->instPowT);
 
+			db->instPowT = 0;
 
 			pTFlag = 0;
 			break;
 
 		} else if (eFlag == 1) {
+			// converts
+			snprintf(aux_response, 30, "e %d %.2f", db->last_sender, db->accumEn);
 
 			eFlag = 0;
 			break;
 
 		} else if (eTFlag == 1) {
+			// converts
+			snprintf(aux_response, 30, "e T %.2f", db->accumEnT);
 
+			db->accumEnT = 0;
 			eTFlag = 0;
 			break;
 
 		} else if (cFlag == 1) {
+			snprintf(aux_response, 30, "c %d %.2f", db->last_sender, db->accumConf);
 
 			cFlag = 0;
 			break;
 
 		} else if (cTFlag == 1) {
+			// converts
+			snprintf(aux_response, 30, "c T %.2f", db->accumConfT);
+
+			db->accumConfT = 0;
 
 			cTFlag = 0;
 			break;
 
 		} else if (vFlag == 1) {
+			snprintf(aux_response, 30, "v %d %.2f", db->last_sender, db->accumVar);			
 
 			vFlag = 0;
 			break;
 
 		} else if (vTFlag == 1) {
+			// converts
+			snprintf(aux_response, 30, "v T %.2f", db->accumVarT);
+
+			db->accumVarT = 0;
 
 			vTFlag = 0;
 			break;
+		} else if (tFlag == 1) {
+			snprintf(aux_response, 30, "t %d %.2f", db->last_sender, db->timeSeconds);
+
+			tFlag = 0;
+			break;
 		}
+
 		mtx.unlock();
 		
 	}
