@@ -92,6 +92,9 @@ std::string SerialComm::restartCommand() {
   //sends a restart flag to the main arduino 
   sendMessage("r");
 
+  // resets buffers and timer
+  db->clearBuffers();
+
   return "ack\n";
 }
 
@@ -99,10 +102,8 @@ std::string SerialComm::lastMinCommand(char message[]) {
 
   std::string response;
 
-  if (message[0] == 'b') {
-    // gets the response of the values corresponding to one minute ago
-    response = db->getLastMinuteValues(message);
-  }
+  // gets the response of the values corresponding to one minute ago
+  response = db->getLastMinuteValues(message);
 
   return response;
 }

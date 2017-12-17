@@ -29,7 +29,6 @@ I2Comm::I2Comm(shared_ptr <Database> db_) : db(db_){
 	printf("I2C has been initialised\n");
 }
 
-
 I2Comm::~I2Comm(){
 
 	// Terminates the library

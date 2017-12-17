@@ -55,20 +55,29 @@
         // stream Mode ON
       } else if (request_[0] == 'c') {
 
+        printf("Entered stream mode\n");
+
         // inits the stream
         stop = 0;                  // <----------------------- can't stream more than one thing
-        type = request_[2];
-        address = atoi(&request_[4]);
 
-        // starts the timer that sets the stream mode
-        tim.expires_from_now(std::chrono::milliseconds(100));
-        tim.async_wait(boost::bind(&session::deadline_handler, this, boost::asio::placeholders::error)); 
+        if( sscanf(request_, "%c %c %d", &order, &type, &address) != 3){
 
-        response_ = "Stream Mode:\n";
+          response_ = "Request Invalid\n"; // Request not correct
+ 
+        } else {
+          // starts the timer that sets the stream mode
+          tim.expires_from_now(std::chrono::milliseconds(100));
+          tim.async_wait(boost::bind(&session::deadline_handler, this, boost::asio::placeholders::error)); 
+
+          response_ = "Stream Mode:\n";
+
+        }
 
       } else if (request_[0] == 'd') {
 
         stop = 1;
+
+        // faltam aqui coisas
 
         response_ = "ack\n";
 
@@ -116,7 +125,15 @@
 
       sample = arduino->streaming(address, type);
 
-      if (sample != "no new data") {
+      if (sample == "Address not valid!\n"){
+
+        // stops streaming
+        stop = 1;
+        // sends the info to the client
+        boost::asio::async_write(socket_, boost::asio::buffer(sample, sample.length()),
+            boost::bind(&session::deadline_handler, this, boost::asio::placeholders::error));
+
+      } else if (sample != "no new data") {
         // sends the info to the client
         boost::asio::async_write(socket_, boost::asio::buffer(sample, sample.length()),
             boost::bind(&session::deadline_handler, this, boost::asio::placeholders::error));
@@ -128,7 +145,6 @@
     }
     
   }
-
 
 /** SERVER FUNCTIONS **/
 

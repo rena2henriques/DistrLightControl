@@ -14,16 +14,16 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-// NOT USED YET
-
 #include <cstdlib>
 #include <iostream>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <boost/bind.hpp>
 //#define BOOST_ASIO_ENABLE_HANDLER_TRACKING
 #include <boost/asio.hpp>
 #include <chrono>
 #include <boost/asio/steady_timer.hpp>
-//#include "command.h"
 #include "serialComm.h"
 using boost::asio::ip::tcp;
 
@@ -50,6 +50,7 @@ private:
 	// aux variables <----------
 	// to stop the timer
 	int stop = 1;
+	char order = 'z'; // <-- useless
 	int address = -1;
 	char type = 'z';
 

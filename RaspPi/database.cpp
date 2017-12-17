@@ -49,8 +49,10 @@ void Database::clearBuffers(){
 	for(int i = 0; i < 127; i++) {
 		buffs[i].ilum.clear();
 		buffs[i].dutyCycle.clear();
+		buffs[i].lastRead = 0;
 	}
 
+	last_restart = std::chrono::system_clock::now();  
 }
 
 int Database::getNumBuffers(){
@@ -112,6 +114,10 @@ std::string Database::getLastMinuteValues(char message[]) {
 	// if requested luminance
 	if (type == 'l') {
 
+		if (buffs[address].ilum.size() == 0 && buffs[address].ilum.capacity() == 0) {
+			return "Address not valid!\n";
+		}
+
 		while (std::chrono::duration_cast<std::chrono::seconds>(now - buffs[address].ilum[i].timestamp).count() < 60) {
 
 			// apends the value to the response
@@ -128,6 +134,10 @@ std::string Database::getLastMinuteValues(char message[]) {
 
 	// if requested dutyCycle
 	} else if (type == 'd') {
+
+		if (buffs[address].dutyCycle.size() == 0 && buffs[address].dutyCycle.capacity() == 0) {
+			return "Address not valid!\n";
+		}
 
 		while (std::chrono::duration_cast<std::chrono::seconds>(now - buffs[address].dutyCycle[i].timestamp).count() < 60) {
 
@@ -155,23 +165,34 @@ int Database::getLastReadState(int address){
 	return buffs[address].lastRead;
 }
 
-
 // returns the 
 std::string Database::getStreamValues(int address, char type){
 
 	// set up of the response string
 	std::string response("c ");
+
 	response += type;
 	response += ' ';
 	response.append(to_string(address));
 	response += ' ';
 	if (type == 'l') {
-		response.append(to_string(buffs[address].ilum[0].data));
+		// testing if the address requested corresponds to an arduino
+		if (buffs[address].ilum.size() > 0 && buffs[address].ilum.capacity() != 0) {
+			response.append(to_string(buffs[address].ilum[0].data));
+		} else {
+			return "Address not valid!\n";
+		}
 	} else if (type == 'd') {
-		response.append(to_string(buffs[address].dutyCycle[0].data));
+		// testing if the address requested corresponds to an arduino
+		if (buffs[address].dutyCycle.size() > 0 && buffs[address].dutyCycle.capacity() != 0) {
+			response.append(to_string(buffs[address].dutyCycle[0].data));
+		} else {
+			return "Address not valid!\n";
+		}
 	}
+	response += ' ';
 	// tempo
-	response.append(to_string(chrono::duration_cast<chrono::miliseconds>(buffs[address].ilum[0].timestamp - last_restart).count()));
+	response.append(to_string(chrono::duration_cast<chrono::milliseconds>(buffs[address].ilum[0].timestamp - last_restart).count()));
 
 	buffs[address].lastRead = 1;
 
