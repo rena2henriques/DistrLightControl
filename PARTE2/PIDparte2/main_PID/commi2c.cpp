@@ -24,6 +24,7 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
           ledON = 1;        //its my turn to turn the led on
           break;
       case 4:
+ // findNodes();
           recalibration = 1; //in case of reset or a new node joined
           break;
       case 5:
@@ -50,6 +51,12 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
       case 10:
           rpiFlagT = 1;
           break; 
+      case 11: //new node joined
+          for(int i = 0; i < 10; i++){
+            if(addrList.get(i) == src_addr)
+              break;
+            addrList.add(src_addr);
+          }
 
    }
  
@@ -64,7 +71,7 @@ int CommI2C::getAddrListSize() {
 }
 
 int CommI2C::findNodes() {
-
+  char empty[] = "";
   int error, address;
   if(addrList.size() != 0)
     addrList.clear();  //cleans the list in case of reset
@@ -73,10 +80,11 @@ int CommI2C::findNodes() {
 
       // We use the Write.endTransmisstion return value to see if
       // a device did acknowledge to the address.
-      Wire.beginTransmission(address);
+     /* Wire.beginTransmission(address);
       Wire.write('z');
-      error = Wire.endTransmission();
-
+      error = Wire.endTransmission();*/
+      error=send((byte)11, (byte)myAddress, empty);
+      
       // The data was send successfully
       if (error == 0) {
         // Inserts the discovered address in the list
