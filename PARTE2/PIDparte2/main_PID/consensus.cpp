@@ -24,9 +24,7 @@ float Consensus::getExternalIlluminance() {
 void Consensus::start_calibration() {
   int nreads=0;
   int nacks=0;
-
-  Serial.print("add List size=");
-  Serial.println(i2calib->getAddrListSize());
+  
   if(myAddress == 1)
      ledON();
     
@@ -162,12 +160,16 @@ float Consensus::consensusIter(){
 
   double k11=0;
   double k12=0;
-  if(myAddress==1){     //because arduino1 gets the k11 first, because he lights up first
+  if(myAddress==1){     //arduino1 gets the k11 first, because he lights up first
     k11 = Klist.get(0);
     k12=  Klist.get(1); 
     i2calib->consensusFlag=1;
+    //c1 = 1;   //to check consensus working with different costs
+    //q1 = 0.1;
   }
   else{
+   // c1 = 2;
+    //q1 = 0.3;
     k11 = Klist.get(1); //arduino2 gets his k22 after getting k21, he reads his own lux after reading arduino1's
     k12 = Klist.get(0); 
   }
@@ -199,7 +201,7 @@ float Consensus::consensusIter(){
         
       double d11_best = -1;
       double d12_best = -1;
-      double min_best_1 = 100000; //big number, o prof tem esta variavel como vector
+      double min_best_1 = 100000; //big numberr
       double sol_unconstrained = 1;
       double sol_boundary_linear = 1;
       double sol_boundary_0 = 1;
@@ -342,15 +344,10 @@ float Consensus::consensusIter(){
       // send node 1 solution to neighboors
       double *d1_copy = d1; //mandar a variavel para o vizinho
 
-     
-    /* double daux=d1_copy[0];
-      d1_copy[0]= d1_copy[1];
-      d1_copy[1]= daux;  */
-
       char d_vector[20];
       char d_aux[7];
       char space[] = " ";
-      //trocar os indices ja que todos os arduinos assumem i=1, em que i é o indice
+      //trocar os indices ja que todos os arduinos assumem i=1, em que i é o seu indice
       dtostrf(d1_copy[1], 7, 2,d_vector);
       dtostrf(d1_copy[0], 7, 2,d_aux);
       strcat(d_vector, space);
