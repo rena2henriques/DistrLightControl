@@ -1,4 +1,4 @@
-#include "commi2c.h"
+ #include "commi2c.h"
 #include "consensus.h"
 #include "pid.h"
 
@@ -50,7 +50,7 @@ int highRef=70;
 //classes
 CommI2C* i2c = new CommI2C();
 Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, lowRef);
-PID pid(-0.62, 1.96, 0, 255, highRef, lowRef, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
+PID pid(-0.62, 1.96, 0, 255, highRef, lowRef, 0.74, 1, 1, -0.7, 0.7, 1, 0.4, 0.1, 0, 30);
 
 //just an empty string
 char empty[] = "";
@@ -108,10 +108,10 @@ void sendToRpiStream(int outputValue, float lux) {
   
 }
 
-void sendToRpiValue(float value, char label) {
+void sendToRpiValue(float value, char label, char address) {
       rpi_vector[0] = label;  //add label
       strcat(rpi_vector, space);
-      rpi_vector[2] = myaddress + '0'; //convert and add my address
+      rpi_vector[2] = address; //convert and add my address
       rpi_vector[3] = '\0';       
       strcat(rpi_vector, space);
       dtostrf(value, 4, 2,d_aux);   
@@ -159,9 +159,11 @@ void rpiAnalyser(String rpi_requestParam){
       case 't':
           requestedValue=getElapsedTime();
    }
-  
-   sendToRpiValue(requestedValue, label); //send to raspberry
- 
+
+   if(i2c->rpiFlagT == 0)
+      sendToRpiValue(requestedValue, label, (myaddress + '0')); //send to raspberry, convert my address to char
+   else
+      sendToRpiValue(requestedValue, label, 'T'); //send to raspberry, if requested accumulated value (T)
 }
 
 // reads the serial buffer
@@ -172,13 +174,28 @@ void analyseString(String serial_string) {
     sscanf(rx_str_aux, "%[^ ] %[^ ] %[^\n]", rpi_requestType, rpi_arg2, rpi_arg3); //stores the 3 paramets in chars[]
 
     if(rpi_requestType[0] == 'g'){  //request of type get
-       dest = atoi(rpi_arg3);
-       if(dest != myaddress) { //rpi requested another node's info
-          label_rpi = 6;
-          i2c->send(label_rpi, dest, rpi_arg2); //send arduino i the request
-       } else { //rpi request my info
-          String request(rpi_arg2);
+       if(rpi_arg3[0] == 'T') {
+          i2c->rpiFlagT = 1;
+          String request(rpi_arg2); 
           rpiAnalyser(request); //analyse request
+          i2c->rpiFlagT = 0;
+          howLongItsBeen = millis();
+          while(true) {
+            if(millis() - howLongItsBeen >= howLongToWait){
+              break; 
+            }
+          }
+          i2c->sendToAll((byte) 10, rpi_arg2);
+          
+       } else {
+         dest = atoi(rpi_arg3);
+         if(dest != myaddress) { //rpi requested another node's info
+            label_rpi = 6;
+            i2c->send(label_rpi, dest, rpi_arg2); //send arduino i the request
+         } else { //rpi request my info
+            String request(rpi_arg2);
+            rpiAnalyser(request); //analyse request
+         }
        }
     }else if (rpi_requestType[0] == 's') {  //request of type set
        dest = atoi(rpi_arg2); 
@@ -218,7 +235,12 @@ void receiveHandler(int howMany) {
      c = Wire.read();
      data += c;             //stores received chars in a string
    }
-   
+   Serial.print("label = ");
+   Serial.println(label);
+   Serial.print("src = ");
+   Serial.println(src_addr);
+   Serial.print("data = ");
+   Serial.println(data);
    i2c->msgDecoder(label, src_addr, data);  //decode the message received
   
 }
@@ -232,10 +254,9 @@ inline void idCheck(const int idPin) {
   // if pin idPin is HIGH = arduino nº1
   if(digitalRead(idPin) == HIGH)
     myaddress = 1; // I'm the arduino nº1
-  else {
+  else
     myaddress = 2; // I'm not the arduino nº2
-    delay(500); //wait to not be simultaneous
-  }
+    
 }
 
 void setup() {
@@ -254,8 +275,8 @@ void setup() {
    
    if(i2c->getAddrListSize() > 0) {
       i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
-      c1.start_calibration();           
-      pwmconsensus = c1.consensusIter();
+      c1.start_calibration();   
+      pwmconsensus = c1.consensusIter(); 
       Serial.print("Pwm=");
       Serial.println(pwmconsensus);
       Serial.print("luxconsensus=");
@@ -282,6 +303,12 @@ void loop() {
     i2c->rpiFlagG = 0;      //reset flag
     rpiAnalyser(i2c->rpiRequest); //decode message received
     //i2c->rpiRequest = "";
+  }
+
+  if(i2c->rpiFlagT == 1) {
+    rpiAnalyser(i2c->rpiRequest); //decode message received
+    i2c->rpiFlagT = 0;  //reset flag
+    
   }
 
   //set occupancy state according to order received from rpi
@@ -373,9 +400,9 @@ void loop() {
     // write the pwm to the LED
     analogWrite(ledPin, outputValue);
 
-   /* Serial.print(pid.getReference());
+    Serial.print(pid.getReference());
     Serial.print(' ');
-    Serial.println(lux);*/
+    Serial.println(lux);
 
     //send at every 20 samples updated lux and pwm to rpi, ISTO PROVAVELMENTE É TEMPO DEMAIS, VER SE COMO O RPI SE PORTA
     if(rpiCount == 20) {
@@ -385,6 +412,8 @@ void loop() {
       d_aux[0]='\0';  //clear 
     }
     rpiCount++;
+
+      
     // reset the read values
     sensorValue = 0;
 

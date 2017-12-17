@@ -27,9 +27,13 @@ public:
     int reconsensus=0;
     int rpiFlagG = 0;
     int rpiFlagS = 0;
+    int rpiFlagT = 0;
     int consensusState = 1;
     String string_consensus;
     String rpiRequest;
+
+    //just an empty string
+    
 
   
   //functions
