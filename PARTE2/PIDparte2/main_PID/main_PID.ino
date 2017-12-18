@@ -2,11 +2,8 @@
 #include "consensus.h"
 #include "pid.h"
 
-
 const int ledPin = 9;
 const int analogInPin = A0; // Analog input pin that the LDR is attached to
-
-
 
 // -----PID variables
 int sensorValue = 0; // value read from the pot
@@ -409,8 +406,8 @@ void loop() {
     Serial.print(' ');
     Serial.println(lux);*/
 
-    //send at every 20 samples updated lux and pwm to rpi, ISTO PROVAVELMENTE É TEMPO DEMAIS, VER SE COMO O RPI SE PORTA
-    if(rpiCount == 30) {
+    //send at every rpiCount samples updated lux and pwm to rpi, ISTO PROVAVELMENTE É TEMPO DEMAIS, VER SE COMO O RPI SE PORTA
+    if(rpiCount == 1) {
       sendToRpiStream(100.0*(outputValue/255.0), lux); //pwm in duty cycle :) 
       rpiCount = 0; //reset
       rpi_vector[0]='\0'; //clear
