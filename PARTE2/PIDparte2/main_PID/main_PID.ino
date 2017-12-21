@@ -106,7 +106,9 @@ void sendToRpiStream(int outputValue, float lux) {
       Wire.beginTransmission(0x48); 
       Wire.write(rpi_vector);
       stat= Wire.endTransmission();
-     
+
+       rpi_vector[0]='\0'; //clear
+       d_aux[0]='\0';  //clear 
   
 }
 
@@ -231,68 +233,9 @@ void analyseString(String serial_string) {
    
 }
 
-//handler activated when an i2c message arrives
-void receiveHandler(int howMany) {
-  int label;
-  int src_addr;
-  char c;
-  String data;
-  
-  if(Wire.available())  {     //returns bytes available
-      label = Wire.read();    //first byte is a label   
-      src_addr = Wire.read(); //second byte is the address of the sender
-   }
-   while (Wire.available()) { //remaining byte are data values
-     c = Wire.read();
-     data += c;             //stores received chars in a string
-   }
-   i2c->msgDecoder(label, src_addr, data);  //decode the message received
-  
-}
+//function that checks state of rpi related flags every loop iteration
 
-
-
-// used only for the case of our problem (2 arduinos)
-inline void idCheck(const int idPin) {
-  // if pin idPin is HIGH = arduino nº1
-  if(digitalRead(idPin) == HIGH)
-    myaddress = 1; // I'm the arduino nº1
-  else
-    myaddress = 2; // I'm not the arduino nº2
-    
-}
-
-void setup() {
-   Serial.begin(115200);
-   // gets i2c address from digital pin
-   idCheck(idPin);
-   //tell objects my address
-   i2c->setMyAddress(myaddress);
-   c1.setMyAddress(myaddress);
-    
-   Wire.begin(myaddress);
-   Wire.onReceive(receiveHandler);
- 
-   int netSize = i2c->findNodes();    //finds all nodes in the network
-
-   //only do cooperative and distributed control, if there are other nodes
-   //if there aren't, when they arrive they will tell this node they are ready
-   if(i2c->getAddrListSize() > 0) {
-      i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
-      c1.start_calibration();   
-      pwmconsensus = c1.consensusIter(); 
-      Serial.print("Pwm=");
-      Serial.println(pwmconsensus);
-      Serial.print("luxconsensus=");
-      Serial.println(c1.getRefConsensus());
-      pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
-      pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
-
-   }
-
-}
-
-void loop() {
+void checkRPIflags() {
   
   if(myaddress==1){   //address1 is the hub, get ready to receive serial messages from RPI
     if (stringComplete) { //flag set by serial rotine, when receives a \n
@@ -328,7 +271,10 @@ void loop() {
     i2c->rpiFlagS=0;      //reset set flag 
     
   }
-  //recalibration
+}
+
+void  checkRecalculation() {
+//recalibration
   if(i2c->recalibration == 1) {
     elapsedTime = millis(); //save timer of restart (reacalibration)
     i2c->findNodes(); //find if there are new nodes in the network
@@ -356,37 +302,17 @@ void loop() {
     Serial.print("luxconsensus=");
     Serial.println(pid.getReference());
   }
+  
+}
 
-  //pid, wait for sampling time
-  currentTime = millis();
-  if(currentTime - previousTime > sampleInterval) {      
-
-    //sampling counter
-    Ncount++;
-
-    //keeping lux from the 2 previous iterations 
-    if(Ncount>2)
-      lux_antepenult=lux_penult;
-
-    if(Ncount>1)
-      lux_penult=lux;
-
-    power = outputValue/255.0; //power = 1W * dutycycle [0,1]
+void metricCalculator() {
+     power = outputValue/255.0; //power = 1W * dutycycle [0,1]
       
     //computing energy comsumed - after first iteration
     subtraction = currentTime - previousTime; 
     if(Ncount>1)
       energy=energy+power*subtraction;
 
-  
-    // LOW PASS filter
-    for(i = 0; i < n_samples; i++)
-        sensorValue = sensorValue + analogRead(analogInPin);
-
-    avg_value = sensorValue/n_samples;
-
-    // converts the voltage to Lux
-    lux = pid.vtolux(avg_value);
        
     //comfort error - only when measured lux is below the reference lux
     if( pid.getReference()-lux >0){
@@ -396,7 +322,107 @@ void loop() {
     //error flickering - only after the 3rd iteration
     if(Ncount>2)
     vFlicker=vFlicker+(abs(lux-2*lux_penult+lux_antepenult))/(currentTime-previousTime)/(currentTime-previousTime);
+}
+
+//handler activated when an i2c message arrives
+void receiveHandler(int howMany) {
+  int label;
+  int src_addr;
+  char c;
+  String data;
+  
+  if(Wire.available())  {     //returns bytes available
+      label = Wire.read();    //first byte is a label   
+      src_addr = Wire.read(); //second byte is the address of the sender
+   }
+   while (Wire.available()) { //remaining byte are data values
+     c = Wire.read();
+     data += c;             //stores received chars in a string
+   }
+   i2c->msgDecoder(label, src_addr, data);  //decode the message received
+  
+}
+
+
+// used only for the case of our problem (2 arduinos)
+inline void idCheck(const int idPin) {
+  // if pin idPin is HIGH = arduino nº1
+  if(digitalRead(idPin) == HIGH)
+    myaddress = 1; // I'm the arduino nº1
+  else
+    myaddress = 2; // I'm not the arduino nº2
     
+}
+
+
+
+
+void setup() {
+   Serial.begin(115200);
+   // gets i2c address from digital pin
+   idCheck(idPin);
+   //tell objects my address
+   i2c->setMyAddress(myaddress);
+   c1.setMyAddress(myaddress);
+    
+   Wire.begin(myaddress);
+   Wire.onReceive(receiveHandler);
+ 
+   int netSize = i2c->findNodes();    //finds all nodes in the network
+
+   //only do cooperative and distributed control, if there are other nodes
+   //if there aren't, when they arrive they will tell this node they are ready
+   if(i2c->getAddrListSize() > 0) {
+      i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
+      c1.start_calibration();   
+      pwmconsensus = c1.consensusIter(); 
+      Serial.print("Pwm=");
+      Serial.println(pwmconsensus);
+      Serial.print("luxconsensus=");
+      Serial.println(c1.getRefConsensus());
+      pid.setPwmConsensus(pwmconsensus); //pwm value for feedforward
+      pid.setReference(c1.getRefConsensus()); //setting the new ref from Consensus
+
+   }
+
+}
+
+void loop() {
+  
+
+  //handles and activates flags requested by RPI
+  checkRPIflags();
+
+  //checks if there is a need to recalibrate/reset or re-do consensus
+  checkRecalculation();
+  
+
+  //PID controller, wait for sampling time
+  currentTime = millis();
+  if(currentTime - previousTime > sampleInterval) {      
+
+    //sampling counter
+    Ncount++;
+    
+    //keeping lux from the 2 previous iterations 
+    if(Ncount>2)
+      lux_antepenult=lux_penult;
+    if(Ncount>1)
+      lux_penult=lux;
+
+    // LOW PASS filter
+    for(i = 0; i < n_samples; i++)
+        sensorValue = sensorValue + analogRead(analogInPin);
+
+    avg_value = sensorValue/n_samples;
+
+    // converts the voltage to Lux
+    lux = pid.vtolux(avg_value);
+
+    //updates or calculates metrics (power, energy etc..)
+    metricCalculator();
+
+    //calculates control value to led
     outputValue = pid.calculate(lux);
   
     // write the pwm to the LED
@@ -406,24 +432,23 @@ void loop() {
     Serial.print(' ');
     Serial.println(lux);*/
 
-
-    //send at every rpiCount samples updated lux and pwm to rpi, ISTO PROVAVELMENTE É TEMPO DEMAIS, VER SE COMO O RPI SE PORTA
-    if(rpiCount == 1) {
+    
+    //send at every rpiCount samples updated lux and pwm to rpi
+    if(rpiCount == 10) {  
       sendToRpiStream(100.0*(outputValue/255.0), lux); //pwm in duty cycle :) 
       rpiCount = 0; //reset
-      rpi_vector[0]='\0'; //clear
-      d_aux[0]='\0';  //clear 
     }
     rpiCount++;
 
-      
     // reset the read values
     sensorValue = 0;
-
     // reset the timer
     previousTime = currentTime;
   }
 }
+
+
+
 
 //standard rotine to read serial
 void serialEvent() {
