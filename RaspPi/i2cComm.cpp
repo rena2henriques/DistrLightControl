@@ -61,8 +61,6 @@ void I2Comm::readData(char msgBuf[], int size) {
 	char message[30] = "";
 	strncpy(message, msgBuf, size);
 
-	printf("I'm reading some data: %s\n", message);
-
 	switch (message[0]) {
 				case 'g':
 					// convert to int
