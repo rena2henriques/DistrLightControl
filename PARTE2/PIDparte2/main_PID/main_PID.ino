@@ -149,7 +149,7 @@ void rpiAnalyser(String rpi_requestParam){
           requestedValue=c1.getLowerRef(); //rpi requested lower reference
           break;
       case 'r':
-          requestedValue=c1.getRefConsensus(); //rpi requested occupancy state PID's reference      
+          requestedValue= pid.getReference(); //rpi requested occupancy state PID's reference      
           break;
       case 'O':
           requestedValue=c1.getExternalIlluminance(); //rpi requested O backgorund illuminance
@@ -409,8 +409,8 @@ void loop() {
     Serial.print(' ');
     Serial.println(lux);*/
 
-    //send at every 20 samples updated lux and pwm to rpi, ISTO PROVAVELMENTE É TEMPO DEMAIS, VER SE COMO O RPI SE PORTA
-    if(rpiCount == 30) {
+    //send at every 10 samples updated lux and pwm to rpi, ISTO PROVAVELMENTE É TEMPO DEMAIS, VER SE COMO O RPI SE PORTA
+    if(rpiCount == 10) {
       sendToRpiStream(100.0*(outputValue/255.0), lux); //pwm in duty cycle :) 
       rpiCount = 0; //reset
       rpi_vector[0]='\0'; //clear
