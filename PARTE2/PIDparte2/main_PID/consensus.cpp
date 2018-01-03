@@ -25,10 +25,8 @@ void Consensus::start_calibration() {
   int nreads=0;
   int nacks=0;
 
-  Serial.println("start calibration");
-  Serial.print("addr size=");
+  Serial.print("add List size=");
   Serial.println(i2calib->getAddrListSize());
-  
   if(myAddress == 1)
      ledON();
     

@@ -48,9 +48,9 @@ int highRef = 70;
 
 //classes
 CommI2C* i2c = new CommI2C();
-Consensus c1 = Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, lowRef);
+
+Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, lowRef);
 PID pid(-0.62, 1.96, 0, 255, highRef, lowRef, 0.74, 1, 1, -0.7, 0.7, 1, 0.4, 0.1, 0, 30);
-//valores da 1ª parte: Kp=1.35 Ki=0.019
 
 //just an empty string
 char empty[] = "";
@@ -236,14 +236,6 @@ void receiveHandler(int howMany) {
     data += c;             //stores received chars in a string
   }
 
-  Serial.print("label=");
-  Serial.println(label);
-  
-  Serial.print("addr=");
-  Serial.println(src_addr);
-  
-  Serial.print("data=");
-  Serial.println(data);
   i2c->msgDecoder(label, src_addr, data);  //decode the message received
 
 }
@@ -257,10 +249,9 @@ inline void idCheck(const int idPin) {
   // if pin idPin is HIGH = arduino nº1
   if (digitalRead(idPin) == HIGH)
     myaddress = 1; // I'm the arduino nº1
-  else {
+  else
     myaddress = 2; // I'm not the arduino nº2
-    delay(500); //wait to not be simultaneous
-  }
+    
 }
 
 void setup() {
@@ -280,11 +271,7 @@ void setup() {
    
    if(i2c->getAddrListSize() > 0) {
       i2c->sendToAll((byte) 4, empty);   //tells other nodes to reset their calibration
-      unsigned long timer = 0;
       c1.start_calibration();   
-      timer = millis() - timer;
-      Serial.print("Tempo da calibraãp = ");
-      Serial.println(timer);
       pwmconsensus = c1.consensusIter(); 
       Serial.print("Pwm=");
       Serial.println(pwmconsensus);
@@ -337,6 +324,7 @@ void loop() {
   }
   //recalibration
   if(i2c->recalibration == 1) {
+    i2c->findNodes();
     elapsedTime = millis();
     i2c->consensusState = 1; //after reset, we have consensus as default
     i2c->reconsensus=1;   //whenever we do recalibration, we have to re-do consensus
@@ -406,9 +394,9 @@ void loop() {
     // write the pwm to the LED
     analogWrite(ledPin, outputValue);
 
-      Serial.print(pid.getReference());
-      Serial.print(' ');
-      Serial.println(lux);
+    Serial.print(pid.getReference());
+    Serial.print(' ');
+    Serial.println(lux);
 
     //send at every 20 samples updated lux and pwm to rpi, ISTO PROVAVELMENTE É TEMPO DEMAIS, VER SE COMO O RPI SE PORTA
     if(rpiCount == 20) {
@@ -418,6 +406,8 @@ void loop() {
       d_aux[0]='\0';  //clear 
     }
     rpiCount++;
+
+      
     // reset the read values
     sensorValue = 0;
 

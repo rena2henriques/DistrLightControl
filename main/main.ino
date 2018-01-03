@@ -8,8 +8,9 @@ float lux = 0.0;
 
 //actuatorMin, actuatorMax, ocupationlux, unocupationlux, ref, antiWgain, antiWFlag, deadFlag, deadMin, deadMax, FFWDFlag, kp, ki, kd, T
 
-PID pid(-0.62, 1.96, 0, 255, 70, 35, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
+//PID pid(-0.62, 1.96, 0, 255, 70, 35, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
 //PID pid(-0.74, 1.92, 0, 255, 70, 35, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
+PID pid(-0.74, 1.92, 0, 255, 70, 35, 35, 0.0, 0, 0, 0.0, 0.0, 1, 0, 0, 0, 30);
 
 
 // time variables (ms)
@@ -121,17 +122,17 @@ void loop() {
 
   	Serial.print(pid.getReference());
   	Serial.print(' ');
-  	Serial.println(lux);
+  	Serial.print(lux);
 
   	/*Serial.print(' ');
   	Serial.print( ( (float) outputValue/255)*100);
   	Serial.print(' ');
-  	Serial.print(pid.getFFWDFlag());
+  	Serial.print(pid.getFFWDFlag());*/
   	Serial.print(' ');
-  	Serial.println(currentTime);*/
+  	Serial.println(currentTime);
 
     // used for testing the ref change
-    count++;
+   // count++;
     if(count==150)
       pid.setReference(70);
     if(count==300)

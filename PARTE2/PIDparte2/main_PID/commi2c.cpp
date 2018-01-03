@@ -12,6 +12,14 @@ void CommI2C::setMyAddress (int address) {
 
 //decodes the message received from i2c
 void CommI2C::msgDecoder(int label, int src_addr, String data){
+
+  
+   Serial.print("label = ");
+   Serial.println(label);
+   Serial.print("src = ");
+   Serial.println(src_addr); 
+   Serial.print("data=");
+   Serial.println(data);
    
    switch(label) {
       case 1:
@@ -24,7 +32,6 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
           ledON = 1;        //its my turn to turn the led on
           break;
       case 4:
-          findNodes();
           recalibration = 1; //in case of reset or a new node joined
           break;
       case 5:
@@ -65,7 +72,6 @@ int CommI2C::getAddrListSize() {
 }
 
 int CommI2C::findNodes() {
-
   int error, address;
   if(addrList.size() != 0)
     addrList.clear();  //cleans the list in case of reset
@@ -77,7 +83,7 @@ int CommI2C::findNodes() {
       Wire.beginTransmission(address);
       Wire.write('z');
       error = Wire.endTransmission();
-
+      
       // The data was send successfully
       if (error == 0) {
         // Inserts the discovered address in the list

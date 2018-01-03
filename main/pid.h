@@ -31,7 +31,7 @@ private:
 	int actuatorMin;
 	// for transforming LUX to pwm
   
-  const float slope = 3.2059;//
+ const float slope = 3.3059;//
   const float y_origin = 2.1629;
 	//const float slope = 2.4356;//3.2059;
   //const float y_origin = -6.9365;//2.1629;

@@ -32,6 +32,9 @@ public:
     String string_consensus;
     String rpiRequest;
 
+    //just an empty string
+    
+
   
   //functions
 	CommI2C();  //default constructor
