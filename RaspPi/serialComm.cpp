@@ -92,17 +92,18 @@ std::string SerialComm::restartCommand() {
   //sends a restart flag to the main arduino 
   sendMessage("r");
 
+  // resets buffers and timer
+  db->clearBuffers();
+
   return "ack\n";
 }
 
-std::string SerialComm::streamCommand(char message[]) {
+std::string SerialComm::lastMinCommand(char message[]) {
 
   std::string response;
 
-  if (message[0] == 'b') {
-    // gets the response of the values corresponding to one minute ago
-    response = db->getLastMinuteValues(message);
-  }
+  // gets the response of the values corresponding to one minute ago
+  response = db->getLastMinuteValues(message);
 
   return response;
 }
@@ -113,4 +114,22 @@ std::string SerialComm::consensusCommand() {
   sendMessage("k");
 
   return "ack\n";
+}
+
+
+std::string SerialComm::streaming(int address, char type) {
+
+  std::string response;
+
+  // the case of having received new data from this arduino
+  if ( db->getLastReadState(address) == 0) {
+
+    response = db->getStreamValues(address, type);
+
+  // the case of not having received new data from this arduino
+  } else {
+    response = "no new data";
+  }
+
+  return response;
 }

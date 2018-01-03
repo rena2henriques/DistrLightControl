@@ -14,12 +14,12 @@ void CommI2C::setMyAddress (int address) {
 void CommI2C::msgDecoder(int label, int src_addr, String data){
 
   
-   Serial.print("label = ");
+  /* Serial.print("label = ");
    Serial.println(label);
    Serial.print("src = ");
    Serial.println(src_addr); 
    Serial.print("data=");
-   Serial.println(data);
+   Serial.println(data);*/
    
    switch(label) {
       case 1:
@@ -41,8 +41,6 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
       case 6:
           rpiFlagG = 1;
           rpiRequest = data;
-          Serial.print("rpi data = ");
-          Serial.println(rpiRequest);
           break;
 
       case 7:
@@ -57,6 +55,7 @@ void CommI2C::msgDecoder(int label, int src_addr, String data){
           break;
       case 10:
           rpiFlagT = 1;
+          rpiRequest = data;
           break; 
 
    }

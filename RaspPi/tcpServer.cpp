@@ -14,7 +14,7 @@
 #include "tcpServer.h"
 
   session::session(boost::asio::io_service& io_service, std::shared_ptr <SerialComm> arduino_)
-    : socket_(io_service), response_(""), arduino(arduino_) {
+    : socket_(io_service), response_(""), arduino(arduino_), tim(io_service) {
   }
 
   tcp::socket& session::socket() {
@@ -48,9 +48,38 @@
         // gets the response requested
         response_ = arduino->consensusCommand();
 
-      } else if (request_[0] == 'b' || request_[0] == 'c' || request_[0] == 'd') {
+      } else if (request_[0] == 'b') {
 
-        response_ = arduino->streamCommand(request_);
+        response_ = arduino->lastMinCommand(request_);
+
+        // stream Mode ON
+      } else if (request_[0] == 'c') {
+
+        printf("Entered stream mode\n");
+
+        // inits the stream
+        stop = 0;                  // <----------------------- can't stream more than one thing
+
+        if( sscanf(request_, "%c %c %d", &order, &type, &address) != 3){
+
+          response_ = "Request Invalid\n"; // Request not correct
+ 
+        } else {
+          // starts the timer that sets the stream mode
+          tim.expires_from_now(std::chrono::milliseconds(100));
+          tim.async_wait(boost::bind(&session::deadline_handler, this, boost::asio::placeholders::error)); 
+
+          response_ = "Stream Mode:\n";
+
+        }
+
+      } else if (request_[0] == 'd') {
+
+        stop = 1;
+
+        // faltam aqui coisas
+
+        response_ = "ack\n";
 
       } else if (request_[0] == '\n') {
 
@@ -84,6 +113,37 @@
     } else {
       delete this;
     }
+  }
+
+  // asynchronous timer
+  void session::deadline_handler(const boost::system::error_code & ec)  { 
+
+    std::string sample;
+
+    // if requested to stop the stream
+    if (stop == 0) {
+
+      sample = arduino->streaming(address, type);
+
+      if (sample == "Address not valid!\n"){
+
+        // stops streaming
+        stop = 1;
+        // sends the info to the client
+        boost::asio::async_write(socket_, boost::asio::buffer(sample, sample.length()),
+            boost::bind(&session::deadline_handler, this, boost::asio::placeholders::error));
+
+      } else if (sample != "no new data") {
+        // sends the info to the client
+        boost::asio::async_write(socket_, boost::asio::buffer(sample, sample.length()),
+            boost::bind(&session::deadline_handler, this, boost::asio::placeholders::error));
+      } else {
+          tim.expires_from_now(std::chrono::milliseconds(100));
+
+          tim.async_wait(boost::bind(&session::deadline_handler, this, boost::asio::placeholders::error)); 
+      }
+    }
+    
   }
 
 /** SERVER FUNCTIONS **/
@@ -120,8 +180,6 @@
       std::string result;
       response_stream >> result;
 
-      //std::cout << result << std::endl;
-
       if ( result == "exit") {
         std::cout << "Entered exit" << std::endl;
         arduino->sendMessage("exit"); // tells the arduino the comm is ending
@@ -129,7 +187,6 @@
         return;
       }
 
-      //arduino->sendMessage("Teste serial");
     }
     start_read_input();
   }

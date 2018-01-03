@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <ctime>
+#include <chrono>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -20,7 +21,7 @@ private:
 
 	struct Info {
 		float data;
-		time_t timestamp; 
+		std::chrono::system_clock::time_point timestamp; 
 	};
 
 	struct Buffer {
@@ -28,13 +29,18 @@ private:
 		boost::circular_buffer<struct Info> ilum;
 		// for duty cycle values
 		boost::circular_buffer<struct Info> dutyCycle;
+
+		int lastRead = 0;
 	};
 
 	// Create a circular buffer for floats
 	Buffer buffs[127];
 
-	// num of nodes
+	// num of nodes for the T gets
 	int numBuffers = 0;
+
+	// time of the last restart 
+	std::chrono::system_clock::time_point last_restart;
 
 public:
 
@@ -52,7 +58,14 @@ public:
 
 	std::string getLastMinuteValues(char message[]);
 
+	// for the T gets
 	int getNumBuffers();
+
+	int getLastReadState(int address);
+
+	void setLastReadState(int address);
+
+	std::string getStreamValues(int address, char type);
 
 	// temp variables to save the info
 	int occupancy = 0;
@@ -71,7 +84,6 @@ public:
 
 	// last sender
 	int last_sender = -1;
-
 };
 
 #endif
