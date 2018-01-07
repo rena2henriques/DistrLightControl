@@ -30,9 +30,11 @@ private:
 	int actuatorMax;
 	int actuatorMin;
 	// for transforming LUX to pwm
-  
- const float slope = 3.3059;//
-  const float y_origin = 2.1629;
+
+  float slope;
+  float y_origin;
+ //const float slope = 3.3059;//
+  //const float y_origin = 2.1629;
 	//const float slope = 2.4356;//3.2059;
   //const float y_origin = -6.9365;//2.1629;
   //const float y_origin=-7.98;
@@ -69,7 +71,7 @@ public:
 	// constructor
 	PID();
 	PID(float a_ldr, float b_ldr, int actMin, int actMax, int ocupationMax, int ocupationMin, int ref, float antiWk, 
-														int antiFlag, int deadflag, float deadMin, float deadMax, int FFWD_flag, float kp, float ki, float kd, float samplingTime);
+														int antiFlag, int deadflag, float deadMin, float deadMax, int FFWD_flag, float kp, float ki, float kd, float samplingTime,float slope_,float y_origin_);
 	void setAntiWindupParam(float k);
 	void setActuatorLimits(int min, int max);
 	void setAntiWindupMode(int mode);

@@ -44,7 +44,7 @@ int highRef = 70;
 //classes
 CommI2C* i2c = new CommI2C();
 
-Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0, lowRef);
+Consensus c1= Consensus(i2c, analogInPin, ledPin, -0.62, 1.96, 1, 0.0, lowRef);
 PID pid(-0.62, 1.96, 0, 255, highRef, lowRef, 0.74, 1, 1, -0.7, 0.7, 1, 0.4, 0.1, 0, 30);
 
 //just an empty string
