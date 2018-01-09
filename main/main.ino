@@ -132,13 +132,6 @@ void loop() {
   	Serial.print(' ');
   	Serial.println(currentTime);
 
-    // used for testing the ref change
-   // count++;
-    if(count==150)
-      pid.setReference(70);
-    if(count==300)
-      pid.setReference(35);
-
     // reset the read values
     sensorValue = 0;
 
