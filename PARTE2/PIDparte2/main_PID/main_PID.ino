@@ -432,27 +432,11 @@ void loop() {
     // write the pwm to the LED
     analogWrite(ledPin, outputValue);
 
-    Serial.print(pid.getReference());
-    Serial.print(' ');
-    Serial.print(lux);
-    Serial.print(' ');
-    Serial.print(millis());
-    Serial.print(' ');
-    Serial.print(energy);
-    Serial.print(' ');
-    Serial.print(cError);
-    Serial.print(' ');
-    Serial.println(vFlicker);
-
-    
-    
-
-    
     //send at every rpiCount samples updated lux and pwm to rpi
-    /*if(rpiCount == 10) {  
+    if(rpiCount == 10) {  
       sendToRpiStream(100.0*(outputValue/255.0), lux); //pwm in duty cycle :) 
       rpiCount = 0; //reset
-    }*/
+    }
     rpiCount++;
 
     // reset the read values
