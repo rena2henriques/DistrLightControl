@@ -6,6 +6,11 @@ using namespace std;
 
 PID::PID() {
 
+  //Calibration Parameters
+  
+  slope = 3.3059;//
+  y_origin = 2.1629;
+
   // Parameters of the LDR
   a_lux = -0.74;
   b_lux = 1.92;
@@ -46,8 +51,12 @@ PID::PID() {
 }
 
 PID::PID(float a_ldr, float b_ldr, int actMin, int actMax, int ocupationMax, int ocupationMin, int ref,
-                             float antiWk,int antiFlag, int deadflag, float deadMin, float deadMax, int FFW_flag, float kp, float ki, float kd, float samplingTime) {
-	
+                             float antiWk,int antiFlag, int deadflag, float deadMin, float deadMax, int FFW_flag, float kp, float ki, float kd, float samplingTime,float slope_,float y_origin_) {
+
+  //Calibration Parameters
+  slope=slope_;
+  y_origin=y_origin_;
+  
   // Parameters of the LDR
   a_lux = a_ldr;
   b_lux = b_ldr;

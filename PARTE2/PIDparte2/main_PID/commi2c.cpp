@@ -12,6 +12,14 @@ void CommI2C::setMyAddress (int address) {
 
 //decodes the message received from i2c
 void CommI2C::msgDecoder(int label, int src_addr, String data){
+
+  
+  /* Serial.print("label = ");
+   Serial.println(label);
+   Serial.print("src = ");
+   Serial.println(src_addr); 
+   Serial.print("data=");
+   Serial.println(data);*/
    
    switch(label) {
       case 1:
@@ -74,7 +82,6 @@ int CommI2C::findNodes() {
       Wire.beginTransmission(address);
       Wire.write('z');
       error = Wire.endTransmission();
-     
       
       // The data was send successfully
       if (error == 0) {

@@ -6,10 +6,13 @@ int sensorValue = 0; // value read from the pot
 int outputValue = 0.0; // value output to the PWM (analog out)
 float lux = 0.0;
 
+
+float slope = 3.3059;//
+float y_origin = 2.1629;
 //actuatorMin, actuatorMax, ocupationlux, unocupationlux, ref, antiWgain, antiWFlag, deadFlag, deadMin, deadMax, FFWDFlag, kp, ki, kd, T
 
-PID pid(-0.62, 1.96, 0, 255, 70, 35, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
-//PID pid(-0.74, 1.92, 0, 255, 70, 35, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
+//PID pid(-0.62, 1.96, 0, 255, 70, 35, 35, 0.74, 1, 1, -0.7, 0.7, 1, 1.35, 0.019, 0, 30);
+PID pid(-0.74, 1.92, 0, 255, 70, 35, 35, 0.0, 0, 0, 0.0, 0.0, 1, 0, 0, 0, 30,slope,y_origin);
 
 
 // time variables (ms)
@@ -112,7 +115,6 @@ void loop() {
 
     // converts the voltage to Lux
   	lux = pid.vtolux(avg_value);
-    //lux=lux*1.425; <--- para novo ldr?
 
   	outputValue = pid.calculate(lux);
 
@@ -121,21 +123,14 @@ void loop() {
 
   	Serial.print(pid.getReference());
   	Serial.print(' ');
-  	Serial.println(lux);
+  	Serial.print(lux);
 
-  	/*Serial.print(' ');
+  	Serial.print(' ');
   	Serial.print( ( (float) outputValue/255)*100);
   	Serial.print(' ');
   	Serial.print(pid.getFFWDFlag());
   	Serial.print(' ');
-  	Serial.println(currentTime);*/
-
-    // used for testing the ref change
-    count++;
-    if(count==150)
-      pid.setReference(70);
-    if(count==300)
-      pid.setReference(35);
+  	Serial.println(currentTime);
 
     // reset the read values
     sensorValue = 0;

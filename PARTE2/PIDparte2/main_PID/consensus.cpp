@@ -37,6 +37,7 @@ void Consensus::start_calibration() {
             ledON();
       }
       if(i2calib->readADC != 0) {
+         
          nreads++;                              //i've read one more lux
          readADCvalue(i2calib->readADC);        //readADC flag contains the address to the HIGH node
          i2calib->readADC = 0;           //resets flag
@@ -134,6 +135,7 @@ void Consensus::cleanCalibVars(){
     analogWrite(ledPin, LOW);
     
     howLongItsBeen = millis();
+    
     while(true) {
       if(millis() - howLongItsBeen >= howLongToWait){
         break; 
@@ -164,12 +166,12 @@ float Consensus::consensusIter(){
     k11 = Klist.get(0);
     k12=  Klist.get(1); 
     i2calib->consensusFlag=1;
-    //c1 = 1;   //to check consensus working with different costs
-    //q1 = 0.1;
+  //  c1 = 1;   //to check consensus working with different costs
+   // q1 = 0.1;
   }
   else{
    // c1 = 2;
-    //q1 = 0.3;
+   // q1 = 0.3;
     k11 = Klist.get(1); //arduino2 gets his k22 after getting k21, he reads his own lux after reading arduino1's
     k12 = Klist.get(0); 
   }

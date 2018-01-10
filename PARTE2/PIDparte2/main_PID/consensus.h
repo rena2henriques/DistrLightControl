@@ -30,7 +30,6 @@ private:
 
   //line of K matrix
   LinkedList<float> Klist = LinkedList<float>();
-
   
   //variables
   unsigned long howLongToWait = 200;
@@ -69,8 +68,6 @@ public:
 
   float getKii();
 
-
-  
 };
 
 #endif
