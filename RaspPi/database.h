@@ -44,8 +44,6 @@ private:
 
 public:
 
-	Database();
-
 	Database(int capacity);
 
 	~Database();

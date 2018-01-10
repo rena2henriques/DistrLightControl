@@ -1,10 +1,5 @@
 #include "database.h"
 
-Database::Database() {
-
-
-}
-
 Database::Database(int capacity_) : capacity(capacity_) {
 
 	last_restart = std::chrono::system_clock::now(); 
@@ -165,7 +160,7 @@ int Database::getLastReadState(int address){
 	return buffs[address].lastRead;
 }
 
-// returns the 
+// returns the last saved values from the db
 std::string Database::getStreamValues(int address, char type){
 
 	// set up of the response string

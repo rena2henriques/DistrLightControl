@@ -51,6 +51,7 @@ void i2c_thread() {
   return;
 }
 
+// used for exiting the program because ctrl-c doesn't terminate GPIO library
 void read_keyboard(){
   while (1) {
     string command;

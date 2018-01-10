@@ -73,20 +73,11 @@ public:
 private:
 	void start_accept();
 
-	void start_read_input();
-
-	void handle_read_input(const boost::system::error_code& error,
-      std::size_t length);
-
 	void handle_accept(session* new_session,
       const boost::system::error_code& error);
 
-	std::string buffer_to_string(const boost::asio::streambuf &buffer);
-
 	boost::asio::io_service& io_service_;
 	tcp::acceptor acceptor_;
-	boost::asio::posix::stream_descriptor input_;
-	boost::asio::streambuf input_buffer_;
 
 	std::shared_ptr <SerialComm> arduino;
 };

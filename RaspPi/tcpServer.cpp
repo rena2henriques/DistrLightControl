@@ -58,7 +58,7 @@
         printf("Entered stream mode\n");
 
         // inits the stream
-        stop = 0;                  // <----------------------- can't stream more than one thing
+        stop = 0;            
 
         if( sscanf(request_, "%c %c %d", &order, &type, &address) != 3){
 
@@ -75,9 +75,14 @@
 
       } else if (request_[0] == 'd') {
 
-        stop = 1;
+        // Parar a stream
+        if( sscanf(request_, "%c %c %d", &order, &type, &address) != 3){
 
-        // faltam aqui coisas
+          response_ = "Request Invalid\n"; // Request not correct
+        } else {
+
+          stop = 1; // stops timer
+        }
 
         response_ = "ack\n";
 
@@ -151,11 +156,9 @@
   Tcp_server::Tcp_server(boost::asio::io_service& io_service, short port, std::shared_ptr <SerialComm> arduino_)
     : io_service_(io_service),
       acceptor_(io_service, tcp::endpoint(tcp::v4(), port)),
-      input_(io_service, ::dup(STDIN_FILENO)),
-      input_buffer_(1024), arduino(arduino_) 
+      arduino(arduino_) 
     {
     start_accept();
-    //start_read_input();
    }
 
   void Tcp_server::start_accept() {
@@ -165,31 +168,6 @@
         boost::bind(&Tcp_server::handle_accept, this, new_session, _1));
   }
 
-  void Tcp_server::start_read_input() {
-
-    // Read a line of input entered by the user.
-    async_read_until(input_, input_buffer_, '\n', 
-        boost::bind(&Tcp_server::handle_read_input, this, _1, _2));
-  }
-
-  void Tcp_server::handle_read_input(const boost::system::error_code& error,
-      std::size_t length) {
-    if (!error) {
-
-      std::istream response_stream(&input_buffer_);
-      std::string result;
-      response_stream >> result;
-
-      if ( result == "exit") {
-        std::cout << "Entered exit" << std::endl;
-        arduino->sendMessage("exit"); // tells the arduino the comm is ending
-        io_service_.stop();
-        return;
-      }
-
-    }
-    start_read_input();
-  }
 
   void Tcp_server::handle_accept(session* new_session,
       const boost::system::error_code& error) {

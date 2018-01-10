@@ -1,8 +1,5 @@
 #include "serialComm.h"
 
-// compile with
-// g++ -g -O -Wall -pedantic -std=c++11 mainSerial.cpp serialComm.cpp -lpthread -lboost_system -o serialArduino
-
 // Constructor
 SerialComm::SerialComm(io_service& io_serv,std::string port_name , shared_ptr <Database> db_, shared_ptr <I2Comm> i2c_slave_)
 	: io(io_serv), sp(io), input_(io, ::dup(STDIN_FILENO)), input_buffer_(1024), db(db_), i2c_slave(i2c_slave_) {
@@ -12,8 +9,6 @@ SerialComm::SerialComm(io_service& io_serv,std::string port_name , shared_ptr <D
 		sp.open(port_name);
     // sets baudrate
 	  sp.set_option(serial_port_base::baud_rate(115200));
-
-		//start_read_input();
 		
 	} catch(boost::system::system_error& error) {
 	    boost::system::error_code ec =	error.code();
@@ -40,7 +35,7 @@ void SerialComm::sendMessage(std::string message) {
 void SerialComm::sendMessageHandler(const boost::system::error_code& ec){
 
   // do nothing
-  std::cout << "Order sent to Arduino Serial" << std::endl; // teste
+  std::cout << "Order sent to Arduino Serial" << std::endl;
 
 }
 
